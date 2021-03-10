@@ -1,0 +1,11 @@
+rootProject.name = 'language-server'
+include 'server'
+include 'client'
+include 'launchers'
+include 'server'
+include 'server-core'
+include 'server:server-core'
+findProject(':server:server-core')?.name = 'server-core'
+include 'server:server-api'
+findProject(':server:server-api')?.name = 'server-api'
+
