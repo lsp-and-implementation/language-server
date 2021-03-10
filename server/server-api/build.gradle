@@ -1,0 +1,18 @@
+group 'org.lsp.server.api'
+version '1.0-SNAPSHOT'
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+task copyArtifacts(type: Copy) {
+    from "$buildDir/libs/server-api-1.0-SNAPSHOT.jar"
+    into "../../client/"
+}
+
+build.finalizedBy(copyArtifacts)

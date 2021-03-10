@@ -1,0 +1,36 @@
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+subprojects {
+    apply plugin: 'java'
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+//        maven {
+//            url = 'https://maven.wso2.org/nexus/content/repositories/releases/'
+//        }
+//        maven {
+//            url = 'https://maven.wso2.org/nexus/content/groups/wso2-public/'
+//        }
+//
+//        maven {
+//            url = 'https://maven.wso2.org/nexus/content/repositories/orgballerinalang-1614'
+//        }
+//
+//        maven {
+//            url = 'https://repo.maven.apache.org/maven2'
+//        }
+    }
+    
+    dependencies {
+        compile 'org.eclipse.lsp4j:org.eclipse.lsp4j:0.10.0'
+        compile 'org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:0.10.0'
+        compile 'org.ballerinalang:ballerina-lang:2.0.0-alpha6-SNAPSHOT'
+        compile 'org.ballerinalang:ballerina-parser:2.0.0-alpha6-SNAPSHOT'
+        compile 'org.ballerinalang:ballerina-tools-api:2.0.0-alpha6-SNAPSHOT'
+        compile 'org.ballerinalang:toml-parser:2.0.0-alpha6-SNAPSHOT'
+    }
+}
