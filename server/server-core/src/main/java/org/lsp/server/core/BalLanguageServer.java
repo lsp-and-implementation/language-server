@@ -24,6 +24,7 @@ import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncOptions;
 import org.eclipse.lsp4j.services.LanguageClient;
+import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
@@ -35,14 +36,13 @@ import java.util.concurrent.CompletableFuture;
  *
  * @since 1.0.0
  */
-public class BalLanguageServer implements LanguageServer {
-    private final TextDocumentService textDocumentService;
-    private final WorkspaceService workspaceService;
+public class BalLanguageServer implements LanguageServer, LanguageClientAware {
+    private TextDocumentService textDocumentService;
+    private WorkspaceService workspaceService;
     private final BalLanguageServerContextImpl serverContext;
     private LanguageClient client;
-    private final DynamicCapabilitySetter dynamicCapabilitySetter;
+    private DynamicCapabilitySetter dynamicCapabilitySetter;
     private boolean shutdownInitiated = false;
-
 
     public BalLanguageServer() {
         this.serverContext = new BalLanguageServerContextImpl();
@@ -104,12 +104,9 @@ public class BalLanguageServer implements LanguageServer {
         return this.workspaceService;
     }
 
-    /**
-     * Set the client instance. This should be called as soon as the launcher is created.
-     * 
-     * @param client {@link LanguageClient}
-     */
-    public void setClient(LanguageClient client) {
-        this.client = client;
+    @Override
+    public void connect(LanguageClient languageClient) {
+        this.client = languageClient;
+        this.serverContext.init(this.client);
     }
 }

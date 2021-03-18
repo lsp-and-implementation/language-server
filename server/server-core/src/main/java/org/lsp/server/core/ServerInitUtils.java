@@ -16,6 +16,7 @@
 package org.lsp.server.core;
 
 import org.eclipse.lsp4j.CompletionOptions;
+import org.eclipse.lsp4j.SaveOptions;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.TextDocumentSyncOptions;
 
@@ -38,9 +39,13 @@ public class ServerInitUtils {
      */
     public static TextDocumentSyncOptions getDocumentSyncOption() {
         TextDocumentSyncOptions syncOptions = new TextDocumentSyncOptions();
+        SaveOptions saveOptions = new SaveOptions(true);
         syncOptions.setChange(TextDocumentSyncKind.Full);
         syncOptions.setOpenClose(true);
-        
+        syncOptions.setWillSave(true);
+        syncOptions.setWillSaveWaitUntil(true);
+        syncOptions.setSave(saveOptions);
+
         return syncOptions;
     }
 
@@ -63,4 +68,5 @@ public class ServerInitUtils {
         
         return completionOptions;
     }
+
 }

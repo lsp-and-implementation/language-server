@@ -47,9 +47,9 @@ public class DiagnosticsPublisherImpl implements org.lsp.server.api.DiagnosticsP
 
     @Override
     public void publish(Project project) {
-        DiagnosticResult diagnosticResult = project.currentPackage().getCompilation().diagnosticResult();
+        DiagnosticResult diagResult =project.currentPackage().getCompilation().diagnosticResult();
         Map<String, List<Diagnostic>> diagnostics = new HashMap<>();     
-        diagnosticResult.diagnostics().forEach(diagnostic -> {
+        diagResult.diagnostics().forEach(diagnostic -> {
             String path = diagnostic.location().lineRange().filePath();
             Diagnostic computedDiag = this.getDiagnostic(diagnostic);
             if (diagnostics.containsKey(path)) {

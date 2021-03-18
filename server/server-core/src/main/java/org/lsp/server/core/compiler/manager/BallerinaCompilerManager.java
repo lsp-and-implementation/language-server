@@ -75,6 +75,11 @@ public class BallerinaCompilerManager implements CompilerManager {
         return Optional.of(module.document(documentId).syntaxTree());
     }
 
+    @Override
+    public void invalidate(Path path) {
+        this.projectsMap.remove(path);
+    }
+
     private Optional<DocumentId> getDocumentId(Path path) {
         Optional<Project> project = getProject(path);
         if (project.isEmpty()) {

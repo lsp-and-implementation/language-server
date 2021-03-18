@@ -12,8 +12,9 @@ test {
 }
 
 task copyArtifacts(type: Copy) {
-    from "$buildDir/libs/server-core-1.0-SNAPSHOT.jar"
-    into "../../client/"
+    dependsOn 'uberJar'
+    from "$buildDir/libs/server-core-1.0-SNAPSHOT-uber.jar"
+    into "../../client/ls-client/"
 }
 
 build.finalizedBy(copyArtifacts)

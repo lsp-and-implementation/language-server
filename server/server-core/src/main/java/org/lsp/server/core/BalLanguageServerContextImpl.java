@@ -28,7 +28,7 @@ import java.util.Optional;
 
 /**
  * Ballerina language server context implementation.
- * 
+ *
  * @since 1.0.0
  */
 public class BalLanguageServerContextImpl implements BalLanguageServerContext {
@@ -53,12 +53,13 @@ public class BalLanguageServerContextImpl implements BalLanguageServerContext {
         if (this.logManager == null) {
             this.logManager = new ClientLogManagerImpl(this.languageClient);
         }
-        return null;
+
+        return this.logManager;
     }
 
     /**
      * Set the client capabilities.
-     * 
+     *
      * @param clientCapabilities {@link ClientCapabilities}
      */
     public void setClientCapabilities(ClientCapabilities clientCapabilities) {
@@ -67,10 +68,6 @@ public class BalLanguageServerContextImpl implements BalLanguageServerContext {
 
     @Override
     public DiagnosticsPublisher diagnosticsPublisher() {
-        if (!this.initialized) {
-            throw new RuntimeException("Context not initialized yet");
-        }
-        
         if (this.diagnosticsPublisherImpl == null) {
             this.diagnosticsPublisherImpl = new DiagnosticsPublisherImpl(this.languageClient);
         }
@@ -80,26 +77,20 @@ public class BalLanguageServerContextImpl implements BalLanguageServerContext {
     
     @Override
     public LanguageClient languageClient() {
-        if (!this.initialized) {
-            throw new RuntimeException("Context not initialized yet");
-        }
         return languageClient;
     }
 
     @Override
     public CompilerManager compilerManager() {
-        if (!this.initialized) {
-            throw new RuntimeException("Context not initialized yet");
-        }
         if (this.compilerManager == null) {
-            this.compilerManager = new BallerinaCompilerManager(this.languageClient());
+            this.compilerManager = new BallerinaCompilerManager(this.languageClient);
         }
-        
+
         return this.compilerManager;
     }
 
     public void init(LanguageClient client) {
-        this.languageClient = languageClient;
+        this.languageClient = client;
         this.initialized = true;
     }
 }

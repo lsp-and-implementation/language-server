@@ -16,13 +16,8 @@
 package org.lsp.server.core;
 
 import io.ballerina.projects.Project;
-import org.eclipse.lsp4j.CompletionItem;
-import org.eclipse.lsp4j.CompletionList;
-import org.eclipse.lsp4j.CompletionParams;
-import org.eclipse.lsp4j.DidChangeTextDocumentParams;
-import org.eclipse.lsp4j.DidCloseTextDocumentParams;
-import org.eclipse.lsp4j.DidOpenTextDocumentParams;
-import org.eclipse.lsp4j.DidSaveTextDocumentParams;
+import io.ballerina.projects.ProjectKind;
+import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.lsp.server.api.BalLanguageServerContext;
@@ -33,6 +28,7 @@ import org.lsp.server.core.docsync.DocumentSyncHandler;
 import org.lsp.server.core.utils.CommonUtils;
 
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -43,20 +39,19 @@ import java.util.concurrent.CompletableFuture;
  * @since 1.0.0
  */
 public class BalTextDocumentService implements TextDocumentService {
-    private final CompilerManager compilerManager;
     private final DocumentSyncHandler documentSyncHandler;
-    private final DiagnosticsPublisher diagnosticsPublisher;
+    private final BalLanguageServerContext serverContext;
 
     public BalTextDocumentService(BalLanguageServerContext serverContext) {
-        this.compilerManager = serverContext.compilerManager();
-        this.documentSyncHandler = new BaseDocumentSyncHandler(serverContext.languageClient());
-        diagnosticsPublisher = serverContext.diagnosticsPublisher();
+        this.serverContext = serverContext;
+        this.documentSyncHandler = new BaseDocumentSyncHandler(serverContext);
     }
 
     @Override
     public void didOpen(DidOpenTextDocumentParams params) {
         Path uriPath = CommonUtils.uriToPath(params.getTextDocument().getUri());
-        Optional<Project> projectForPath = this.compilerManager.getProject(uriPath);
+        CompilerManager compilerManager = this.serverContext.compilerManager();
+        Optional<Project> projectForPath = compilerManager.getProject(uriPath);
         /*
         If the project already exists in the compiler manager that means
         we have sent the diagnostics for the project earlier.
@@ -66,31 +61,60 @@ public class BalTextDocumentService implements TextDocumentService {
          */
         if (projectForPath.isEmpty()) {
             Optional<Project> project = this.documentSyncHandler.didOpen(params);
-            project.ifPresent(this.diagnosticsPublisher::publish);
+            DiagnosticsPublisher diagPublisher = this.serverContext.diagnosticsPublisher();
+            project.ifPresent(diagPublisher::publish);
         }
     }
 
     @Override
     public void didChange(DidChangeTextDocumentParams params) {
         Optional<Project> project = this.documentSyncHandler.didChange(params);
-        this.diagnosticsPublisher.publish(project.orElseThrow());
+        DiagnosticsPublisher diagnosticsPublisher = this.serverContext.diagnosticsPublisher();
+        diagnosticsPublisher.publish(project.orElseThrow());
         /*
          Publish the diagnostics upon the changes of the document.
          Even this is a single file change, the semantics can 
          affect the whole project. Therefore we have to publish the 
          diagnostics for the whole project.
          */
-        project.ifPresent(this.diagnosticsPublisher::publish);
+        project.ifPresent(diagnosticsPublisher::publish);
     }
 
     @Override
     public void didClose(DidCloseTextDocumentParams params) {
-        // TODO: implement
+        String uri = params.getTextDocument().getUri();
+        Path path = CommonUtils.uriToPath(uri);
+        CompilerManager compilerManager = this.serverContext.compilerManager();
+        Project project = compilerManager.getProject(path).orElseThrow();
+
+        if (project.kind() == ProjectKind.SINGLE_FILE_PROJECT) {
+            this.documentSyncHandler.didClose(params);
+        }
     }
 
     @Override
     public void didSave(DidSaveTextDocumentParams params) {
         
+    }
+
+    @Override
+    public CompletableFuture<List<TextEdit>>
+    willSaveWaitUntil(WillSaveTextDocumentParams params) {
+        ClientCapabilities clientCapabilities =
+                this.serverContext.clientCapabilities().orElseThrow();
+        return CompletableFuture.supplyAsync(() -> {
+            if (!clientCapabilities.getTextDocument()
+                    .getSynchronization().getWillSaveWaitUntil()) {
+                return null;
+            }
+            // Here we do not consider the reason property here
+            String uri = params.getTextDocument().getUri();
+            Path path = CommonUtils.uriToPath(uri);
+//            TextEdit textEdit = TextModifierUtil.withEndingNewLine(path);
+
+//            return Collections.singletonList(textEdit);
+            return Collections.emptyList();
+        });
     }
 
     @Override

@@ -16,14 +16,15 @@
 package org.lsp.server.core.docsync;
 
 import io.ballerina.projects.Project;
+import io.ballerina.projects.ProjectKind;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
-import org.eclipse.lsp4j.services.LanguageClient;
-import org.lsp.server.core.compiler.manager.BallerinaCompilerManager;
+import org.lsp.server.api.BalLanguageServerContext;
+import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
 import org.lsp.server.core.utils.CommonUtils;
 
 import java.nio.file.Path;
@@ -37,15 +38,16 @@ import java.util.Optional;
  */
 public class BaseDocumentSyncHandler implements DocumentSyncHandler {
 
-    private final BallerinaCompilerManager compilerManager;
+    private final BalLanguageServerContext serverContext;
 
-    public BaseDocumentSyncHandler(LanguageClient client) {
-        this.compilerManager = new BallerinaCompilerManager(client);
+    public BaseDocumentSyncHandler(BalLanguageServerContext serverContext) {
+        this.serverContext = serverContext;
     }
 
     @Override
     public Optional<Project> didOpen(DidOpenTextDocumentParams params) {
         TextDocumentItem textDocument = params.getTextDocument();
+        CompilerManager compilerManager = this.serverContext.compilerManager();
         return compilerManager.openDocument(CommonUtils.uriToPath(textDocument.getUri()));
     }
 
@@ -56,11 +58,19 @@ public class BaseDocumentSyncHandler implements DocumentSyncHandler {
         List<TextDocumentContentChangeEvent> contentChanges = params.getContentChanges();
         // Base handler assumes the document sync mode is FULL mode
         TextDocumentContentChangeEvent contentChangeEvent = contentChanges.get(0);
-        return this.compilerManager.updateDocument(path, contentChangeEvent.getText());
+        CompilerManager compilerManager = this.serverContext.compilerManager();
+        return compilerManager.updateDocument(path, contentChangeEvent.getText());
     }
 
     @Override
     public void didClose(DidCloseTextDocumentParams params) {
+        String uri = params.getTextDocument().getUri();
+        Path path = CommonUtils.uriToPath(uri);
+        CompilerManager compilerManager = this.serverContext.compilerManager();
+        Project project = compilerManager.getProject(path).orElseThrow();
 
+        if (project.kind() == ProjectKind.SINGLE_FILE_PROJECT) {
+            compilerManager.invalidate(path);
+        }
     }
 }

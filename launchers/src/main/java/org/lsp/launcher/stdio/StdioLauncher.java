@@ -18,6 +18,7 @@ package org.lsp.launcher.stdio;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.launch.LSPLauncher;
 import org.eclipse.lsp4j.services.LanguageClient;
+import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.lsp.server.core.BalLanguageServer;
 
 import java.io.InputStream;
@@ -45,7 +46,7 @@ public class StdioLauncher {
             throws InterruptedException, ExecutionException {
         BalLanguageServer server = new BalLanguageServer();
         Launcher<LanguageClient> launcher = LSPLauncher.createServerLauncher(server, in, out);
-        server.setClient(launcher.getRemoteProxy());
+        server.connect(launcher.getRemoteProxy());
         Future<?> startListening = launcher.startListening();
         startListening.get();
     }
