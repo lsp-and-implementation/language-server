@@ -10,26 +10,3 @@ dependencies {
 test {
     useJUnitPlatform()
 }
-
-task copyArtifacts(type: Copy) {
-    dependsOn 'uberJar'
-    from "$buildDir/libs/server-core-1.0-SNAPSHOT-uber.jar"
-    into "../../client/ls-client/"
-}
-
-build.finalizedBy(copyArtifacts)
-
-task uberJar(type: Jar) {
-    archiveClassifier = 'uber'
-
-    from sourceSets.main.output
-
-    dependsOn configurations.runtimeClasspath
-    from {
-        exclude 'META-INF/MANIFEST.MF'
-        exclude 'META-INF/*.SF'
-        exclude 'META-INF/*.DSA'
-        exclude 'META-INF/*.RSA'
-        configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
-    }
-}

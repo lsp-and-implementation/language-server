@@ -15,22 +15,38 @@
  */
 package org.lsp.server.api;
 
-import io.ballerina.projects.Project;
+import org.eclipse.lsp4j.ClientCapabilities;
+import org.eclipse.lsp4j.services.LanguageClient;
 
-import java.nio.file.Path;
+import java.util.Optional;
 
 /**
- * Diagnostics publisher API allows the server-wide diagnostic publishing capability.
+ * Ballerina language server context information.
  *
  * @since 1.0.0
  */
-public interface DiagnosticsPublisher {
+public interface LSContext {
+
+    <V> void put(LSContext.Key<V> key, V value);
+
+    <V> V get(LSContext.Key<V> key);
+
+    <V> void put(Class<V> clazz, V value);
+
+    <V> V get(Class<V> clazz);
+
+    void setClient(LanguageClient client);
+
+    LanguageClient getClient();
+
+    void setClientCapabilities(ClientCapabilities capabilities);
+
+    Optional<ClientCapabilities> getClientCapabilities();
 
     /**
-     * Publish project diagnostics.
-     *
-     * @param path {@link Path} of the ballerina document
-     * @param context Operation context
+     * @param <K> key
+     * @since 1.0.0
      */
-    void publish(BaseOperationContext context, Path path);
+    class Key<K> {
+    }
 }

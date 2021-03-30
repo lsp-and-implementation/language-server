@@ -20,16 +20,28 @@ import io.ballerina.projects.Project;
 import io.ballerina.tools.diagnostics.DiagnosticInfo;
 import io.ballerina.tools.text.LineRange;
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DiagnosticRelatedInformation;
 import org.eclipse.lsp4j.DiagnosticSeverity;
+import org.eclipse.lsp4j.DiagnosticTag;
+import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.services.LanguageClient;
+import org.lsp.server.api.DiagnosticsPublisher;
+import org.lsp.server.api.LSContext;
+import org.lsp.server.api.BaseOperationContext;
+import org.lsp.server.core.utils.BallerinaLinter;
+import org.lsp.server.core.utils.LinterDiagnostic;
+import org.lsp.server.core.utils.RedeclaredVarDiagnostic;
 
+import java.net.URI;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -40,36 +52,89 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DiagnosticsPublisherImpl implements org.lsp.server.api.DiagnosticsPublisher {
     private final LanguageClient client;
     private Map<String, List<Diagnostic>> previousDiagnostics = new ConcurrentHashMap<>();
+    private static final LSContext.Key<DiagnosticsPublisher> DIAGNOSTICS_PUBLISHER_KEY = new LSContext.Key<>();
 
-    public DiagnosticsPublisherImpl(LanguageClient client) {
-        this.client = client;
+    public static DiagnosticsPublisher getInstance(LSContext serverContext) {
+        DiagnosticsPublisher diagnosticsPublisher = serverContext.get(DIAGNOSTICS_PUBLISHER_KEY);
+        if (diagnosticsPublisher == null) {
+            diagnosticsPublisher = new DiagnosticsPublisherImpl(serverContext);
+        }
+        
+        return diagnosticsPublisher;
+    }
+
+    private DiagnosticsPublisherImpl(LSContext serverContext) {
+        serverContext.put(DIAGNOSTICS_PUBLISHER_KEY, this);
+        this.client = serverContext.getClient();
     }
 
     @Override
-    public void publish(Project project) {
-        DiagnosticResult diagResult =project.currentPackage().getCompilation().diagnosticResult();
-        Map<String, List<Diagnostic>> diagnostics = new HashMap<>();     
-        diagResult.diagnostics().forEach(diagnostic -> {
-            String path = diagnostic.location().lineRange().filePath();
+    public void publish(BaseOperationContext context, Path path) {
+        Optional<Project> project =
+                context.compilerManager().getProject(path);
+        if (project.isEmpty()) {
+            return;
+        }
+        DiagnosticResult diagResult = project.get().currentPackage()
+                .getCompilation().diagnosticResult();
+        Map<String, List<Diagnostic>> diagnostics = new HashMap<>();
+        // Get the compiler generated diagnostics
+        List<io.ballerina.tools.diagnostics.Diagnostic>
+                allDiagnostics = new ArrayList<>(diagResult.diagnostics());
+        // Get the diagnostics from the linter
+        allDiagnostics.addAll(BallerinaLinter
+                .getFunctionDiagnostics(path, context));
+        allDiagnostics.addAll(BallerinaLinter
+                .getRedeclaredVarDiagnostics(path, context));
+        // Fill the diagnostics to the return list
+        allDiagnostics.forEach(diagnostic -> {
+            String diagPath;
+            if (diagnostic instanceof LinterDiagnostic) {
+                diagPath = ((LinterDiagnostic) diagnostic).getUri();
+            } else {
+                diagPath = diagnostic.location().lineRange().filePath();
+            }
             Diagnostic computedDiag = this.getDiagnostic(diagnostic);
-            if (diagnostics.containsKey(path)) {
-                diagnostics.get(path).add(computedDiag);
+            List<DiagnosticTag> tags = new ArrayList<>();
+            if (diagnostic.diagnosticInfo().code().equals("LINTER001")) {
+                tags.add(DiagnosticTag.Unnecessary);
+            }
+            if (diagnostic.diagnosticInfo().code().equals("LINTER002")) {
+                tags.add(DiagnosticTag.Deprecated);
+            }
+            computedDiag.setTags(tags);
+            if (diagnostic instanceof RedeclaredVarDiagnostic) {
+                io.ballerina.tools.diagnostics.DiagnosticRelatedInformation rInfo =
+                        ((RedeclaredVarDiagnostic) diagnostic).relatedInformation();
+                DiagnosticRelatedInformation relatedInfo =
+                        new DiagnosticRelatedInformation();
+                relatedInfo.setMessage(rInfo.message());
+                relatedInfo.setLocation(getRelatedInfoLocation(rInfo, project.get()));
+            }
+            if (diagnostics.containsKey(diagPath)) {
+                diagnostics.get(diagPath).add(computedDiag);
             } else {
                 List<Diagnostic> diags = new ArrayList<>();
-                diags.add(computedDiag);
-                diagnostics.put(path, diags);
+                diagnostics.put(diagPath, diags);
             }
         });
         
-        this.previousDiagnostics.forEach((path, diagnosticList) -> {
-            if (!diagnostics.containsKey(path)) {
-                diagnostics.put(path, new ArrayList<>());
+        /*
+        Go through the previously published diagnostics
+        and clear the diagnostics associated with a 
+        particular file uri by setting an empty list.
+         */
+        this.previousDiagnostics.forEach((diagPath, diagnosticList) -> {
+            if (!diagnostics.containsKey(diagPath)) {
+                diagnostics.put(diagPath, new ArrayList<>());
             }
         });
-        diagnostics.forEach((path, diagList) -> {
-            PublishDiagnosticsParams params = new PublishDiagnosticsParams();
+        diagnostics.forEach((diagPath, diagList) -> {
+            PublishDiagnosticsParams params =
+                    new PublishDiagnosticsParams();
             params.setDiagnostics(diagList);
-            params.setUri(path);
+            URI uri = project.get().sourceRoot().resolve(diagPath).toUri();
+            params.setUri(uri.toString());
             
             this.client.publishDiagnostics(params);
         });
@@ -106,5 +171,10 @@ public class DiagnosticsPublisherImpl implements org.lsp.server.api.DiagnosticsP
         }
         
         return diag;
+    }
+    
+    private Location getRelatedInfoLocation(io.ballerina.tools.diagnostics.DiagnosticRelatedInformation info,
+                                            Project project) {
+        return null;
     }
 }

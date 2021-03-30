@@ -1,0 +1,74 @@
+{
+  "name": "ls-client",
+  "displayName": "ls-client",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.53.0"
+  },
+  "publisher": "nadeeshaan",
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:ballerina"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lsp-and-implementation/language-server.git"
+  },
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "ballerina",
+        "aliases": [
+          "ballerina",
+          "Ballerina"
+        ],
+        "extensions": [
+          ".bal"
+        ]
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "LangServer",
+      "properties": {
+        "LSDEBUG": {
+          "type": "boolean",
+          "default": false,
+          "description": "If set to true, language server will be started on debug mode"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package",
+    "build": "npm run compile && npm run package"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.53.0",
+    "@types/glob": "^7.1.3",
+    "@types/mocha": "^8.0.4",
+    "@types/node": "^12.11.7",
+    "eslint": "^7.19.0",
+    "@typescript-eslint/eslint-plugin": "^4.14.1",
+    "@typescript-eslint/parser": "^4.14.1",
+    "glob": "^7.1.6",
+    "mocha": "^8.2.1",
+    "typescript": "^4.1.3",
+    "vscode-test": "^1.5.0",
+    "vsce": "^1.59.0"
+  },
+  "dependencies": {
+    "vscode-languageclient": "7.0.0",
+    "vscode-languageserver-types": "^3.14.0"
+  }
+}

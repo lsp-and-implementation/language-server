@@ -9,10 +9,3 @@ dependencies {
 test {
     useJUnitPlatform()
 }
-
-task copyArtifacts(type: Copy) {
-    from "$buildDir/libs/server-api-1.0-SNAPSHOT.jar"
-    into "../../client/"
-}
-
-build.finalizedBy(copyArtifacts)

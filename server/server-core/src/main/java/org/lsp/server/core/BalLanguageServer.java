@@ -37,18 +37,17 @@ import java.util.concurrent.CompletableFuture;
  * @since 1.0.0
  */
 public class BalLanguageServer implements LanguageServer, LanguageClientAware {
-    private TextDocumentService textDocumentService;
-    private WorkspaceService workspaceService;
-    private final BalLanguageServerContextImpl serverContext;
+    private final TextDocumentService textDocumentService;
+    private final WorkspaceService workspaceService;
+    private final BallerinaLSContext serverContext;
     private LanguageClient client;
     private DynamicCapabilitySetter dynamicCapabilitySetter;
     private boolean shutdownInitiated = false;
 
     public BalLanguageServer() {
-        this.serverContext = new BalLanguageServerContextImpl();
+        this.serverContext = new BallerinaLSContext();
         this.textDocumentService = new BalTextDocumentService(this.serverContext);
         this.workspaceService = new BalWorkspaceService();
-        this.dynamicCapabilitySetter = new DynamicCapabilitySetter(this.serverContext);
     }
 
     @Override
@@ -70,7 +69,7 @@ public class BalLanguageServer implements LanguageServer, LanguageClientAware {
     @Override
     public void initialized(InitializedParams params) {
         // Registering the onTypeFormatting capability
-        this.dynamicCapabilitySetter.registerOnTypeFormatting();
+        this.dynamicCapabilitySetter.registerOnTypeFormatting(this.serverContext);
         // Other initializing tasks can be handled here
         MessageParams messageParams = new MessageParams();
         messageParams.setMessage("Server Initiated!");
@@ -82,7 +81,7 @@ public class BalLanguageServer implements LanguageServer, LanguageClientAware {
     public CompletableFuture<Object> shutdown() {
         this.shutdownInitiated = true;
 
-        return CompletableFuture.supplyAsync(() -> null);
+        return CompletableFuture.supplyAsync(Object::new);
     }
 
     @Override
@@ -92,6 +91,7 @@ public class BalLanguageServer implements LanguageServer, LanguageClientAware {
         if (this.shutdownInitiated) {
             System.exit(0);
         }
+        System.exit(1);
     }
 
     @Override
@@ -107,6 +107,6 @@ public class BalLanguageServer implements LanguageServer, LanguageClientAware {
     @Override
     public void connect(LanguageClient languageClient) {
         this.client = languageClient;
-        this.serverContext.init(this.client);
+        this.serverContext.setClient(this.client);
     }
 }

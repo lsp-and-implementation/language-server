@@ -1,5 +1,21 @@
+/*
+ * Copyright (c) 2021, Nadeeshaan Gunasinghe, Nipuna Marcus
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.lsp.server.core.compiler.manager;
 
+import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import io.ballerina.projects.BuildOptions;
 import io.ballerina.projects.BuildOptionsBuilder;
@@ -17,6 +33,7 @@ import io.ballerina.toml.semantic.diagnostics.TomlDiagnostic;
 import org.eclipse.lsp4j.MessageActionItem;
 import org.eclipse.lsp4j.ShowMessageRequestParams;
 import org.eclipse.lsp4j.services.LanguageClient;
+import org.lsp.server.api.LSContext;
 import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
 
 import java.nio.file.Path;
@@ -25,13 +42,34 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class BallerinaCompilerManager implements CompilerManager {
-
+/**
+ * Ballerina Compiler Manager implementation.
+ *
+ * @since 1.0.0
+ */
+public class BallerinaCompilerManager extends CompilerManager {
+    private static final LSContext.Key<CompilerManager> COMPILER_MANAGER_KEY = new LSContext.Key<>();
     private final Map<Path, Project> projectsMap = new ConcurrentHashMap<>();
     private final LanguageClient client;
 
-    public BallerinaCompilerManager(LanguageClient client) {
-        this.client = client;
+    /**
+     * Get the Compiler manager instance for the given server context.
+     *
+     * @param serverContext Language Server Context.
+     * @return {@link CompilerManager} created instance
+     */
+    public static CompilerManager getInstance(LSContext serverContext) {
+        CompilerManager compilerManager = serverContext.get(COMPILER_MANAGER_KEY);
+        if (compilerManager == null) {
+            compilerManager = new BallerinaCompilerManager(serverContext);
+        }
+
+        return compilerManager;
+    }
+
+    private BallerinaCompilerManager(LSContext serverContext) {
+        serverContext.put(COMPILER_MANAGER_KEY, this);
+        this.client = serverContext.getClient();
     }
 
     public Optional<Project> openDocument(Path path) {
@@ -52,8 +90,17 @@ public class BallerinaCompilerManager implements CompilerManager {
     }
 
     @Override
+    public Optional<SemanticModel> getSemanticModel(Path path) {
+        Optional<Module> module = this.getModule(path);
+        if (module.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(module.get().getCompilation().getSemanticModel());
+    }
+
+    @Override
     public Optional<Project> getProject(Path path) {
-        return Optional.ofNullable(this.projectsMap.get(path));
+        return Optional.ofNullable(this.projectsMap.get(ProjectPaths.packageRoot(path)));
     }
 
     @Override
@@ -80,6 +127,16 @@ public class BallerinaCompilerManager implements CompilerManager {
         this.projectsMap.remove(path);
     }
 
+    @Override
+    public Optional<Document> getDocument(Path path) {
+        Optional<Module> module = this.getModule(path);
+        if (module.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable(module.get().document(this.getDocumentId(path).orElseThrow()));
+    }
+
     private Optional<DocumentId> getDocumentId(Path path) {
         Optional<Project> project = getProject(path);
         if (project.isEmpty()) {
@@ -87,15 +144,6 @@ public class BallerinaCompilerManager implements CompilerManager {
         }
 
         return Optional.of(project.get().documentId(path));
-    }
-
-    private Optional<Document> getDocument(Path path) {
-        Optional<Module> module = this.getModule(path);
-        if (module.isEmpty()) {
-            return Optional.empty();
-        }
-
-        return Optional.ofNullable(module.get().document(this.getDocumentId(path).orElseThrow()));
     }
 
     private Optional<Project> buildProject(Path path) {

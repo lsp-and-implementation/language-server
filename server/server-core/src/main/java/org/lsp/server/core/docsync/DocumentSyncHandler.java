@@ -19,6 +19,7 @@ import io.ballerina.projects.Project;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
+import org.lsp.server.api.BaseOperationContext;
 
 import java.util.Optional;
 
@@ -28,9 +29,9 @@ import java.util.Optional;
  * @since 1.0.0
  */
 public interface DocumentSyncHandler {
-    Optional<Project> didOpen(DidOpenTextDocumentParams params);
+    Optional<Project> didOpen(DidOpenTextDocumentParams params, BaseOperationContext context);
 
-    Optional<Project> didChange(DidChangeTextDocumentParams params);
+    Optional<Project> didChange(DidChangeTextDocumentParams params, BaseOperationContext context);
 
-    void didClose(DidCloseTextDocumentParams params);
+    void didClose(DidCloseTextDocumentParams params, BaseOperationContext context);
 }

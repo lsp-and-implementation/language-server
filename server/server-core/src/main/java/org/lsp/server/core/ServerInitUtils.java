@@ -60,13 +60,10 @@ public class ServerInitUtils {
         // List of trigger characters.
         List<String> triggerCharacters = Arrays.asList(".", ">");
         
-        // Uncomment the following, in order to enable completionItem/resolve request
         completionOptions.setResolveProvider(true);
         completionOptions.setTriggerCharacters(triggerCharacters);
-        // Uncomment the following in order to enable work done progress behaviour
         completionOptions.setWorkDoneProgress(true);
         
         return completionOptions;
     }
-
 }

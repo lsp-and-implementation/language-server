@@ -20,7 +20,7 @@ import org.eclipse.lsp4j.DocumentOnTypeFormattingRegistrationOptions;
 import org.eclipse.lsp4j.OnTypeFormattingCapabilities;
 import org.eclipse.lsp4j.Registration;
 import org.eclipse.lsp4j.RegistrationParams;
-import org.lsp.server.api.BalLanguageServerContext;
+import org.lsp.server.api.LSContext;
 
 import java.util.Collections;
 import java.util.List;
@@ -32,17 +32,34 @@ import java.util.Optional;
  * @since 1.0.0
  */
 public class DynamicCapabilitySetter {
-    private final BalLanguageServerContext serverContext;
+    private static final LSContext.Key<DynamicCapabilitySetter> CAPABILITY_SETTER_KEY = new LSContext.Key<>();
 
-    public DynamicCapabilitySetter(BalLanguageServerContext serverContext) {
-        this.serverContext = serverContext;
+    private DynamicCapabilitySetter(LSContext serverContext) {
+        serverContext.put(CAPABILITY_SETTER_KEY, this);
+    }
+
+    /**
+     * Get the Dynamic capability setter.
+     *
+     * @param serverContext Language Server Context
+     * @return {@link DynamicCapabilitySetter}
+     */
+    public DynamicCapabilitySetter getInstance(LSContext serverContext) {
+        DynamicCapabilitySetter capabilitySetter = serverContext.get(CAPABILITY_SETTER_KEY);
+        if (capabilitySetter == null) {
+            capabilitySetter = new DynamicCapabilitySetter(serverContext);
+        }
+
+        return capabilitySetter;
     }
 
     /**
      * Register the onTypeFormatting capability.
+     *
+     * @param serverContext language server context
      */
-    public void registerOnTypeFormatting() {
-        Optional<ClientCapabilities> clientCapabilities = this.serverContext.clientCapabilities();
+    public void registerOnTypeFormatting(LSContext serverContext) {
+        Optional<ClientCapabilities> clientCapabilities = serverContext.getClientCapabilities();
 
         if (clientCapabilities.isEmpty()) {
             // Client capabilities are not saved
@@ -74,7 +91,7 @@ public class DynamicCapabilitySetter {
         RegistrationParams regParams = new RegistrationParams(regList);
 
         // Send the register request and ignore the void result
-        this.serverContext.languageClient().registerCapability(regParams);
+        serverContext.getClient().registerCapability(regParams);
     }
 
     private enum Method {
