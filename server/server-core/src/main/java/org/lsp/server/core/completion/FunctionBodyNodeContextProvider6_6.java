@@ -1,5 +1,6 @@
 package org.lsp.server.core.completion;
 
+import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.syntax.tree.FunctionBodyBlockNode;
 import org.eclipse.lsp4j.CompletionItem;
 import org.lsp.server.api.completion.BalCompletionContext;
@@ -28,13 +29,17 @@ public class FunctionBodyNodeContextProvider6_6 extends
     }
 
     @Override
-    public boolean enabled() {
-        return true;
+    public void sort(FunctionBodyBlockNode node, BalCompletionContext context, List<CompletionItem> items) {
+        
     }
 
     @Override
-    public void sort(FunctionBodyBlockNode node,
-                     BalCompletionContext context) {
-        // TODO: implement
+    public void sort(FunctionBodyBlockNode node, BalCompletionContext context, CompletionItem item, Symbol symbol) {
+
+    }
+
+    @Override
+    public boolean enabled() {
+        return true;
     }
 }

@@ -39,6 +39,16 @@ public class FunctionBodyNodeContextProvider6_9 extends
         return Collections.emptyList();
     }
 
+    @Override
+    public void sort(FunctionBodyBlockNode node, BalCompletionContext context, List<CompletionItem> items) {
+        
+    }
+
+    @Override
+    public void sort(FunctionBodyBlockNode node, BalCompletionContext context, CompletionItem item, Symbol symbol) {
+
+    }
+
     private List<CompletionItem>
     prepareCompletionItems(QualifiedNameReferenceNode nameRef,
                           List<Symbol> symbols,
@@ -77,11 +87,5 @@ public class FunctionBodyNodeContextProvider6_9 extends
     @Override
     public boolean enabled() {
         return true;
-    }
-
-    @Override
-    public void sort(FunctionBodyBlockNode node,
-                     BalCompletionContext context) {
-        // TODO: implement
     }
 }

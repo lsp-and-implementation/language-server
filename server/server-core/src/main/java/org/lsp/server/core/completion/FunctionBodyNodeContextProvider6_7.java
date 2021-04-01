@@ -54,6 +54,16 @@ public class FunctionBodyNodeContextProvider6_7 extends
         return items;
     }
 
+    @Override
+    public void sort(FunctionBodyBlockNode node, BalCompletionContext context, List<CompletionItem> items) {
+        
+    }
+
+    @Override
+    public void sort(FunctionBodyBlockNode node, BalCompletionContext context, CompletionItem item, Symbol symbol) {
+
+    }
+
     private CompletionItem
     getForEachSnippet(BalCompletionContext context,
                       VariableSymbol symbol) {
@@ -120,12 +130,6 @@ public class FunctionBodyNodeContextProvider6_7 extends
     @Override
     public boolean enabled() {
         return true;
-    }
-
-    @Override
-    public void sort(FunctionBodyBlockNode node,
-                     BalCompletionContext context) {
-        // TODO: implement
     }
 
     private boolean isArrayTypeVar(VariableSymbol symbol) {

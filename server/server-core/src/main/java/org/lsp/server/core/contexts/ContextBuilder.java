@@ -16,8 +16,8 @@ public class ContextBuilder {
         return new BalCompletionContextImpl(serverContext, params);
     }
     
-    public static BalCompletionResolveContext completionResolveContext(LSContext serverContext, CompletionItem unresolved) {
-//        return new BalCompletionResolveContext(serverContext, params);
-        return null;
+    public static BalCompletionResolveContext completionResolveContext(LSContext serverContext,
+                                                                       CompletionItem unresolved) {
+        return new BalCompletionResolveContextImpl(serverContext, unresolved);
     }
 }

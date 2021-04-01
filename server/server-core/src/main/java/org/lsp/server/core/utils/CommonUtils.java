@@ -25,6 +25,8 @@ import java.nio.file.Paths;
  * @since 1.0.0
  */
 public class CommonUtils {
+    public static final String LINE_SEPARATOR = System.lineSeparator();
+    
     private CommonUtils() {
     }
 

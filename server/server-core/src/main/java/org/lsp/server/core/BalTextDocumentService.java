@@ -44,6 +44,7 @@ import org.lsp.server.core.contexts.ContextBuilder;
 import org.lsp.server.core.docsync.BaseDocumentSyncHandler;
 import org.lsp.server.core.docsync.DocumentSyncHandler;
 import org.lsp.server.core.utils.CommonUtils;
+import org.lsp.server.core.utils.TextModifierUtil;
 
 import java.nio.file.Path;
 import java.util.Collections;
@@ -66,6 +67,7 @@ public class BalTextDocumentService implements TextDocumentService {
     }
 
     @Override
+    // Done
     public void didOpen(DidOpenTextDocumentParams params) {
         Path uriPath = CommonUtils.uriToPath(params.getTextDocument().getUri());
         BaseOperationContext context = ContextBuilder.baseContext(this.serverContext);
@@ -85,6 +87,7 @@ public class BalTextDocumentService implements TextDocumentService {
     }
 
     @Override
+    // Done
     public void didChange(DidChangeTextDocumentParams params) {
         BaseOperationContext context = ContextBuilder.baseContext(this.serverContext);
         Optional<Project> project = this.documentSyncHandler.didChange(params, context);
@@ -120,6 +123,8 @@ public class BalTextDocumentService implements TextDocumentService {
     @Override
     public CompletableFuture<List<TextEdit>>
     willSaveWaitUntil(WillSaveTextDocumentParams params) {
+        BaseOperationContext context =
+                ContextBuilder.baseContext(this.serverContext);
         ClientCapabilities clientCapabilities =
                 this.serverContext.getClientCapabilities().orElseThrow();
         return CompletableFuture.supplyAsync(() -> {
@@ -130,10 +135,12 @@ public class BalTextDocumentService implements TextDocumentService {
             // Here we do not consider the reason property here
             String uri = params.getTextDocument().getUri();
             Path path = CommonUtils.uriToPath(uri);
-//            TextEdit textEdit = TextModifierUtil.withEndingNewLine(path);
+            Optional<TextEdit> textEdit =
+                    TextModifierUtil.withEndingNewLine(path, context);
 
-//            return Collections.singletonList(textEdit);
-            return Collections.emptyList();
+            return textEdit
+                    .map(Collections::singletonList)
+                    .orElse(Collections.emptyList());
         });
     }
 
@@ -151,7 +158,7 @@ public class BalTextDocumentService implements TextDocumentService {
             BalCompletionResolveContext context = ContextBuilder
                     .completionResolveContext(this.serverContext,
                             unresolved);
-            
+
             return CompletionItemResolver.resolve(context);
         });
     }

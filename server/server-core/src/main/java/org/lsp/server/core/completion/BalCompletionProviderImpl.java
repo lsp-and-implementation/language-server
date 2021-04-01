@@ -6,6 +6,7 @@ import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TypeDefinitionSymbol;
 import io.ballerina.compiler.syntax.tree.Node;
 import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.CompletionItemTag;
 import org.lsp.server.api.completion.BalCompletionContext;
 import org.lsp.server.api.completion.BalCompletionProvider;
@@ -28,6 +29,7 @@ public abstract class BalCompletionProviderImpl<T extends Node> implements BalCo
                 TypeDefinitionSymbol tDesc = (TypeDefinitionSymbol) symbol;
                 CompletionItem item = new CompletionItem();
                 
+                item.setKind(CompletionItemKind.TypeParameter);
                 item.setLabel(symbol.getName().get());
                 item.setInsertText(symbol.getName().get());
                 // Set the type signature as the detail

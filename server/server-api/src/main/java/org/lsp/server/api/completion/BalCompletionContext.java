@@ -7,6 +7,7 @@ import org.eclipse.lsp4j.CompletionCapabilities;
 import org.eclipse.lsp4j.Position;
 import org.lsp.server.api.BaseOperationContext;
 
+import java.nio.file.Path;
 import java.util.List;
 
 public interface BalCompletionContext extends BaseOperationContext {
@@ -62,4 +63,11 @@ public interface BalCompletionContext extends BaseOperationContext {
      * @return {@link Position} cursor position
      */
     Position getCursorPosition();
+
+    /**
+     * Get the current document path.
+     * 
+     * @return {@link Path}
+     */
+    Path getPath();
 }

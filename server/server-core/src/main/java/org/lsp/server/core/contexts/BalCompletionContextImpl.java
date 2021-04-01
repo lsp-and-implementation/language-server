@@ -119,4 +119,9 @@ public class BalCompletionContextImpl implements BalCompletionContext {
     public Position getCursorPosition() {
         return this.params.getPosition();
     }
+
+    @Override
+    public Path getPath() {
+        return CommonUtils.uriToPath(this.params.getTextDocument().getUri());
+    }
 }

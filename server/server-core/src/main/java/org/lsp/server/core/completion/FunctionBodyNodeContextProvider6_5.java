@@ -24,6 +24,16 @@ public class FunctionBodyNodeContextProvider6_5 extends
         return this.convert(typeDefs, context);
     }
 
+    @Override
+    public void sort(FunctionBodyBlockNode node, BalCompletionContext context, List<CompletionItem> items) {
+        
+    }
+
+    @Override
+    public void sort(FunctionBodyBlockNode node, BalCompletionContext context, CompletionItem item, Symbol symbol) {
+
+    }
+
     /**
      * Convert the symbols to the completion items.
      *
@@ -48,11 +58,5 @@ public class FunctionBodyNodeContextProvider6_5 extends
     @Override
     public boolean enabled() {
         return true;
-    }
-
-    @Override
-    public void sort(FunctionBodyBlockNode node,
-                     BalCompletionContext context) {
-        // TODO: implement
     }
 }
