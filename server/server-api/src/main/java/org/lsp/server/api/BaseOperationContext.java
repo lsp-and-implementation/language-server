@@ -12,4 +12,6 @@ public interface BaseOperationContext {
     DiagnosticsPublisher diagnosticPublisher();
 
     Optional<Document> currentDocument();
+    
+    ClientLogManager clientLogManager();
 }

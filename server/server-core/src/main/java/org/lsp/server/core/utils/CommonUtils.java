@@ -40,4 +40,8 @@ public class CommonUtils {
         URI uri = URI.create(pathUri);
         return Paths.get(uri);
     }
+
+    public static boolean isKeyword(String newName) {
+        return true;
+    }
 }

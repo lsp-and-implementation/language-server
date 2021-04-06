@@ -16,6 +16,7 @@
 package org.lsp.server.core;
 
 import org.eclipse.lsp4j.CompletionOptions;
+import org.eclipse.lsp4j.RenameOptions;
 import org.eclipse.lsp4j.SaveOptions;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.TextDocumentSyncOptions;
@@ -65,5 +66,13 @@ public class ServerInitUtils {
         completionOptions.setWorkDoneProgress(true);
         
         return completionOptions;
+    }
+    
+    public static RenameOptions getRenameOptions() {
+        RenameOptions renameOptions = new RenameOptions();
+        // Set the prepare support from the server
+        renameOptions.setPrepareProvider(false);
+        
+        return renameOptions;
     }
 }

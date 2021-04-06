@@ -61,6 +61,7 @@ public class BalLanguageServer implements LanguageServer, LanguageClientAware {
 
             sCapabilities.setTextDocumentSync(documentSyncOption);
             sCapabilities.setCompletionProvider(completionOptions);
+            sCapabilities.setRenameProvider(ServerInitUtils.getRenameOptions());
 
             return new InitializeResult(sCapabilities);
         });

@@ -2,6 +2,7 @@ package org.lsp.server.core.contexts;
 
 import io.ballerina.projects.Document;
 import org.eclipse.lsp4j.SignatureHelpContext;
+import org.lsp.server.api.ClientLogManager;
 import org.lsp.server.api.DiagnosticsPublisher;
 import org.lsp.server.api.signature.BalSignatureContext;
 import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
@@ -22,6 +23,11 @@ public class BalSignatureContextImpl implements BalSignatureContext {
     @Override
     public Optional<Document> currentDocument() {
         return Optional.empty();
+    }
+
+    @Override
+    public ClientLogManager clientLogManager() {
+        return null;
     }
 
     @Override

@@ -25,11 +25,17 @@ import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.PrepareRenameParams;
+import org.eclipse.lsp4j.PrepareRenameResult;
+import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.SignatureHelp;
 import org.eclipse.lsp4j.SignatureHelpContext;
 import org.eclipse.lsp4j.SignatureHelpParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.WillSaveTextDocumentParams;
+import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.lsp.server.api.BaseOperationContext;
@@ -37,12 +43,14 @@ import org.lsp.server.api.DiagnosticsPublisher;
 import org.lsp.server.api.LSContext;
 import org.lsp.server.api.completion.BalCompletionContext;
 import org.lsp.server.api.completion.BalCompletionResolveContext;
+import org.lsp.server.api.completion.BalRenameContext;
 import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
 import org.lsp.server.core.completion.BalCompletionRouter;
 import org.lsp.server.core.completion.CompletionItemResolver;
 import org.lsp.server.core.contexts.ContextBuilder;
 import org.lsp.server.core.docsync.BaseDocumentSyncHandler;
 import org.lsp.server.core.docsync.DocumentSyncHandler;
+import org.lsp.server.core.rename.RenameProvider;
 import org.lsp.server.core.utils.CommonUtils;
 import org.lsp.server.core.utils.TextModifierUtil;
 
@@ -167,5 +175,27 @@ public class BalTextDocumentService implements TextDocumentService {
     public CompletableFuture<SignatureHelp> signatureHelp(SignatureHelpParams params) {
         SignatureHelpContext context = params.getContext();
         return null;
+    }
+
+    @Override
+    public CompletableFuture<WorkspaceEdit> rename(RenameParams params) {
+        return CompletableFuture.supplyAsync(() -> {
+            BalRenameContext context = ContextBuilder.renameContext(this.serverContext, params);
+            return RenameProvider.getRename(context);          
+        });
+    }
+
+    @Override
+    public CompletableFuture<Either<Range, PrepareRenameResult>> prepareRename(PrepareRenameParams params) {
+        return CompletableFuture.supplyAsync(() -> {
+            PrepareRenameResult renameResult = new PrepareRenameResult();
+            Range range = new Range();
+            range.setStart(new Position(14, 6));
+            range.setStart(new Position(14, 15));
+            renameResult.setPlaceholder("hello");
+            renameResult.setRange(range);
+            
+            return Either.forRight(renameResult);
+        });
     }
 }

@@ -1,6 +1,7 @@
 package org.lsp.server.core.contexts;
 
 import io.ballerina.projects.Document;
+import org.lsp.server.api.ClientLogManager;
 import org.lsp.server.api.DiagnosticsPublisher;
 import org.lsp.server.api.LSContext;
 import org.lsp.server.api.BaseOperationContext;
@@ -29,6 +30,11 @@ public class BaseOperationContextImpl implements BaseOperationContext {
 
     @Override
     public Optional<Document> currentDocument() {
+        return null;
+    }
+
+    @Override
+    public ClientLogManager clientLogManager() {
         return null;
     }
 }

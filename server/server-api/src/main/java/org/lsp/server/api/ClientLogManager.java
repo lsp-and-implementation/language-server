@@ -28,4 +28,6 @@ public interface ClientLogManager {
      * @param message {@link String}
      */
     void publishWarning(String message);
+    
+    void showErrorMessage(String message);
 }

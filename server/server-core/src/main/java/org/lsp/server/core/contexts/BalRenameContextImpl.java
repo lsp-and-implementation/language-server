@@ -9,10 +9,13 @@ import io.ballerina.tools.text.LinePosition;
 import org.eclipse.lsp4j.CompletionCapabilities;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.RenameCapabilities;
+import org.eclipse.lsp4j.RenameParams;
 import org.lsp.server.api.ClientLogManager;
 import org.lsp.server.api.DiagnosticsPublisher;
 import org.lsp.server.api.LSContext;
 import org.lsp.server.api.completion.BalCompletionContext;
+import org.lsp.server.api.completion.BalRenameContext;
 import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
 import org.lsp.server.core.compiler.manager.BallerinaCompilerManager;
 import org.lsp.server.core.utils.ClientLogManagerImpl;
@@ -23,14 +26,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class BalCompletionContextImpl implements BalCompletionContext {
+public class BalRenameContextImpl implements BalRenameContext {
     private final LSContext serverContext;
-    private final CompletionParams params;
+    private final RenameParams params;
     private int cursor = -1;
     private NonTerminalNode nodeAtCursor;
     private Token tokenAtCursor;
 
-    public BalCompletionContextImpl(LSContext serverContext, CompletionParams params) {
+    public BalRenameContextImpl(LSContext serverContext, RenameParams params) {
         this.serverContext = serverContext;
         this.params = params;
     }
@@ -72,8 +75,8 @@ public class BalCompletionContextImpl implements BalCompletionContext {
     }
 
     @Override
-    public CompletionCapabilities clientCapabilities() {
-        return serverContext.getClientCapabilities().orElseThrow().getTextDocument().getCompletion();
+    public RenameCapabilities clientCapabilities() {
+        return this.serverContext.getClientCapabilities().orElseThrow().getTextDocument().getRename();
     }
 
     @Override
@@ -131,4 +134,11 @@ public class BalCompletionContextImpl implements BalCompletionContext {
     public Path getPath() {
         return CommonUtils.uriToPath(this.params.getTextDocument().getUri());
     }
+
+    @Override
+    public RenameParams params() {
+        return this.params;
+    }
+
+
 }

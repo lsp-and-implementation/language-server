@@ -7,6 +7,7 @@ import io.ballerina.projects.Document;
 import org.eclipse.lsp4j.CompletionCapabilities;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Position;
+import org.lsp.server.api.ClientLogManager;
 import org.lsp.server.api.DiagnosticsPublisher;
 import org.lsp.server.api.LSContext;
 import org.lsp.server.api.completion.BalCompletionResolveContext;
@@ -43,6 +44,11 @@ public class BalCompletionResolveContextImpl implements BalCompletionResolveCont
         return Optional.empty();
 //        Path path = CommonUtils.uriToPath(this.params.getTextDocument().getUri());
 //        return BallerinaCompilerManager.getInstance(this.serverContext).getDocument(path);
+    }
+
+    @Override
+    public ClientLogManager clientLogManager() {
+        return null;
     }
 
     @Override

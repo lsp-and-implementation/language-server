@@ -8,16 +8,16 @@ version '1.0-SNAPSHOT'
 repositories {
     mavenCentral()
     mavenLocal()
-    maven {
-        url = 'https://oss.sonatype.org/content/repositories/snapshots'
-    }
+//    maven {
+//        url = 'https://oss.sonatype.org/content/repositories/snapshots'
+//    }
 }
 
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-    implementation 'org.eclipse.lsp4j:org.eclipse.lsp4j:0.11.0-SNAPSHOT'
-    implementation 'org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:0.11.0-SNAPSHOT'
+    implementation 'org.eclipse.lsp4j:org.eclipse.lsp4j:0.12.0'
+    implementation 'org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:0.12.0'
     implementation project(':server:server-core')
 }
 
