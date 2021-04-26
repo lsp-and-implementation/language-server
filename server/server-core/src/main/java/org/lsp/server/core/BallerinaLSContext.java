@@ -17,8 +17,7 @@ package org.lsp.server.core;
 
 import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.services.LanguageClient;
-import org.lsp.server.api.LSContext;
-import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
+import org.lsp.server.api.context.LSContext;
 
 import java.util.HashMap;
 import java.util.Map;

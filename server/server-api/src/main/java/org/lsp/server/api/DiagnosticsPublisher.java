@@ -15,7 +15,7 @@
  */
 package org.lsp.server.api;
 
-import io.ballerina.projects.Project;
+import org.lsp.server.api.context.BaseOperationContext;
 
 import java.nio.file.Path;
 

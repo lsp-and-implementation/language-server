@@ -5,7 +5,6 @@ import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import io.ballerina.projects.Document;
 import io.ballerina.projects.Module;
 import io.ballerina.projects.Project;
-import org.lsp.server.api.LSContext;
 
 import java.nio.file.Path;
 import java.util.Optional;

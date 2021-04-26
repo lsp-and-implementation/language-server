@@ -6,7 +6,7 @@ import io.ballerina.tools.text.LinePosition;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
-import org.lsp.server.api.BaseOperationContext;
+import org.lsp.server.api.context.BaseOperationContext;
 
 import java.nio.file.Path;
 import java.util.Optional;

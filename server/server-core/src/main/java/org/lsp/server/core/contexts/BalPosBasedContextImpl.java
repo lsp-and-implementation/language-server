@@ -7,12 +7,10 @@ import io.ballerina.compiler.syntax.tree.Token;
 import io.ballerina.projects.Document;
 import io.ballerina.tools.text.LinePosition;
 import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.RenameCapabilities;
-import org.eclipse.lsp4j.RenameParams;
 import org.lsp.server.api.ClientLogManager;
 import org.lsp.server.api.DiagnosticsPublisher;
 import org.lsp.server.api.context.LSContext;
-import org.lsp.server.api.context.BalRenameContext;
+import org.lsp.server.api.context.BalPosBasedContext;
 import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
 import org.lsp.server.core.compiler.manager.BallerinaCompilerManager;
 import org.lsp.server.core.utils.ClientLogManagerImpl;
@@ -23,16 +21,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class BalRenameContextImpl implements BalRenameContext {
+public class BalPosBasedContextImpl implements BalPosBasedContext {
     private final LSContext serverContext;
-    private final RenameParams params;
+    private final String uri;
+    private final Position position;
     private int cursor = -1;
     private NonTerminalNode nodeAtCursor;
     private Token tokenAtCursor;
 
-    public BalRenameContextImpl(LSContext serverContext, RenameParams params) {
+    public BalPosBasedContextImpl(LSContext serverContext, String uri, Position position) {
         this.serverContext = serverContext;
-        this.params = params;
+        this.uri = uri;
+        this.position = position;
     }
 
     @Override
@@ -47,7 +47,7 @@ public class BalRenameContextImpl implements BalRenameContext {
 
     @Override
     public Optional<Document> currentDocument() {
-        Path path = CommonUtils.uriToPath(this.params.getTextDocument().getUri());
+        Path path = CommonUtils.uriToPath(uri);
         return BallerinaCompilerManager.getInstance(this.serverContext).getDocument(path);
     }
 
@@ -58,7 +58,7 @@ public class BalRenameContextImpl implements BalRenameContext {
 
     @Override
     public List<Symbol> visibleSymbols() {
-        Path path = CommonUtils.uriToPath(this.params.getTextDocument().getUri());
+        Path path = CommonUtils.uriToPath(uri);
         Document currentDoc = this.currentDocument().orElseThrow();
         Position cursorPosition = this.getCursorPosition();
         LinePosition linePosition = LinePosition.from(cursorPosition.getLine(), cursorPosition.getCharacter());
@@ -67,13 +67,8 @@ public class BalRenameContextImpl implements BalRenameContext {
         if (semanticModel.isEmpty()) {
             return Collections.emptyList();
         }
-        
-        return semanticModel.get().visibleSymbols(currentDoc, linePosition);
-    }
 
-    @Override
-    public RenameCapabilities clientCapabilities() {
-        return this.serverContext.getClientCapabilities().orElseThrow().getTextDocument().getRename();
+        return semanticModel.get().visibleSymbols(currentDoc, linePosition);
     }
 
     @Override
@@ -124,18 +119,11 @@ public class BalRenameContextImpl implements BalRenameContext {
 
     @Override
     public Position getCursorPosition() {
-        return this.params.getPosition();
+        return position;
     }
 
     @Override
     public Path getPath() {
-        return CommonUtils.uriToPath(this.params.getTextDocument().getUri());
+        return CommonUtils.uriToPath(uri);
     }
-
-    @Override
-    public RenameParams params() {
-        return this.params;
-    }
-
-
 }

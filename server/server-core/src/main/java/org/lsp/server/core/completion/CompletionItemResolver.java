@@ -4,7 +4,7 @@ import io.ballerina.compiler.api.symbols.Documentation;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemCapabilities;
 import org.eclipse.lsp4j.Position;
-import org.lsp.server.api.completion.BalCompletionResolveContext;
+import org.lsp.server.api.context.BalCompletionResolveContext;
 
 import java.util.List;
 import java.util.Map;

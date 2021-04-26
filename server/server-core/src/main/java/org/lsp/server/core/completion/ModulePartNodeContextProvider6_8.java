@@ -10,16 +10,12 @@ import io.ballerina.compiler.syntax.tree.Token;
 import io.ballerina.tools.text.LinePosition;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemKind;
-import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
-import org.lsp.server.api.completion.BalCompletionContext;
-import org.lsp.server.core.completion.utils.SnippetBlock;
+import org.lsp.server.api.context.BalCompletionContext;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;

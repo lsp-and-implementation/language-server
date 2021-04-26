@@ -20,7 +20,7 @@ import org.eclipse.lsp4j.DocumentOnTypeFormattingRegistrationOptions;
 import org.eclipse.lsp4j.OnTypeFormattingCapabilities;
 import org.eclipse.lsp4j.Registration;
 import org.eclipse.lsp4j.RegistrationParams;
-import org.lsp.server.api.LSContext;
+import org.lsp.server.api.context.LSContext;
 
 import java.util.Collections;
 import java.util.List;

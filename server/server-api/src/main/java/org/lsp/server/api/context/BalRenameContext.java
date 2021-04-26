@@ -1,19 +1,19 @@
-package org.lsp.server.api.completion;
+package org.lsp.server.api.context;
 
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.syntax.tree.NonTerminalNode;
 import io.ballerina.compiler.syntax.tree.Token;
-import org.eclipse.lsp4j.CompletionCapabilities;
 import org.eclipse.lsp4j.Position;
-import org.lsp.server.api.BaseOperationContext;
+import org.eclipse.lsp4j.RenameCapabilities;
+import org.eclipse.lsp4j.RenameParams;
 
 import java.nio.file.Path;
 import java.util.List;
 
-public interface BalCompletionContext extends BaseOperationContext {
+public interface BalRenameContext extends BaseOperationContext {
     List<Symbol> visibleSymbols();
     
-    CompletionCapabilities clientCapabilities();
+    RenameCapabilities clientCapabilities();
 
     /**
      * Set the token at the completion's cursor position.
@@ -70,4 +70,6 @@ public interface BalCompletionContext extends BaseOperationContext {
      * @return {@link Path}
      */
     Path getPath();
+    
+    RenameParams params();
 }

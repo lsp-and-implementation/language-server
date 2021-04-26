@@ -1,4 +1,4 @@
-package org.lsp.server.api.completion;
+package org.lsp.server.api.context;
 
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.syntax.tree.Node;

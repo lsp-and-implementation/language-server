@@ -1,4 +1,4 @@
-package org.lsp.server.core.completion.utils;
+package org.lsp.server.core.utils;
 
 import io.ballerina.compiler.syntax.tree.ModulePartNode;
 import io.ballerina.compiler.syntax.tree.NonTerminalNode;
@@ -8,7 +8,7 @@ import io.ballerina.tools.text.LinePosition;
 import io.ballerina.tools.text.TextDocument;
 import io.ballerina.tools.text.TextRange;
 import org.eclipse.lsp4j.Position;
-import org.lsp.server.api.completion.BalCompletionContext;
+import org.lsp.server.api.context.BalPosBasedContext;
 
 import java.util.Optional;
 
@@ -19,7 +19,7 @@ public class ContextEvaluator {
     /**
      * Find the token at cursor.
      */
-    public static void fillTokenInfoAtCursor(BalCompletionContext context) {
+    public static void fillTokenInfoAtCursor(BalPosBasedContext context) {
         context.setTokenAtCursor(findTokenAtPosition(context, context.getCursorPosition()));
         Optional<Document> document = context.currentDocument();
         if (document.isEmpty()) {
@@ -60,7 +60,7 @@ public class ContextEvaluator {
      *
      * @return Token at position
      */
-    public static Token findTokenAtPosition(BalCompletionContext context, Position position) {
+    private static Token findTokenAtPosition(BalPosBasedContext context, Position position) {
         Optional<Document> document = context.currentDocument();
         if (document.isEmpty()) {
             throw new RuntimeException("Couldn't find a valid document!");

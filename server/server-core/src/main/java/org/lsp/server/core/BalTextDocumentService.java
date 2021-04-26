@@ -18,17 +18,26 @@ package org.lsp.server.core;
 import io.ballerina.projects.Project;
 import io.ballerina.projects.ProjectKind;
 import org.eclipse.lsp4j.ClientCapabilities;
+import org.eclipse.lsp4j.CodeAction;
+import org.eclipse.lsp4j.CodeActionParams;
+import org.eclipse.lsp4j.CodeLens;
+import org.eclipse.lsp4j.CodeLensParams;
+import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
+import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
-import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.DocumentFormattingParams;
+import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.PrepareRenameParams;
 import org.eclipse.lsp4j.PrepareRenameResult;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.SignatureHelp;
 import org.eclipse.lsp4j.SignatureHelpContext;
@@ -38,12 +47,13 @@ import org.eclipse.lsp4j.WillSaveTextDocumentParams;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
-import org.lsp.server.api.BaseOperationContext;
 import org.lsp.server.api.DiagnosticsPublisher;
-import org.lsp.server.api.LSContext;
-import org.lsp.server.api.completion.BalCompletionContext;
-import org.lsp.server.api.completion.BalCompletionResolveContext;
-import org.lsp.server.api.completion.BalRenameContext;
+import org.lsp.server.api.context.BalCompletionContext;
+import org.lsp.server.api.context.BalCompletionResolveContext;
+import org.lsp.server.api.context.BalPrepareRenameContext;
+import org.lsp.server.api.context.BalRenameContext;
+import org.lsp.server.api.context.BaseOperationContext;
+import org.lsp.server.api.context.LSContext;
 import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
 import org.lsp.server.core.completion.BalCompletionRouter;
 import org.lsp.server.core.completion.CompletionItemResolver;
@@ -52,6 +62,7 @@ import org.lsp.server.core.docsync.BaseDocumentSyncHandler;
 import org.lsp.server.core.docsync.DocumentSyncHandler;
 import org.lsp.server.core.rename.RenameProvider;
 import org.lsp.server.core.utils.CommonUtils;
+import org.lsp.server.core.utils.ContextEvaluator;
 import org.lsp.server.core.utils.TextModifierUtil;
 
 import java.nio.file.Path;
@@ -181,21 +192,55 @@ public class BalTextDocumentService implements TextDocumentService {
     public CompletableFuture<WorkspaceEdit> rename(RenameParams params) {
         return CompletableFuture.supplyAsync(() -> {
             BalRenameContext context = ContextBuilder.renameContext(this.serverContext, params);
-            return RenameProvider.getRename(context);          
+            return RenameProvider.getRename(context);
         });
     }
 
     @Override
     public CompletableFuture<Either<Range, PrepareRenameResult>> prepareRename(PrepareRenameParams params) {
         return CompletableFuture.supplyAsync(() -> {
-            PrepareRenameResult renameResult = new PrepareRenameResult();
-            Range range = new Range();
-            range.setStart(new Position(14, 6));
-            range.setStart(new Position(14, 15));
-            renameResult.setPlaceholder("hello");
-            renameResult.setRange(range);
-            
+            BalPrepareRenameContext context = ContextBuilder.prepareRenameContext(this.serverContext, params);
+            ContextEvaluator.fillTokenInfoAtCursor(context);
+            PrepareRenameResult renameResult = RenameProvider.prepareRename(context);
+            if (renameResult == null) {
+                return null;
+            }
+
             return Either.forRight(renameResult);
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<? extends TextEdit>> formatting(DocumentFormattingParams params) {
+        BaseOperationContext context = ContextBuilder.baseContext(this.serverContext);
+
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params) {
+        return CompletableFuture.supplyAsync(() -> {
+            return null;
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<List<? extends Location>> references(ReferenceParams params) {
+        // TODO: Add a separate section the chapters regarding the workdone progress for 
+        return CompletableFuture.supplyAsync(() -> {
+            return null;
+        });
+    }
+
+    @Override
+    public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> definition(DefinitionParams params) {
+        return CompletableFuture.supplyAsync(() -> {
+            return null;
         });
     }
 }

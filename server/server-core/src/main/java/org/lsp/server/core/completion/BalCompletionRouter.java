@@ -5,8 +5,8 @@ import io.ballerina.compiler.syntax.tree.ModulePartNode;
 import io.ballerina.compiler.syntax.tree.NonTerminalNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import org.eclipse.lsp4j.CompletionItem;
-import org.lsp.server.api.completion.BalCompletionContext;
-import org.lsp.server.core.completion.utils.ContextEvaluator;
+import org.lsp.server.api.context.BalCompletionContext;
+import org.lsp.server.core.utils.ContextEvaluator;
 
 import java.util.Collections;
 import java.util.List;

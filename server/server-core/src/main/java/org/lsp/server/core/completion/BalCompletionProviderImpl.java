@@ -8,8 +8,8 @@ import io.ballerina.compiler.syntax.tree.Node;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.CompletionItemTag;
-import org.lsp.server.api.completion.BalCompletionContext;
-import org.lsp.server.api.completion.BalCompletionProvider;
+import org.lsp.server.api.context.BalCompletionContext;
+import org.lsp.server.api.context.BalCompletionProvider;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -16,12 +16,18 @@
 package org.lsp.server.core;
 
 import org.eclipse.lsp4j.CompletionOptions;
+import org.eclipse.lsp4j.DefinitionOptions;
+import org.eclipse.lsp4j.DocumentOnTypeFormattingOptions;
+import org.eclipse.lsp4j.ExecuteCommandOptions;
+import org.eclipse.lsp4j.OnTypeFormattingCapabilities;
+import org.eclipse.lsp4j.ReferenceOptions;
 import org.eclipse.lsp4j.RenameOptions;
 import org.eclipse.lsp4j.SaveOptions;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.TextDocumentSyncOptions;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -71,8 +77,38 @@ public class ServerInitUtils {
     public static RenameOptions getRenameOptions() {
         RenameOptions renameOptions = new RenameOptions();
         // Set the prepare support from the server
-        renameOptions.setPrepareProvider(false);
+        renameOptions.setPrepareProvider(true);
         
         return renameOptions;
+    }
+    
+    public static DocumentOnTypeFormattingOptions getOnTypeFormatOptions() {
+        DocumentOnTypeFormattingOptions options =
+                new DocumentOnTypeFormattingOptions();
+        options.setFirstTriggerCharacter("}");
+        options.setMoreTriggerCharacter(Collections.singletonList(";"));
+        
+        return options;
+    }
+    
+    public static ReferenceOptions getReferenceOptions() {
+        ReferenceOptions options = new ReferenceOptions();
+        
+        return options;
+    }
+    
+    public static DefinitionOptions getDefinitionOptions() {
+        DefinitionOptions options = new DefinitionOptions();
+        
+        return options;
+    }
+    
+    public static ExecuteCommandOptions getExecCommandOptions() {
+        ExecuteCommandOptions options = new ExecuteCommandOptions();
+        options.setCommands(Arrays.asList(
+                "ADD_DOC",
+                "CREATE_VAR"));
+        
+        return options;
     }
 }

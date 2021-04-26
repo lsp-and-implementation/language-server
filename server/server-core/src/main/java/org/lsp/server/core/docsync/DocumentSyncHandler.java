@@ -19,7 +19,7 @@ import io.ballerina.projects.Project;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
-import org.lsp.server.api.BaseOperationContext;
+import org.lsp.server.api.context.BaseOperationContext;
 
 import java.util.Optional;
 

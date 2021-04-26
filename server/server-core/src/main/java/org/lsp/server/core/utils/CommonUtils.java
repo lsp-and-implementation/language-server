@@ -15,9 +15,13 @@
  */
 package org.lsp.server.core.utils;
 
+import io.ballerina.compiler.api.symbols.Symbol;
+import io.ballerina.compiler.api.symbols.TypeSymbol;
+
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 
 /**
  * Common utility methods exposed to use within the language server core implementation.
@@ -42,6 +46,10 @@ public class CommonUtils {
     }
 
     public static boolean isKeyword(String newName) {
-        return true;
+        return false;
+    }
+
+    public static Optional<TypeSymbol> getTypeDefinition(Symbol symbol) {
+        return Optional.empty();
     }
 }

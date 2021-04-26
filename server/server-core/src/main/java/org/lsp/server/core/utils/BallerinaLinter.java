@@ -17,7 +17,7 @@ import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticInfo;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 import io.ballerina.tools.diagnostics.Location;
-import org.lsp.server.api.BaseOperationContext;
+import org.lsp.server.api.context.BaseOperationContext;
 import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
 
 import java.nio.file.Path;

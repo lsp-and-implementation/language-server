@@ -19,14 +19,11 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.lsp.server.api.completion.BalCompletionContext;
-import org.lsp.server.core.BallerinaLSContext;
-import org.lsp.server.core.completion.utils.SnippetBlock;
+import org.lsp.server.api.context.BalCompletionContext;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class FunctionBodyNodeContextProvider6_7 extends
         BalCompletionProviderImpl<FunctionBodyBlockNode> {

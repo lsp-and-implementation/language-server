@@ -4,7 +4,7 @@ import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.syntax.tree.FunctionBodyBlockNode;
 import org.eclipse.lsp4j.CompletionItem;
-import org.lsp.server.api.completion.BalCompletionContext;
+import org.lsp.server.api.context.BalCompletionContext;
 
 import java.util.ArrayList;
 import java.util.List;

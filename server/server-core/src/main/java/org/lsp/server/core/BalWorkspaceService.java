@@ -27,6 +27,6 @@ public class BalWorkspaceService implements WorkspaceService {
 
     @Override
     public void didChangeWatchedFiles(DidChangeWatchedFilesParams params) {
-
+        // Handle the codelens refresh in chapter 7
     }
 }

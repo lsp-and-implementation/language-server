@@ -2,14 +2,12 @@ package org.lsp.server.core.completion;
 
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.syntax.tree.FunctionBodyBlockNode;
-import io.ballerina.compiler.syntax.tree.ModulePartNode;
 import io.ballerina.compiler.syntax.tree.NonTerminalNode;
 import io.ballerina.compiler.syntax.tree.QualifiedNameReferenceNode;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
-import org.lsp.server.api.completion.BalCompletionContext;
-import org.lsp.server.core.utils.CommonUtils;
+import org.lsp.server.api.context.BalCompletionContext;
 
 import java.util.ArrayList;
 import java.util.Collections;

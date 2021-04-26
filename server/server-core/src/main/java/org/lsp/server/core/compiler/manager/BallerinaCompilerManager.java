@@ -33,7 +33,7 @@ import io.ballerina.toml.semantic.diagnostics.TomlDiagnostic;
 import org.eclipse.lsp4j.MessageActionItem;
 import org.eclipse.lsp4j.ShowMessageRequestParams;
 import org.eclipse.lsp4j.services.LanguageClient;
-import org.lsp.server.api.LSContext;
+import org.lsp.server.api.context.LSContext;
 import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
 
 import java.nio.file.Path;

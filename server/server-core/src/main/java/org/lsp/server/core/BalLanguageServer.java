@@ -62,7 +62,10 @@ public class BalLanguageServer implements LanguageServer, LanguageClientAware {
             sCapabilities.setTextDocumentSync(documentSyncOption);
             sCapabilities.setCompletionProvider(completionOptions);
             sCapabilities.setRenameProvider(ServerInitUtils.getRenameOptions());
-
+            sCapabilities.setDocumentFormattingProvider(true);
+            sCapabilities.setDocumentRangeFormattingProvider(true);
+            sCapabilities.setDocumentOnTypeFormattingProvider(ServerInitUtils.getOnTypeFormatOptions());
+            
             return new InitializeResult(sCapabilities);
         });
     }

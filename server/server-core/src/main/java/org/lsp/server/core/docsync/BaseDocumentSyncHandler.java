@@ -23,8 +23,8 @@ import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
-import org.lsp.server.api.BaseOperationContext;
-import org.lsp.server.api.LSContext;
+import org.lsp.server.api.context.BaseOperationContext;
+import org.lsp.server.api.context.LSContext;
 import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
 import org.lsp.server.core.utils.CommonUtils;
 

@@ -4,9 +4,7 @@ import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.lsp.server.api.ClientLogManager;
-import org.lsp.server.api.LSContext;
-import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
-import org.lsp.server.core.compiler.manager.BallerinaCompilerManager;
+import org.lsp.server.api.context.LSContext;
 
 /**
  * Simplified Logging manager which logs messages to the language client via client.logMessage.

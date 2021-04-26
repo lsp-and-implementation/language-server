@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.lsp.server.api;
+package org.lsp.server.api.context;
 
 import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.services.LanguageClient;

@@ -3,7 +3,7 @@ package org.lsp.server.core.completion.utils;
 import org.eclipse.lsp4j.CompletionCapabilities;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.InsertTextFormat;
-import org.lsp.server.api.completion.BalCompletionContext;
+import org.lsp.server.api.context.BalCompletionContext;
 
 public class SnippetBlock {
     private final String label;

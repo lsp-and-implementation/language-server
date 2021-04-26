@@ -2,8 +2,7 @@ package org.lsp.server.core;
 
 import org.eclipse.lsp4j.SignatureHelp;
 import org.eclipse.lsp4j.SignatureHelpContext;
-import org.eclipse.lsp4j.SignatureInformation;
-import org.lsp.server.api.signature.BalSignatureContext;
+import org.lsp.server.api.context.BalSignatureContext;
 
 public class SignatureProvider {
     public static SignatureHelp getSignatureHelp(BalSignatureContext context) {
