@@ -16,6 +16,7 @@
 package org.lsp.server.core;
 
 import org.eclipse.lsp4j.CompletionOptions;
+import org.eclipse.lsp4j.DocumentSymbolOptions;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.InitializedParams;
@@ -65,6 +66,7 @@ public class BalLanguageServer implements LanguageServer, LanguageClientAware {
             sCapabilities.setDocumentFormattingProvider(true);
             sCapabilities.setDocumentRangeFormattingProvider(true);
             sCapabilities.setDocumentOnTypeFormattingProvider(ServerInitUtils.getOnTypeFormatOptions());
+            sCapabilities.setDocumentSymbolProvider(ServerInitUtils.getDocumentSymbolOptions());
             
             return new InitializeResult(sCapabilities);
         });

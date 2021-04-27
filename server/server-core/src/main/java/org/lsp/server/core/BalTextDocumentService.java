@@ -32,6 +32,8 @@ import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
 import org.eclipse.lsp4j.DocumentFormattingParams;
+import org.eclipse.lsp4j.DocumentSymbol;
+import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.PrepareRenameParams;
@@ -42,6 +44,7 @@ import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.SignatureHelp;
 import org.eclipse.lsp4j.SignatureHelpContext;
 import org.eclipse.lsp4j.SignatureHelpParams;
+import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.WillSaveTextDocumentParams;
 import org.eclipse.lsp4j.WorkspaceEdit;
@@ -50,6 +53,7 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 import org.lsp.server.api.DiagnosticsPublisher;
 import org.lsp.server.api.context.BalCompletionContext;
 import org.lsp.server.api.context.BalCompletionResolveContext;
+import org.lsp.server.api.context.BalDocumentSymbolContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
 import org.lsp.server.api.context.BalRenameContext;
 import org.lsp.server.api.context.BaseOperationContext;
@@ -58,6 +62,7 @@ import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
 import org.lsp.server.core.completion.BalCompletionRouter;
 import org.lsp.server.core.completion.CompletionItemResolver;
 import org.lsp.server.core.contexts.ContextBuilder;
+import org.lsp.server.core.docsymbol.DocumentSymbolProvider;
 import org.lsp.server.core.docsync.BaseDocumentSyncHandler;
 import org.lsp.server.core.docsync.DocumentSyncHandler;
 import org.lsp.server.core.rename.RenameProvider;
@@ -238,9 +243,29 @@ public class BalTextDocumentService implements TextDocumentService {
     }
 
     @Override
-    public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> definition(DefinitionParams params) {
+    public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>>
+    definition(DefinitionParams params) {
         return CompletableFuture.supplyAsync(() -> {
             return null;
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>>
+    documentSymbol(DocumentSymbolParams params) {
+        return CompletableFuture.supplyAsync(() -> {
+            BalDocumentSymbolContext context = ContextBuilder.documentSymbolContext(this.serverContext, params);
+
+//            SymbolInformation information = new SymbolInformation();
+//            information.setKind(SymbolKind.Enum);
+//            information.setName("HELLO VAR");
+//            information.setTags(Collections.singletonList(SymbolTag.Deprecated));
+//            Range range = new Range();
+//            range.setStart(new Position(1, 7));
+//            range.setEnd(new Position(1, 10));
+//            information.setLocation(new Location(params.getTextDocument().getUri(), range));
+
+            return DocumentSymbolProvider.getSymbolInformation(context);
         });
     }
 }

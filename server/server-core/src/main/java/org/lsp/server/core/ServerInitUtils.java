@@ -18,6 +18,7 @@ package org.lsp.server.core;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.DefinitionOptions;
 import org.eclipse.lsp4j.DocumentOnTypeFormattingOptions;
+import org.eclipse.lsp4j.DocumentSymbolOptions;
 import org.eclipse.lsp4j.ExecuteCommandOptions;
 import org.eclipse.lsp4j.OnTypeFormattingCapabilities;
 import org.eclipse.lsp4j.ReferenceOptions;
@@ -108,6 +109,13 @@ public class ServerInitUtils {
         options.setCommands(Arrays.asList(
                 "ADD_DOC",
                 "CREATE_VAR"));
+        
+        return options;
+    }
+    
+    public static DocumentSymbolOptions getDocumentSymbolOptions() {
+        DocumentSymbolOptions options = new DocumentSymbolOptions();
+        options.setLabel("Ballerina Default");
         
         return options;
     }
