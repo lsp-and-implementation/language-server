@@ -17,6 +17,7 @@ package org.lsp.server.core.utils;
 
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
+import io.ballerina.compiler.syntax.tree.ModuleMemberDeclarationNode;
 
 import java.net.URI;
 import java.nio.file.Path;
@@ -51,5 +52,9 @@ public class CommonUtils {
 
     public static Optional<TypeSymbol> getTypeDefinition(Symbol symbol) {
         return Optional.empty();
+    }
+
+    public static boolean isDeprecated(ModuleMemberDeclarationNode member) {
+        return false;
     }
 }

@@ -265,7 +265,7 @@ public class BalTextDocumentService implements TextDocumentService {
 //            range.setEnd(new Position(1, 10));
 //            information.setLocation(new Location(params.getTextDocument().getUri(), range));
 
-            return DocumentSymbolProvider.getSymbolInformation(context);
+            return DocumentSymbolProvider.getDocumentSymbol(context);
         });
     }
 }
