@@ -32,6 +32,10 @@ import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
 import org.eclipse.lsp4j.DocumentFormattingParams;
+import org.eclipse.lsp4j.DocumentHighlight;
+import org.eclipse.lsp4j.DocumentHighlightParams;
+import org.eclipse.lsp4j.DocumentLink;
+import org.eclipse.lsp4j.DocumentLinkParams;
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Location;
@@ -53,6 +57,7 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 import org.lsp.server.api.DiagnosticsPublisher;
 import org.lsp.server.api.context.BalCompletionContext;
 import org.lsp.server.api.context.BalCompletionResolveContext;
+import org.lsp.server.api.context.BalDocumentHighlightContext;
 import org.lsp.server.api.context.BalDocumentSymbolContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
 import org.lsp.server.api.context.BalRenameContext;
@@ -65,6 +70,7 @@ import org.lsp.server.core.contexts.ContextBuilder;
 import org.lsp.server.core.docsymbol.DocumentSymbolProvider;
 import org.lsp.server.core.docsync.BaseDocumentSyncHandler;
 import org.lsp.server.core.docsync.DocumentSyncHandler;
+import org.lsp.server.core.highlight.DocumentHighlightProvider;
 import org.lsp.server.core.rename.RenameProvider;
 import org.lsp.server.core.utils.CommonUtils;
 import org.lsp.server.core.utils.ContextEvaluator;
@@ -255,17 +261,25 @@ public class BalTextDocumentService implements TextDocumentService {
     documentSymbol(DocumentSymbolParams params) {
         return CompletableFuture.supplyAsync(() -> {
             BalDocumentSymbolContext context = ContextBuilder.documentSymbolContext(this.serverContext, params);
-
-//            SymbolInformation information = new SymbolInformation();
-//            information.setKind(SymbolKind.Enum);
-//            information.setName("HELLO VAR");
-//            information.setTags(Collections.singletonList(SymbolTag.Deprecated));
-//            Range range = new Range();
-//            range.setStart(new Position(1, 7));
-//            range.setEnd(new Position(1, 10));
-//            information.setLocation(new Location(params.getTextDocument().getUri(), range));
-
             return DocumentSymbolProvider.getDocumentSymbol(context);
         });
+    }
+
+    @Override
+    public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(DocumentHighlightParams params) {
+        return CompletableFuture.supplyAsync(() -> {
+            BalDocumentHighlightContext context = ContextBuilder.documentHighlightContext(this.serverContext, params);
+            return DocumentHighlightProvider.getHighlight(context);
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<DocumentLink>> documentLink(DocumentLinkParams params) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<DocumentLink> documentLinkResolve(DocumentLink params) {
+        return null;
     }
 }

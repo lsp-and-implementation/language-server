@@ -2,11 +2,13 @@ package org.lsp.server.core.contexts;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionParams;
+import org.eclipse.lsp4j.DocumentHighlightParams;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.PrepareRenameParams;
 import org.eclipse.lsp4j.RenameParams;
 import org.lsp.server.api.context.BalCompletionContext;
 import org.lsp.server.api.context.BalCompletionResolveContext;
+import org.lsp.server.api.context.BalDocumentHighlightContext;
 import org.lsp.server.api.context.BalDocumentSymbolContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
 import org.lsp.server.api.context.BalRenameContext;
@@ -37,5 +39,10 @@ public class ContextBuilder {
 
     public static BalDocumentSymbolContext documentSymbolContext(LSContext context, DocumentSymbolParams params) {
         return new BalDocumentSymbolContextImpl(context, params);
+    }
+
+    public static BalDocumentHighlightContext documentHighlightContext(LSContext context,
+                                                                       DocumentHighlightParams params) {
+        return new BalDocumentHighlightContextImpl(context, params);
     }
 }
