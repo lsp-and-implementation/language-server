@@ -45,6 +45,14 @@ import org.eclipse.lsp4j.PrepareRenameResult;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.RenameParams;
+import org.eclipse.lsp4j.SelectionRange;
+import org.eclipse.lsp4j.SelectionRangeParams;
+import org.eclipse.lsp4j.SemanticTokenTypes;
+import org.eclipse.lsp4j.SemanticTokens;
+import org.eclipse.lsp4j.SemanticTokensDelta;
+import org.eclipse.lsp4j.SemanticTokensDeltaParams;
+import org.eclipse.lsp4j.SemanticTokensParams;
+import org.eclipse.lsp4j.SemanticTokensRangeParams;
 import org.eclipse.lsp4j.SignatureHelp;
 import org.eclipse.lsp4j.SignatureHelpContext;
 import org.eclipse.lsp4j.SignatureHelpParams;
@@ -61,6 +69,7 @@ import org.lsp.server.api.context.BalDocumentHighlightContext;
 import org.lsp.server.api.context.BalDocumentSymbolContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
 import org.lsp.server.api.context.BalRenameContext;
+import org.lsp.server.api.context.BalSemanticTokenContext;
 import org.lsp.server.api.context.BaseOperationContext;
 import org.lsp.server.api.context.LSContext;
 import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
@@ -72,6 +81,7 @@ import org.lsp.server.core.docsync.BaseDocumentSyncHandler;
 import org.lsp.server.core.docsync.DocumentSyncHandler;
 import org.lsp.server.core.highlight.DocumentHighlightProvider;
 import org.lsp.server.core.rename.RenameProvider;
+import org.lsp.server.core.semantictoken.SemanticTokensProvider;
 import org.lsp.server.core.utils.CommonUtils;
 import org.lsp.server.core.utils.ContextEvaluator;
 import org.lsp.server.core.utils.TextModifierUtil;
@@ -280,6 +290,30 @@ public class BalTextDocumentService implements TextDocumentService {
 
     @Override
     public CompletableFuture<DocumentLink> documentLinkResolve(DocumentLink params) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<List<SelectionRange>> selectionRange(SelectionRangeParams params) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<SemanticTokens> semanticTokensFull(SemanticTokensParams params) {
+        return CompletableFuture.supplyAsync(() -> {
+            BalSemanticTokenContext context = ContextBuilder.semanticTokensContext(this.serverContext, params);
+            
+            return SemanticTokensProvider.getSemanticTokens(context);
+        });
+    }
+
+    @Override
+    public CompletableFuture<Either<SemanticTokens, SemanticTokensDelta>> semanticTokensFullDelta(SemanticTokensDeltaParams params) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<SemanticTokens> semanticTokensRange(SemanticTokensRangeParams params) {
         return null;
     }
 }

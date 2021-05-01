@@ -15,6 +15,7 @@
  */
 package org.lsp.server.core;
 
+import org.checkerframework.checker.units.qual.A;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.DefinitionOptions;
 import org.eclipse.lsp4j.DocumentLinkOptions;
@@ -24,8 +25,11 @@ import org.eclipse.lsp4j.ExecuteCommandOptions;
 import org.eclipse.lsp4j.ReferenceOptions;
 import org.eclipse.lsp4j.RenameOptions;
 import org.eclipse.lsp4j.SaveOptions;
+import org.eclipse.lsp4j.SemanticTokensServerFull;
+import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.TextDocumentSyncOptions;
+import org.lsp.server.core.semantictoken.SemanticTokensProvider;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -122,6 +126,16 @@ public class ServerInitUtils {
     public static DocumentSymbolOptions getDocumentSymbolOptions() {
         DocumentSymbolOptions options = new DocumentSymbolOptions();
         options.setLabel("Ballerina Default");
+        
+        return options;
+    }
+    
+    public static SemanticTokensWithRegistrationOptions getSemanticTokenOptions() {
+        SemanticTokensWithRegistrationOptions options = new SemanticTokensWithRegistrationOptions();
+        SemanticTokensServerFull serverFull = new SemanticTokensServerFull();
+        serverFull.setDelta(false);
+        options.setLegend(SemanticTokensProvider.SEMANTIC_TOKENS_LEGEND);
+        options.setFull(serverFull);
         
         return options;
     }

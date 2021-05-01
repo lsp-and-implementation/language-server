@@ -24,6 +24,7 @@ import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.InitializedParams;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
+import org.eclipse.lsp4j.SelectionRangeRegistrationOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncOptions;
 import org.eclipse.lsp4j.services.LanguageClient;
@@ -71,6 +72,8 @@ public class BalLanguageServer implements LanguageServer, LanguageClientAware {
             sCapabilities.setDocumentSymbolProvider(ServerInitUtils.getDocumentSymbolOptions());
             sCapabilities.setDocumentHighlightProvider(true);
             sCapabilities.setDocumentLinkProvider(ServerInitUtils.getDocumentLinkOptions());
+            sCapabilities.setSelectionRangeProvider(true);
+            sCapabilities.setSemanticTokensProvider(ServerInitUtils.getSemanticTokenOptions());
             
             return new InitializeResult(sCapabilities);
         });
@@ -84,6 +87,7 @@ public class BalLanguageServer implements LanguageServer, LanguageClientAware {
         MessageParams messageParams = new MessageParams();
         messageParams.setMessage("Server Initiated!");
         messageParams.setType(MessageType.Info);
+        this.dynamicCapabilitySetter.registerOnTypeFormatting(this.serverContext);
         this.client.showMessage(messageParams);
     }
 
