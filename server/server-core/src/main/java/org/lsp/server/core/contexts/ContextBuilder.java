@@ -2,6 +2,7 @@ package org.lsp.server.core.contexts;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionParams;
+import org.eclipse.lsp4j.DocumentColorParams;
 import org.eclipse.lsp4j.DocumentHighlightParams;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.PrepareRenameParams;
@@ -11,6 +12,7 @@ import org.eclipse.lsp4j.SemanticTokensParams;
 import org.eclipse.lsp4j.SemanticTokensRangeParams;
 import org.lsp.server.api.context.BalCompletionContext;
 import org.lsp.server.api.context.BalCompletionResolveContext;
+import org.lsp.server.api.context.BalDocumentColourContext;
 import org.lsp.server.api.context.BalDocumentHighlightContext;
 import org.lsp.server.api.context.BalDocumentSymbolContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
@@ -62,5 +64,9 @@ public class ContextBuilder {
 
     public static BalSemanticTokenDeltaContext semanticTokensDeltaContext(LSContext serverContext, SemanticTokensDeltaParams params) {
         return null;
+    }
+
+    public static BalDocumentColourContext getColourContext(LSContext serverContext, DocumentColorParams params) {
+        return new BalDocumentColourContextImpl(serverContext, params);
     }
 }

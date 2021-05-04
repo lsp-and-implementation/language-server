@@ -22,6 +22,9 @@ import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
+import org.eclipse.lsp4j.ColorInformation;
+import org.eclipse.lsp4j.ColorPresentation;
+import org.eclipse.lsp4j.ColorPresentationParams;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
@@ -31,6 +34,7 @@ import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
+import org.eclipse.lsp4j.DocumentColorParams;
 import org.eclipse.lsp4j.DocumentFormattingParams;
 import org.eclipse.lsp4j.DocumentHighlight;
 import org.eclipse.lsp4j.DocumentHighlightParams;
@@ -47,7 +51,6 @@ import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.SelectionRange;
 import org.eclipse.lsp4j.SelectionRangeParams;
-import org.eclipse.lsp4j.SemanticTokenTypes;
 import org.eclipse.lsp4j.SemanticTokens;
 import org.eclipse.lsp4j.SemanticTokensDelta;
 import org.eclipse.lsp4j.SemanticTokensDeltaParams;
@@ -65,6 +68,7 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 import org.lsp.server.api.DiagnosticsPublisher;
 import org.lsp.server.api.context.BalCompletionContext;
 import org.lsp.server.api.context.BalCompletionResolveContext;
+import org.lsp.server.api.context.BalDocumentColourContext;
 import org.lsp.server.api.context.BalDocumentHighlightContext;
 import org.lsp.server.api.context.BalDocumentSymbolContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
@@ -76,6 +80,7 @@ import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
 import org.lsp.server.core.completion.BalCompletionRouter;
 import org.lsp.server.core.completion.CompletionItemResolver;
 import org.lsp.server.core.contexts.ContextBuilder;
+import org.lsp.server.core.doccolour.DocumentColourProvider;
 import org.lsp.server.core.docsymbol.DocumentSymbolProvider;
 import org.lsp.server.core.docsync.BaseDocumentSyncHandler;
 import org.lsp.server.core.docsync.DocumentSyncHandler;
@@ -302,7 +307,7 @@ public class BalTextDocumentService implements TextDocumentService {
     public CompletableFuture<SemanticTokens> semanticTokensFull(SemanticTokensParams params) {
         return CompletableFuture.supplyAsync(() -> {
             BalSemanticTokenContext context = ContextBuilder.semanticTokensContext(this.serverContext, params);
-            
+
             return SemanticTokensProvider.getSemanticTokens(context);
         });
     }
@@ -315,5 +320,16 @@ public class BalTextDocumentService implements TextDocumentService {
     @Override
     public CompletableFuture<SemanticTokens> semanticTokensRange(SemanticTokensRangeParams params) {
         return null;
+    }
+
+    @Override
+    public CompletableFuture<List<ColorInformation>> documentColor(DocumentColorParams params) {
+        BalDocumentColourContext context = ContextBuilder.getColourContext(this.serverContext, params);
+        return CompletableFuture.supplyAsync(() -> DocumentColourProvider.getColours(context));
+    }
+
+    @Override
+    public CompletableFuture<List<ColorPresentation>> colorPresentation(ColorPresentationParams params) {
+        return CompletableFuture.supplyAsync(() -> DocumentColourProvider.getColourPresentation(params));
     }
 }

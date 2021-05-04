@@ -1,6 +1,7 @@
 package org.lsp.server.ballerina.compiler.workspace;
 
 import io.ballerina.compiler.api.SemanticModel;
+import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import io.ballerina.projects.Document;
 import io.ballerina.projects.Module;
@@ -30,4 +31,6 @@ public abstract class CompilerManager {
     public abstract Optional<SemanticModel> getSemanticModel(Path path);
     
     public abstract Optional<Document> getDocument(Path path);
+    
+    public abstract Optional<Node> getNode(Path path, int line, int character);
 }

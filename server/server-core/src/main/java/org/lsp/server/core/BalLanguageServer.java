@@ -74,6 +74,7 @@ public class BalLanguageServer implements LanguageServer, LanguageClientAware {
             sCapabilities.setDocumentLinkProvider(ServerInitUtils.getDocumentLinkOptions());
             sCapabilities.setSelectionRangeProvider(true);
             sCapabilities.setSemanticTokensProvider(ServerInitUtils.getSemanticTokenOptions());
+            sCapabilities.setColorProvider(true);
             
             return new InitializeResult(sCapabilities);
         });

@@ -16,6 +16,9 @@
 package org.lsp.server.core.compiler.manager;
 
 import io.ballerina.compiler.api.SemanticModel;
+import io.ballerina.compiler.syntax.tree.ModulePartNode;
+import io.ballerina.compiler.syntax.tree.Node;
+import io.ballerina.compiler.syntax.tree.NonTerminalNode;
 import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import io.ballerina.projects.BuildOptions;
 import io.ballerina.projects.BuildOptionsBuilder;
@@ -30,6 +33,9 @@ import io.ballerina.projects.directory.BuildProject;
 import io.ballerina.projects.directory.SingleFileProject;
 import io.ballerina.projects.util.ProjectPaths;
 import io.ballerina.toml.semantic.diagnostics.TomlDiagnostic;
+import io.ballerina.tools.text.LinePosition;
+import io.ballerina.tools.text.TextDocument;
+import io.ballerina.tools.text.TextRange;
 import org.eclipse.lsp4j.MessageActionItem;
 import org.eclipse.lsp4j.ShowMessageRequestParams;
 import org.eclipse.lsp4j.services.LanguageClient;
@@ -135,6 +141,20 @@ public class BallerinaCompilerManager extends CompilerManager {
         }
 
         return Optional.ofNullable(module.get().document(this.getDocumentId(path).orElseThrow()));
+    }
+
+    @Override
+    public Optional<Node> getNode(Path path, int line, int character) {
+        Optional<Document> document = this.getDocument(path);
+        if (document.isEmpty()) {
+            return Optional.empty();
+        }
+        TextDocument textDocument = document.get().textDocument();
+        int txtPos = textDocument.textPositionFrom(LinePosition.from(line, character));
+        TextRange range = TextRange.from(txtPos, 0);
+        NonTerminalNode nonTerminalNode = ((ModulePartNode) document.get().syntaxTree().rootNode()).findNode(range);
+        
+        return Optional.of(nonTerminalNode);
     }
 
     private Optional<DocumentId> getDocumentId(Path path) {
