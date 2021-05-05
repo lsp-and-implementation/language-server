@@ -5,6 +5,7 @@ import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DocumentColorParams;
 import org.eclipse.lsp4j.DocumentHighlightParams;
 import org.eclipse.lsp4j.DocumentSymbolParams;
+import org.eclipse.lsp4j.FoldingRangeRequestParams;
 import org.eclipse.lsp4j.PrepareRenameParams;
 import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.SemanticTokensDeltaParams;
@@ -15,6 +16,7 @@ import org.lsp.server.api.context.BalCompletionResolveContext;
 import org.lsp.server.api.context.BalDocumentColourContext;
 import org.lsp.server.api.context.BalDocumentHighlightContext;
 import org.lsp.server.api.context.BalDocumentSymbolContext;
+import org.lsp.server.api.context.BalFoldingRangeContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
 import org.lsp.server.api.context.BalRenameContext;
 import org.lsp.server.api.context.BalSemanticTokenContext;
@@ -68,5 +70,9 @@ public class ContextBuilder {
 
     public static BalDocumentColourContext getColourContext(LSContext serverContext, DocumentColorParams params) {
         return new BalDocumentColourContextImpl(serverContext, params);
+    }
+
+    public static BalFoldingRangeContext getFoldingRangeContext(LSContext serverContext, FoldingRangeRequestParams params) {
+        return new BalFoldingRangeContextImpl(serverContext, params);
     }
 }

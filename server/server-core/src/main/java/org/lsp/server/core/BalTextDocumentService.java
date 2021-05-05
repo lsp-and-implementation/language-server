@@ -42,6 +42,8 @@ import org.eclipse.lsp4j.DocumentLink;
 import org.eclipse.lsp4j.DocumentLinkParams;
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
+import org.eclipse.lsp4j.FoldingRange;
+import org.eclipse.lsp4j.FoldingRangeRequestParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.PrepareRenameParams;
@@ -71,6 +73,7 @@ import org.lsp.server.api.context.BalCompletionResolveContext;
 import org.lsp.server.api.context.BalDocumentColourContext;
 import org.lsp.server.api.context.BalDocumentHighlightContext;
 import org.lsp.server.api.context.BalDocumentSymbolContext;
+import org.lsp.server.api.context.BalFoldingRangeContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
 import org.lsp.server.api.context.BalRenameContext;
 import org.lsp.server.api.context.BalSemanticTokenContext;
@@ -84,6 +87,7 @@ import org.lsp.server.core.doccolour.DocumentColourProvider;
 import org.lsp.server.core.docsymbol.DocumentSymbolProvider;
 import org.lsp.server.core.docsync.BaseDocumentSyncHandler;
 import org.lsp.server.core.docsync.DocumentSyncHandler;
+import org.lsp.server.core.foldingrange.FoldingRangeProvider;
 import org.lsp.server.core.highlight.DocumentHighlightProvider;
 import org.lsp.server.core.rename.RenameProvider;
 import org.lsp.server.core.semantictoken.SemanticTokensProvider;
@@ -331,5 +335,13 @@ public class BalTextDocumentService implements TextDocumentService {
     @Override
     public CompletableFuture<List<ColorPresentation>> colorPresentation(ColorPresentationParams params) {
         return CompletableFuture.supplyAsync(() -> DocumentColourProvider.getColourPresentation(params));
+    }
+
+    @Override
+    public CompletableFuture<List<FoldingRange>> foldingRange(FoldingRangeRequestParams params) {
+        return CompletableFuture.supplyAsync(() -> {
+            BalFoldingRangeContext context = ContextBuilder.getFoldingRangeContext(this.serverContext, params);
+            return FoldingRangeProvider.getFoldingRanges(context);
+        });
     }
 }
