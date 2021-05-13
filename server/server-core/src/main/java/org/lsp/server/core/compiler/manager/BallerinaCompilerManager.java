@@ -157,6 +157,15 @@ public class BallerinaCompilerManager extends CompilerManager {
         return Optional.of(nonTerminalNode);
     }
 
+    @Override
+    public Optional<Path> getProjectRoot(Path path) {
+        Optional<Project> project = this.getProject(path);
+        if (project.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(ProjectPaths.packageRoot(path));
+    }
+
     private Optional<DocumentId> getDocumentId(Path path) {
         Optional<Project> project = getProject(path);
         if (project.isEmpty()) {

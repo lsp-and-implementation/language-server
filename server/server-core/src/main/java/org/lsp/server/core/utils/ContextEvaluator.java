@@ -9,6 +9,8 @@ import io.ballerina.tools.text.TextDocument;
 import io.ballerina.tools.text.TextRange;
 import org.eclipse.lsp4j.Position;
 import org.lsp.server.api.context.BalPosBasedContext;
+import org.lsp.server.api.context.BalTextDocumentContext;
+import org.lsp.server.api.context.BaseOperationContext;
 
 import java.util.Optional;
 
@@ -45,6 +47,30 @@ public class ContextEvaluator {
         }
 
         context.setNodeAtCursor(nonTerminalNode);
+    }
+    
+    public static NonTerminalNode nodeAtPosition(Position position, BalTextDocumentContext context) {
+        Optional<Document> document = context.currentDocument();
+        if (document.isEmpty()) {
+            throw new RuntimeException("Could not find a valid document");
+        }
+        TextDocument textDocument = document.get().textDocument();
+        int txtPos = textDocument.textPositionFrom(LinePosition.from(position.getLine(), position.getCharacter()));
+        TextRange range = TextRange.from(txtPos, 0);
+        NonTerminalNode nonTerminalNode = ((ModulePartNode) document.get().syntaxTree().rootNode()).findNode(range);
+
+        while (true) {
+            /*
+            ModulePartNode's parent is null
+             */
+            if (nonTerminalNode.parent() != null && !withinTextRange(txtPos, nonTerminalNode)) {
+                nonTerminalNode = nonTerminalNode.parent();
+                continue;
+            }
+            break;
+        }
+        
+        return nonTerminalNode;
     }
 
     private static boolean withinTextRange(int position, NonTerminalNode node) {

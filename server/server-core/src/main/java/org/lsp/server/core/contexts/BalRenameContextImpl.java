@@ -23,7 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class BalRenameContextImpl implements BalRenameContext {
+public class BalRenameContextImpl extends BalTextDocumentContextImpl implements BalRenameContext {
     private final LSContext serverContext;
     private final RenameParams params;
     private int cursor = -1;
@@ -31,6 +31,7 @@ public class BalRenameContextImpl implements BalRenameContext {
     private Token tokenAtCursor;
 
     public BalRenameContextImpl(LSContext serverContext, RenameParams params) {
+        super(serverContext, params.getTextDocument().getUri());
         this.serverContext = serverContext;
         this.params = params;
     }
@@ -43,12 +44,6 @@ public class BalRenameContextImpl implements BalRenameContext {
     @Override
     public DiagnosticsPublisher diagnosticPublisher() {
         return null;
-    }
-
-    @Override
-    public Optional<Document> currentDocument() {
-        Path path = CommonUtils.uriToPath(this.params.getTextDocument().getUri());
-        return BallerinaCompilerManager.getInstance(this.serverContext).getDocument(path);
     }
 
     @Override

@@ -10,7 +10,7 @@ import org.eclipse.lsp4j.RenameParams;
 import java.nio.file.Path;
 import java.util.List;
 
-public interface BalRenameContext extends BaseOperationContext {
+public interface BalRenameContext extends BalTextDocumentContext {
     List<Symbol> visibleSymbols();
     
     RenameCapabilities clientCapabilities();

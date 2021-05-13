@@ -8,7 +8,7 @@ import org.eclipse.lsp4j.Position;
 import java.nio.file.Path;
 import java.util.List;
 
-public interface BalPosBasedContext extends BaseOperationContext {
+public interface BalPosBasedContext extends BalTextDocumentContext {
     List<Symbol> visibleSymbols();
 
     /**
@@ -59,11 +59,4 @@ public interface BalPosBasedContext extends BaseOperationContext {
      * @return {@link Position} cursor position
      */
     Position getCursorPosition();
-
-    /**
-     * Get the current document path.
-     * 
-     * @return {@link Path}
-     */
-    Path getPath();
 }

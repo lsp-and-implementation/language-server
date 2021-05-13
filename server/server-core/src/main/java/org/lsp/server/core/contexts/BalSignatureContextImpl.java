@@ -21,11 +21,6 @@ public class BalSignatureContextImpl implements BalSignatureContext {
     }
 
     @Override
-    public Optional<Document> currentDocument() {
-        return Optional.empty();
-    }
-
-    @Override
     public ClientLogManager clientLogManager() {
         return null;
     }

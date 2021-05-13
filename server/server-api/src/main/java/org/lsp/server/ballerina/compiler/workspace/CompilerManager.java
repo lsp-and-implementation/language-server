@@ -33,4 +33,6 @@ public abstract class CompilerManager {
     public abstract Optional<Document> getDocument(Path path);
     
     public abstract Optional<Node> getNode(Path path, int line, int character);
+    
+    public abstract Optional<Path> getProjectRoot(Path path);
 }

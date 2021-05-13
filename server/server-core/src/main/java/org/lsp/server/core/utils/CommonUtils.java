@@ -26,18 +26,18 @@ import java.util.Optional;
 
 /**
  * Common utility methods exposed to use within the language server core implementation.
- * 
+ *
  * @since 1.0.0
  */
 public class CommonUtils {
     public static final String LINE_SEPARATOR = System.lineSeparator();
-    
+
     private CommonUtils() {
     }
 
     /**
      * Get the {@link Path} from the given string URI.
-     * 
+     *
      * @param pathUri to convert
      * @return {@link Path}
      */

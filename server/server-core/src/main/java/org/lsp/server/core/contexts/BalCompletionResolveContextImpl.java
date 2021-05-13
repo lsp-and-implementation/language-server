@@ -7,21 +7,24 @@ import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Position;
 import org.lsp.server.api.ClientLogManager;
 import org.lsp.server.api.DiagnosticsPublisher;
+import org.lsp.server.api.context.BalTextDocumentContext;
 import org.lsp.server.api.context.LSContext;
 import org.lsp.server.api.context.BalCompletionResolveContext;
 import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
 import org.lsp.server.core.compiler.manager.BallerinaCompilerManager;
 
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class BalCompletionResolveContextImpl implements BalCompletionResolveContext {
+public class BalCompletionResolveContextImpl extends BalTextDocumentContextImpl implements BalCompletionResolveContext {
     private final LSContext serverContext;
     private final CompletionItem unresolved;
     private final CompletionCapabilities completionCapabilities;
 
     public BalCompletionResolveContextImpl(LSContext serverContext, CompletionItem unresolved) {
+        super(serverContext, null);
         this.serverContext = serverContext;
         this.unresolved = unresolved;
         this.completionCapabilities = serverContext.getClientCapabilities().get().getTextDocument().getCompletion();

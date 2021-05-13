@@ -1,27 +1,32 @@
 package org.lsp.server.core.contexts;
 
+import org.eclipse.lsp4j.CallHierarchyItem;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DocumentColorParams;
 import org.eclipse.lsp4j.DocumentHighlightParams;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.FoldingRangeRequestParams;
+import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PrepareRenameParams;
 import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.SemanticTokensDeltaParams;
 import org.eclipse.lsp4j.SemanticTokensParams;
 import org.eclipse.lsp4j.SemanticTokensRangeParams;
+import org.lsp.server.api.context.BalCallHierarchyOutgoingContext;
 import org.lsp.server.api.context.BalCompletionContext;
 import org.lsp.server.api.context.BalCompletionResolveContext;
 import org.lsp.server.api.context.BalDocumentColourContext;
 import org.lsp.server.api.context.BalDocumentHighlightContext;
 import org.lsp.server.api.context.BalDocumentSymbolContext;
 import org.lsp.server.api.context.BalFoldingRangeContext;
+import org.lsp.server.api.context.BalPosBasedContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
 import org.lsp.server.api.context.BalRenameContext;
 import org.lsp.server.api.context.BalSemanticTokenContext;
 import org.lsp.server.api.context.BalSemanticTokenDeltaContext;
 import org.lsp.server.api.context.BalSemanticTokenRangeContext;
+import org.lsp.server.api.context.BalTextDocumentContext;
 import org.lsp.server.api.context.BaseOperationContext;
 import org.lsp.server.api.context.LSContext;
 
@@ -74,5 +79,17 @@ public class ContextBuilder {
 
     public static BalFoldingRangeContext getFoldingRangeContext(LSContext serverContext, FoldingRangeRequestParams params) {
         return new BalFoldingRangeContextImpl(serverContext, params);
+    }
+    
+    public static BalPosBasedContext getPosBasedContext(LSContext serverContext, String uri, Position position) {
+        return new BalPosBasedContextImpl(serverContext, uri, position);
+    }
+    
+    public static BalTextDocumentContext getTextDocumentContext(LSContext serverContext, String uri) {
+        return new BalTextDocumentContextImpl(serverContext, uri);
+    }
+    
+    public static BalCallHierarchyOutgoingContext getCallHierarchyOutGoingContext(LSContext serverContext, CallHierarchyItem item) {
+        return new BalCallHierarchyOutgoingContextImpl(serverContext, item);
     }
 }

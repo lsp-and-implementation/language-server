@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class BalPosBasedContextImpl implements BalPosBasedContext {
+public class BalPosBasedContextImpl extends BalTextDocumentContextImpl implements BalPosBasedContext {
     private final LSContext serverContext;
     private final String uri;
     private final Position position;
@@ -30,6 +30,7 @@ public class BalPosBasedContextImpl implements BalPosBasedContext {
     private Token tokenAtCursor;
 
     public BalPosBasedContextImpl(LSContext serverContext, String uri, Position position) {
+        super(serverContext, uri);
         this.serverContext = serverContext;
         this.uri = uri;
         this.position = position;
@@ -43,12 +44,6 @@ public class BalPosBasedContextImpl implements BalPosBasedContext {
     @Override
     public DiagnosticsPublisher diagnosticPublisher() {
         return null;
-    }
-
-    @Override
-    public Optional<Document> currentDocument() {
-        Path path = CommonUtils.uriToPath(uri);
-        return BallerinaCompilerManager.getInstance(this.serverContext).getDocument(path);
     }
 
     @Override
@@ -120,10 +115,5 @@ public class BalPosBasedContextImpl implements BalPosBasedContext {
     @Override
     public Position getCursorPosition() {
         return position;
-    }
-
-    @Override
-    public Path getPath() {
-        return CommonUtils.uriToPath(uri);
     }
 }

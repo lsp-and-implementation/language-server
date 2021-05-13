@@ -17,6 +17,12 @@ package org.lsp.server.core;
 
 import io.ballerina.projects.Project;
 import io.ballerina.projects.ProjectKind;
+import org.eclipse.lsp4j.CallHierarchyIncomingCall;
+import org.eclipse.lsp4j.CallHierarchyIncomingCallsParams;
+import org.eclipse.lsp4j.CallHierarchyItem;
+import org.eclipse.lsp4j.CallHierarchyOutgoingCall;
+import org.eclipse.lsp4j.CallHierarchyOutgoingCallsParams;
+import org.eclipse.lsp4j.CallHierarchyPrepareParams;
 import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionParams;
@@ -68,18 +74,21 @@ import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.lsp.server.api.DiagnosticsPublisher;
+import org.lsp.server.api.context.BalCallHierarchyOutgoingContext;
 import org.lsp.server.api.context.BalCompletionContext;
 import org.lsp.server.api.context.BalCompletionResolveContext;
 import org.lsp.server.api.context.BalDocumentColourContext;
 import org.lsp.server.api.context.BalDocumentHighlightContext;
 import org.lsp.server.api.context.BalDocumentSymbolContext;
 import org.lsp.server.api.context.BalFoldingRangeContext;
+import org.lsp.server.api.context.BalPosBasedContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
 import org.lsp.server.api.context.BalRenameContext;
 import org.lsp.server.api.context.BalSemanticTokenContext;
 import org.lsp.server.api.context.BaseOperationContext;
 import org.lsp.server.api.context.LSContext;
 import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
+import org.lsp.server.core.callhierarchy.CallHierarchyProvider;
 import org.lsp.server.core.completion.BalCompletionRouter;
 import org.lsp.server.core.completion.CompletionItemResolver;
 import org.lsp.server.core.contexts.ContextBuilder;
@@ -342,6 +351,37 @@ public class BalTextDocumentService implements TextDocumentService {
         return CompletableFuture.supplyAsync(() -> {
             BalFoldingRangeContext context = ContextBuilder.getFoldingRangeContext(this.serverContext, params);
             return FoldingRangeProvider.getFoldingRanges(context);
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<CallHierarchyItem>> prepareCallHierarchy(CallHierarchyPrepareParams params) {
+        return CompletableFuture.supplyAsync(() -> {
+            BalPosBasedContext context = ContextBuilder.getPosBasedContext(this.serverContext,
+                    params.getTextDocument().getUri(), params.getPosition());
+            return CallHierarchyProvider.prepare(context);
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<CallHierarchyIncomingCall>> callHierarchyIncomingCalls(CallHierarchyIncomingCallsParams params) {
+        return CompletableFuture.supplyAsync(() -> {
+            CallHierarchyItem item = params.getItem();
+            BalPosBasedContext context = ContextBuilder.getPosBasedContext(this.serverContext,
+                    item.getUri(), item.getRange().getStart());
+
+            return CallHierarchyProvider.incoming(context);
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<CallHierarchyOutgoingCall>> callHierarchyOutgoingCalls(CallHierarchyOutgoingCallsParams params) {
+        return CompletableFuture.supplyAsync(() -> {
+            CallHierarchyItem item = params.getItem();
+            BalCallHierarchyOutgoingContext context = ContextBuilder.getCallHierarchyOutGoingContext(this.serverContext,
+                    item);
+
+            return CallHierarchyProvider.outgoing(context);
         });
     }
 }
