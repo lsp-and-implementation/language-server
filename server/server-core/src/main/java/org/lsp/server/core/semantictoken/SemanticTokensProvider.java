@@ -22,22 +22,34 @@ import java.util.List;
 import java.util.Map;
 
 public class SemanticTokensProvider {
-    private static final List<String> TOKEN_TYPES = Arrays.asList(SemanticTokenTypes.Type, SemanticTokenTypes.Enum);
-    private static final List<String> MODIFIERS = Arrays.asList(SemanticTokenModifiers.Declaration, SemanticTokenModifiers.Definition);
-    public static final SemanticTokensLegend SEMANTIC_TOKENS_LEGEND = new SemanticTokensLegend(TOKEN_TYPES, MODIFIERS);
+    private static final List<String> TOKEN_TYPES = 
+            Arrays.asList(
+                    SemanticTokenTypes.Type,
+                    SemanticTokenTypes.Enum
+            );
+    private static final List<String> MODIFIERS =
+            Arrays.asList(
+                    SemanticTokenModifiers.Declaration,
+                    SemanticTokenModifiers.Definition
+            );
+    public static final SemanticTokensLegend SEMANTIC_TOKENS_LEGEND =
+            new SemanticTokensLegend(TOKEN_TYPES, MODIFIERS);
     
     public static SemanticTokens getSemanticTokens(BalSemanticTokenContext context) {
-        SyntaxTree syntaxTree = context.compilerManager().getSyntaxTree(context.getPath()).orElseThrow();
+        SyntaxTree syntaxTree = context.currentSyntaxTree().get();
         List<Integer> data = new ArrayList<>();
         Map<Integer, Token> lastTokenInLine = new HashMap<>();
         int lastLine = 0;
-        for (ModuleMemberDeclarationNode member : ((ModulePartNode) syntaxTree.rootNode()).members()) {
+        ModulePartNode modPart = syntaxTree.rootNode();
+        for (ModuleMemberDeclarationNode member : (modPart).members()) {
             if (member.kind() == SyntaxKind.TYPE_DEFINITION) {
                 Token typeName = ((TypeDefinitionNode) member).typeName();
                 LinePosition startLine = typeName.lineRange().startLine();
                 int startChar = startLine.offset();
                 if (lastTokenInLine.containsKey(startLine.line())) {
-                    startChar = startChar - lastTokenInLine.get(startLine.line()).lineRange().startLine().offset();
+                    startChar = startChar - lastTokenInLine
+                            .get(startLine.line()).lineRange()
+                            .startLine().offset();
                 }
                 int line = startLine.line() - lastLine;
                 lastLine = startLine.line();

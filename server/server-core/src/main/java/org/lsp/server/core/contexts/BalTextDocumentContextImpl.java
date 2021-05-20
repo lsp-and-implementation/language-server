@@ -1,5 +1,6 @@
 package org.lsp.server.core.contexts;
 
+import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import io.ballerina.projects.Document;
 import org.lsp.server.api.context.BalTextDocumentContext;
 import org.lsp.server.api.context.LSContext;
@@ -23,10 +24,18 @@ public class BalTextDocumentContextImpl extends BaseOperationContextImpl impleme
     public Path getPath() {
         return CommonUtils.uriToPath(uri);
     }
-    
+
     @Override
     public Optional<Document> currentDocument() {
         Path path = CommonUtils.uriToPath(this.uri);
+
         return BallerinaCompilerManager.getInstance(this.serverContext).getDocument(path);
+    }
+
+    @Override
+    public Optional<SyntaxTree> currentSyntaxTree() {
+        Path path = CommonUtils.uriToPath(this.uri);
+        
+        return BallerinaCompilerManager.getInstance(this.serverContext).getSyntaxTree(path);
     }
 }

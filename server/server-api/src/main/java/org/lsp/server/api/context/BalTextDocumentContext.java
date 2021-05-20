@@ -1,5 +1,6 @@
 package org.lsp.server.api.context;
 
+import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import io.ballerina.projects.Document;
 
 import java.nio.file.Path;
@@ -14,4 +15,6 @@ public interface BalTextDocumentContext extends BaseOperationContext {
     Path getPath();
     
     Optional<Document> currentDocument();
+    
+    Optional<SyntaxTree> currentSyntaxTree();
 }
