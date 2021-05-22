@@ -72,8 +72,9 @@ public class DocumentColourProvider {
                     continue;
                 }
                 RequiredParameterNode reqParm = (RequiredParameterNode) param;
-                LinePosition startLine = reqParm.paramName().get().lineRange().startLine();
-                Optional<Symbol> symbol = semanticModel.symbol(document, LinePosition.from(startLine.line(), startLine.offset()));
+                LinePosition sLine = reqParm.paramName().get().lineRange().startLine();
+                LinePosition linePosition = LinePosition.from(sLine.line(), sLine.offset());
+                Optional<Symbol> symbol = semanticModel.symbol(document, linePosition);
                 if (symbol.isEmpty() || symbol.get().kind() != SymbolKind.PARAMETER) {
                     continue;
                 }
@@ -87,6 +88,7 @@ public class DocumentColourProvider {
                 }
                 List<Location> references = semanticModel.references(document, funcLinePos, false);
 
+                // Convert RGB string to 
                 Map<Range, List<Double>> rgbInfo = getRGB(references, i, context, path);
                 rgbInfo.forEach((range, floats) -> {
                     Color color = new Color(floats.get(0), floats.get(1), floats.get(2), floats.get(3));
@@ -138,8 +140,9 @@ public class DocumentColourProvider {
                         int integer = Integer.parseInt(components[i].trim());
                         double xx = integer / 255D;
                         parts.add(xx);
+                    } else {
+                        parts.add(Double.parseDouble(components[i].trim()));
                     }
-                    parts.add(Double.parseDouble(components[i].trim()));
                 }
 
                 LinePosition startLine = expression.lineRange().startLine();
