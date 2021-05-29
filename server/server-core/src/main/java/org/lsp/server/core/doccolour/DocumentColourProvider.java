@@ -111,13 +111,14 @@ public class DocumentColourProvider {
                 Math.round(color.getAlpha()) + "\"";
         textEdit.setNewText(insertColour);
         ColorPresentation presentation = new ColorPresentation();
-        presentation.setLabel("Insert Variation");
+        presentation.setLabel(insertColour);
         presentation.setTextEdit(textEdit);
 
         return Collections.singletonList(presentation);
     }
 
-    private static Map<Range, List<Double>> getRGB(List<Location> references, int paramId, BalDocumentColourContext context, Path path) {
+    private static Map<Range, List<Double>> getRGB(List<Location> references, int paramId,
+                                                   BalDocumentColourContext context, Path path) {
         Map<Range, List<Double>> colourInfo = new HashMap<>();
         for (Location location : references) {
             LinePosition refStart = location.lineRange().startLine();

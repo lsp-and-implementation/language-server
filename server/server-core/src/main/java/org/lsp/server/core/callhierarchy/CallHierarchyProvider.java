@@ -37,18 +37,19 @@ public class CallHierarchyProvider {
     private CallHierarchyProvider() {
     }
 
-    public static List<CallHierarchyItem> prepare(BalPosBasedContext context) {
+    public static List<CallHierarchyItem> prepare(
+            BalPosBasedContext context) {
         CompilerManager compilerManager = context.compilerManager();
         Path path = context.getPath();
         Document document = context.currentDocument().orElseThrow();
         Position position = context.getCursorPosition();
         SemanticModel semanticModel = compilerManager.getSemanticModel(path).orElseThrow();
-        Optional<Symbol> symbol = semanticModel.symbol(document, LinePosition.from(position.getLine(), position.getCharacter()));
+        LinePosition linePos = LinePosition.from(position.getLine(), position.getCharacter());
+        Optional<Symbol> symbol = semanticModel.symbol(document, linePos);
         if (symbol.isEmpty() || symbol.get().kind() != SymbolKind.FUNCTION) {
             return Collections.emptyList();
         }
         FunctionSymbol functionSymbol = (FunctionSymbol) symbol.get();
-        List<CallHierarchyItem> items = new ArrayList<>();
         CallHierarchyItem cItem = new CallHierarchyItem();
         cItem.setKind(org.eclipse.lsp4j.SymbolKind.Function);
         cItem.setName(functionSymbol.getName().orElseThrow());
@@ -58,9 +59,10 @@ public class CallHierarchyProvider {
         Position rEnd = new Position(lineRange.endLine().line(), lineRange.endLine().offset());
         cItem.setRange(new Range(rStart, rEnd));
 
-        Optional<Node> funcNode = compilerManager.getNode(path, lineRange.startLine().line(), lineRange.startLine().offset());
+        Optional<Node> funcNode = compilerManager.getNode(path, lineRange.startLine().line(),
+                lineRange.startLine().offset());
         if (funcNode.isEmpty() || funcNode.get().kind() != SyntaxKind.FUNCTION_DEFINITION) {
-            return items;
+            return Collections.emptyList();
         }
         IdentifierToken fName = ((FunctionDefinitionNode) funcNode.get()).functionName();
         LineRange nameLineRange = fName.lineRange();
@@ -70,10 +72,12 @@ public class CallHierarchyProvider {
         String uri = getUriFromLocation(symbol.get(), symbol.get().getLocation().get(), prjRoot);
         cItem.setSelectionRange(new Range(srStart, srEnd));
         cItem.setUri(uri);
+        /*
+        Necessary semantic information can be added with data field as
+        cItem.setData();
+         */
 
-        items.add(cItem);
-
-        return items;
+        return Collections.singletonList(cItem);
     }
 
     public static List<CallHierarchyIncomingCall> incoming(BalPosBasedContext context) {
