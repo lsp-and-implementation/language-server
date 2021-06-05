@@ -15,18 +15,24 @@
  */
 package org.lsp.server.core;
 
+import io.ballerina.projects.util.ProjectConstants;
 import org.eclipse.lsp4j.CompletionOptions;
+import org.eclipse.lsp4j.DidChangeWatchedFilesRegistrationOptions;
 import org.eclipse.lsp4j.DocumentHighlightOptions;
 import org.eclipse.lsp4j.DocumentLinkOptions;
 import org.eclipse.lsp4j.DocumentSymbolOptions;
+import org.eclipse.lsp4j.FileSystemWatcher;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.InitializedParams;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
+import org.eclipse.lsp4j.Registration;
+import org.eclipse.lsp4j.RegistrationParams;
 import org.eclipse.lsp4j.SelectionRangeRegistrationOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncOptions;
+import org.eclipse.lsp4j.WatchKind;
 import org.eclipse.lsp4j.WorkspaceServerCapabilities;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
@@ -34,6 +40,10 @@ import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -79,10 +89,10 @@ public class BalLanguageServer implements LanguageServer, LanguageClientAware {
             sCapabilities.setColorProvider(true);
             sCapabilities.setFoldingRangeProvider(true);
             sCapabilities.setCallHierarchyProvider(true);
-            
+
             // Set the workspace capabilities
             sCapabilities.setWorkspace(wsCapabilities);
-            
+
             return new InitializeResult(sCapabilities);
         });
     }
@@ -97,6 +107,19 @@ public class BalLanguageServer implements LanguageServer, LanguageClientAware {
         messageParams.setType(MessageType.Info);
         this.dynamicCapabilitySetter.registerOnTypeFormatting(this.serverContext);
         this.client.showMessage(messageParams);
+
+        // Register file watchers
+        List<FileSystemWatcher> watchers = new ArrayList<>();
+        watchers.add(new FileSystemWatcher("/**/"
+                + ProjectConstants.BALLERINA_TOML,
+                WatchKind.Create + WatchKind.Delete));
+        DidChangeWatchedFilesRegistrationOptions opts =
+                new DidChangeWatchedFilesRegistrationOptions(watchers);
+        Registration registration =
+                new Registration(UUID.randomUUID().toString(),
+                        "workspace/didChangeWatchedFiles", opts);
+        this.client.registerCapability(
+                new RegistrationParams(Collections.singletonList(registration)));
     }
 
     @Override

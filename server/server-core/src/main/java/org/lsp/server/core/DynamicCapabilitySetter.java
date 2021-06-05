@@ -32,6 +32,7 @@ import java.util.Optional;
  * @since 1.0.0
  */
 public class DynamicCapabilitySetter {
+    // TODO: IMPLEMENT ALL THE OPERATIONS HERE
     private static final LSContext.Key<DynamicCapabilitySetter> CAPABILITY_SETTER_KEY = new LSContext.Key<>();
 
     private DynamicCapabilitySetter(LSContext serverContext) {
