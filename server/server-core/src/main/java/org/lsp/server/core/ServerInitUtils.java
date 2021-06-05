@@ -16,6 +16,7 @@
 package org.lsp.server.core;
 
 import org.checkerframework.checker.units.qual.A;
+import org.eclipse.lsp4j.CodeActionOptions;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.DefinitionOptions;
 import org.eclipse.lsp4j.DocumentLinkOptions;
@@ -136,6 +137,13 @@ public class ServerInitUtils {
         serverFull.setDelta(false);
         options.setLegend(SemanticTokensProvider.SEMANTIC_TOKENS_LEGEND);
         options.setFull(serverFull);
+        
+        return options;
+    }
+
+    public static CodeActionOptions getCodeActionOptions() {
+        CodeActionOptions options = new CodeActionOptions();
+        options.setResolveProvider(true);
         
         return options;
     }

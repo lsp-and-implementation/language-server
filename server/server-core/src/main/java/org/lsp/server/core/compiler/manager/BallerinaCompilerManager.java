@@ -153,7 +153,7 @@ public class BallerinaCompilerManager extends CompilerManager {
         int txtPos = textDocument.textPositionFrom(LinePosition.from(line, character));
         TextRange range = TextRange.from(txtPos, 0);
         NonTerminalNode nonTerminalNode = ((ModulePartNode) document.get().syntaxTree().rootNode()).findNode(range);
-        
+
         return Optional.of(nonTerminalNode);
     }
 
@@ -164,6 +164,11 @@ public class BallerinaCompilerManager extends CompilerManager {
             return Optional.empty();
         }
         return Optional.ofNullable(ProjectPaths.packageRoot(path));
+    }
+
+    @Override
+    public void reloadProject(Path projectRoot) {
+        // Todo: Implement
     }
 
     private Optional<DocumentId> getDocumentId(Path path) {

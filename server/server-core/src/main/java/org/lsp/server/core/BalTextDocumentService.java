@@ -35,6 +35,8 @@ import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
+import org.eclipse.lsp4j.ConfigurationItem;
+import org.eclipse.lsp4j.ConfigurationParams;
 import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
@@ -72,6 +74,7 @@ import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.WillSaveTextDocumentParams;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.lsp.server.api.DiagnosticsPublisher;
 import org.lsp.server.api.context.BalCallHierarchyOutgoingContext;
@@ -109,6 +112,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Implementation of the {@link TextDocumentService}.

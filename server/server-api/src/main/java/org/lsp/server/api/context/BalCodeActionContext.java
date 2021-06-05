@@ -1,6 +1,7 @@
 package org.lsp.server.api.context;
 
-import org.lsp.server.api.context.BalPosBasedContext;
+import org.eclipse.lsp4j.services.LanguageClient;
 
 public interface BalCodeActionContext extends BalPosBasedContext {
+    LanguageClient getClient();
 }

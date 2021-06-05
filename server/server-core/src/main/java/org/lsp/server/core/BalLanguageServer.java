@@ -27,6 +27,7 @@ import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.SelectionRangeRegistrationOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncOptions;
+import org.eclipse.lsp4j.WorkspaceServerCapabilities;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.LanguageServer;
@@ -51,7 +52,7 @@ public class BalLanguageServer implements LanguageServer, LanguageClientAware {
     public BalLanguageServer() {
         this.serverContext = new BallerinaLSContext();
         this.textDocumentService = new BalTextDocumentService(this.serverContext);
-        this.workspaceService = new BalWorkspaceService();
+        this.workspaceService = new BalWorkspaceService(this.serverContext);
     }
 
     @Override
@@ -59,7 +60,7 @@ public class BalLanguageServer implements LanguageServer, LanguageClientAware {
         return CompletableFuture.supplyAsync(() -> {
             serverContext.setClientCapabilities(params.getCapabilities());
             ServerCapabilities sCapabilities = new ServerCapabilities();
-
+            WorkspaceServerCapabilities wsCapabilities = new WorkspaceServerCapabilities();
             TextDocumentSyncOptions documentSyncOption = ServerInitUtils.getDocumentSyncOption();
             CompletionOptions completionOptions = ServerInitUtils.getCompletionOptions();
 
@@ -74,9 +75,13 @@ public class BalLanguageServer implements LanguageServer, LanguageClientAware {
             sCapabilities.setDocumentLinkProvider(ServerInitUtils.getDocumentLinkOptions());
             sCapabilities.setSelectionRangeProvider(true);
             sCapabilities.setSemanticTokensProvider(ServerInitUtils.getSemanticTokenOptions());
+            sCapabilities.setCodeActionProvider(ServerInitUtils.getCodeActionOptions());
             sCapabilities.setColorProvider(true);
             sCapabilities.setFoldingRangeProvider(true);
             sCapabilities.setCallHierarchyProvider(true);
+            
+            // Set the workspace capabilities
+            sCapabilities.setWorkspace(wsCapabilities);
             
             return new InitializeResult(sCapabilities);
         });

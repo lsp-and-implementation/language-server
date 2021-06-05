@@ -27,6 +27,7 @@ import org.lsp.server.api.context.BalSemanticTokenContext;
 import org.lsp.server.api.context.BalSemanticTokenDeltaContext;
 import org.lsp.server.api.context.BalSemanticTokenRangeContext;
 import org.lsp.server.api.context.BalTextDocumentContext;
+import org.lsp.server.api.context.BalWorkspaceContext;
 import org.lsp.server.api.context.BaseOperationContext;
 import org.lsp.server.api.context.LSContext;
 
@@ -91,5 +92,9 @@ public class ContextBuilder {
     
     public static BalCallHierarchyOutgoingContext getCallHierarchyOutGoingContext(LSContext serverContext, CallHierarchyItem item) {
         return new BalCallHierarchyOutgoingContextImpl(serverContext, item);
+    }
+    
+    public static BalWorkspaceContext getWorkspaceContext(LSContext serverContext) {
+        return new BalWorkspaceContextImpl(serverContext);
     }
 }

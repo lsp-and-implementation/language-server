@@ -35,4 +35,6 @@ public abstract class CompilerManager {
     public abstract Optional<Node> getNode(Path path, int line, int character);
     
     public abstract Optional<Path> getProjectRoot(Path path);
+    
+    public abstract void reloadProject(Path projectRoot);
 }
