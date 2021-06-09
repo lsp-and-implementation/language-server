@@ -8,6 +8,7 @@ import io.ballerina.projects.Module;
 import io.ballerina.projects.Project;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -37,4 +38,6 @@ public abstract class CompilerManager {
     public abstract Optional<Path> getProjectRoot(Path path);
     
     public abstract void reloadProject(Path projectRoot);
+    
+    public abstract List<SemanticModel> getSemanticModels(Path projectRoot);
 }

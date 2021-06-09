@@ -18,6 +18,7 @@ package org.lsp.server.core.utils;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.syntax.tree.ModuleMemberDeclarationNode;
+import org.eclipse.lsp4j.SymbolInformation;
 
 import java.net.URI;
 import java.nio.file.Path;
@@ -56,5 +57,11 @@ public class CommonUtils {
 
     public static boolean isDeprecated(ModuleMemberDeclarationNode member) {
         return false;
+    }
+    
+    public static SymbolInformation getSymbolInformation(Symbol symbol) {
+        SymbolInformation symbolInformation = new SymbolInformation();
+        
+        return symbolInformation;
     }
 }

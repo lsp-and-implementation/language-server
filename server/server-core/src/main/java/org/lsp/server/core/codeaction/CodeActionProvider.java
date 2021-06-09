@@ -13,8 +13,7 @@ import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.lsp.server.api.context.BalCodeActionContext;
-import org.lsp.server.api.context.LSContext;
-import org.lsp.server.core.configdidchange.ConfigurationHolder;
+import org.lsp.server.core.executecommand.CreateVariableArgs;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,6 +25,7 @@ import java.util.concurrent.ExecutionException;
 public class CodeActionProvider {
     private static final String VAR_ASSIGNMENT_REQUIRED = "";
 
+    // TODO: UPDATE THE CONTENT IN BOOK
     public static List<Either<org.eclipse.lsp4j.Command, CodeAction>>
     getCodeAction(BalCodeActionContext context, CodeActionParams params) {
         List<Either<org.eclipse.lsp4j.Command, CodeAction>> codeActions =
@@ -34,7 +34,8 @@ public class CodeActionProvider {
         Node topLevelNode = getTopLevelNode(params.getRange());
         String message = diag.message().toLowerCase(Locale.ROOT);
         if (message.equals(VAR_ASSIGNMENT_REQUIRED)) {
-            org.eclipse.lsp4j.Command createVarCommand = getCreateVarCommand(params.getRange());
+            // TODO: FIX
+            org.eclipse.lsp4j.Command createVarCommand = getCreateVarCommand(params.getRange(), null, null);
             Either<org.eclipse.lsp4j.Command, CodeAction> command = Either.forLeft(createVarCommand);
 
             return Collections.singletonList(command);
@@ -54,13 +55,20 @@ public class CodeActionProvider {
         return null;
     }
 
-    private static org.eclipse.lsp4j.Command getCreateVarCommand(Range range) {
+    // TODO: UPDATE THE SAMPLE IN THE BOOK
+    private static org.eclipse.lsp4j.Command
+    getCreateVarCommand(Range range,
+                        BalCodeActionContext context, String expr) {
         org.eclipse.lsp4j.Command command = new org.eclipse.lsp4j.Command();
         command.setCommand(Command.CREATE_VAR.getName());
         command.setTitle(Command.CREATE_VAR.getTitle());
         List<Object> args = new ArrayList<>();
         String typeDescriptor = getExpectedTypeDescriptor(range);
-        args.add(new CommandArgument("type", typeDescriptor));
+        String uri = context.getPath().toUri().toString();
+        String newText = typeDescriptor + " = " + expr;
+        CreateVariableArgs createVarArgs =
+                new CreateVariableArgs(newText, range, uri);
+        args.add(new CommandArgument("params", createVarArgs));
         command.setArguments(args);
 
         return command;

@@ -44,6 +44,7 @@ import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
 
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -169,6 +170,11 @@ public class BallerinaCompilerManager extends CompilerManager {
     @Override
     public void reloadProject(Path projectRoot) {
         // Todo: Implement
+    }
+
+    @Override
+    public List<SemanticModel> getSemanticModels(Path projectRoot) {
+        return Collections.emptyList();
     }
 
     private Optional<DocumentId> getDocumentId(Path path) {
