@@ -63,6 +63,7 @@ public class BalLanguageServer implements LanguageServer, LanguageClientAware {
         this.serverContext = new BallerinaLSContext();
         this.textDocumentService = new BalTextDocumentService(this.serverContext);
         this.workspaceService = new BalWorkspaceService(this.serverContext);
+        this.dynamicCapabilitySetter = DynamicCapabilitySetter.getInstance(this.serverContext);
     }
 
     @Override

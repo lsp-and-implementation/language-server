@@ -45,7 +45,7 @@ public class DynamicCapabilitySetter {
      * @param serverContext Language Server Context
      * @return {@link DynamicCapabilitySetter}
      */
-    public DynamicCapabilitySetter getInstance(LSContext serverContext) {
+    public static DynamicCapabilitySetter getInstance(LSContext serverContext) {
         DynamicCapabilitySetter capabilitySetter = serverContext.get(CAPABILITY_SETTER_KEY);
         if (capabilitySetter == null) {
             capabilitySetter = new DynamicCapabilitySetter(serverContext);

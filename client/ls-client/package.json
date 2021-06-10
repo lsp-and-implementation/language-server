@@ -39,6 +39,11 @@
           "type": "boolean",
           "default": false,
           "description": "If set to true, language server will be started on debug mode"
+        },
+        "ballerina.codeLens.documentation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable all code lens features."
         }
       }
     }
@@ -65,10 +70,12 @@
     "mocha": "^8.2.1",
     "typescript": "^4.1.3",
     "vscode-test": "^1.5.0",
-    "vsce": "^1.59.0"
+    "vsce": "^1.59.0",
+    "@types/mz": "0.0.32"
   },
   "dependencies": {
     "vscode-languageclient": "7.0.0",
-    "vscode-languageserver-types": "^3.14.0"
+    "vscode-languageserver-types": "^3.14.0",
+    "mz": "2.7.0"
   }
 }
