@@ -35,11 +35,6 @@
       "type": "object",
       "title": "LangServer",
       "properties": {
-        "LSDEBUG": {
-          "type": "boolean",
-          "default": false,
-          "description": "If set to true, language server will be started on debug mode"
-        },
         "ballerina.codeLens.documentation": {
           "type": "boolean",
           "default": true,

@@ -1,19 +1,15 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import { exec, execSync } from 'child_process';
+import { execSync } from 'child_process';
 import { ChildProcess, spawn } from 'mz/child_process';
-// import * as cp from 'child_process';
-// import ChildProcess = cp.ChildProcess;
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as net from 'net';
-import { LanguageClient, LanguageClientOptions, ServerOptions, StreamInfo, ChildProcessInfo } from 'vscode-languageclient/node';
+import { LanguageClient, LanguageClientOptions, ServerOptions, StreamInfo } from 'vscode-languageclient/node';
 
 export function activate(context: vscode.ExtensionContext) {
-	var logChannel = vscode.window.createOutputChannel("LangServerDemo");
+	var logChannel = vscode.window.createOutputChannel("Bal_LSP_and_Impl");
 	const main: string = 'org.lsp.launcher.stdio.StdioLauncher';
 	const tcpMain: string = 'org.lsp.launcher.tcp.TCPLauncher'
-	logChannel.appendLine("Starting the Demo Ballerina Language Server Extension!");
+	logChannel.appendLine("Starting the Ballerina Language Server Extension!");
 
 	getJavaHome().then(val => {
 		let javaHome = ((val + '').split('java.home =')[1]).trim();
@@ -43,40 +39,36 @@ export function activate(context: vscode.ExtensionContext) {
 				// Use a TCP socket because of problems with blocking STDIO
 				const server = net.createServer(socket => {
 					// 'connection' listener
-					console.log('PHP process connected')
+					logChannel.appendLine('Ballerina Language Server Process Disconnected')
 					socket.on('end', () => {
-						console.log('PHP process disconnected')
+						logChannel.appendLine('Ballerina Language Server Process Disconnected')
 					});
 					server.close()
 					resolve({ reader: socket, writer: socket })
 				});
-				// Listen on random port
+				// Listen on port 9925
 				server.listen(9925, '127.0.0.1', () => {
-					// The server is implemented in PHP
 					const childProcess = spawn(excecutable, [...args, tcpMain]);
 					childProcess.stderr.on('data', (chunk: Buffer) => {
-						const str = chunk.toString()
-						console.log('PHP Language Server:', str)
-						// client.outputChannel.appendLine(str)
+						const str = chunk.toString();
+						logChannel.appendLine('Ballerina Language Server:' + str);
 					});
 					childProcess.stdout.on('data', (chunk: Buffer) => {
-						console.log('PHP Language Server:', chunk + '');
+						logChannel.appendLine('Ballerina Language Server:' + chunk + '');
 					});
 					childProcess.on('exit', (code, signal) => {
 						logChannel.appendLine(
 							`Language server exited ` + (signal ? `from signal ${signal}` : `with exit code ${code}`)
-						)
+						);
 						if (code !== 0) {
 							logChannel.show()
 						}
-					})
+					});
 					return childProcess
-				})
-			})
+				});
+			});
 
 		// ######## End of TCP Connection ########
-
-		logChannel.appendLine(classPath);
 
 		let clientOptions: LanguageClientOptions = {
 			// Register the server for ballerina documents
@@ -84,11 +76,12 @@ export function activate(context: vscode.ExtensionContext) {
 			initializationOptions: {
 				enableDocumentationCodeLenses: false,
 				synchronize: { configurationSection: ['editor'] },
-			}
+			},
+			outputChannel: logChannel
 		};
 
-		let disposable = new LanguageClient('bal-ls-demo', serverOptions, clientOptions).start();
-		// let disposable = new LanguageClient('bal-ls-demo', tcpServerOptions, clientOptions).start();
+		let disposable = new LanguageClient('ballerina-lang-client', serverOptions, clientOptions).start();
+		// let disposable = new LanguageClient('ballerina-lang-client', tcpServerOptions, clientOptions).start();
 		context.subscriptions.push(disposable);
 	});
 }
