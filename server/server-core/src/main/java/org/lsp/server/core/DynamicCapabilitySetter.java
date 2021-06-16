@@ -15,7 +15,11 @@
  */
 package org.lsp.server.core;
 
+import io.ballerina.projects.util.ProjectConstants;
 import org.eclipse.lsp4j.ClientCapabilities;
+import org.eclipse.lsp4j.CompletionCapabilities;
+import org.eclipse.lsp4j.CompletionRegistrationOptions;
+import org.eclipse.lsp4j.DocumentFilter;
 import org.eclipse.lsp4j.DocumentOnTypeFormattingRegistrationOptions;
 import org.eclipse.lsp4j.OnTypeFormattingCapabilities;
 import org.eclipse.lsp4j.Registration;
@@ -95,8 +99,44 @@ public class DynamicCapabilitySetter {
         serverContext.getClient().registerCapability(regParams);
     }
 
+    public void registerBallerinaTomlCompletion(LSContext serverContext) {
+        Optional<ClientCapabilities> clientCapabilities =
+                serverContext.getClientCapabilities();
+
+        if (clientCapabilities.isEmpty()) {
+            // Client capabilities are not saved
+            return;
+        }
+        CompletionCapabilities completionCapabilities =
+                clientCapabilities.get().getTextDocument().getCompletion();
+        if (!completionCapabilities.getDynamicRegistration()) {
+        /*
+        client does not support dynamic registration for 
+         completion. Gracefully fall back
+         */
+            return;
+        }
+        CompletionRegistrationOptions options =
+                new CompletionRegistrationOptions();
+        DocumentFilter tomlFilter = new DocumentFilter();
+        tomlFilter.setLanguage("toml");
+        tomlFilter.setScheme("file");
+        tomlFilter.setPattern("/**/" + ProjectConstants.BALLERINA_TOML);
+
+        options.setResolveProvider(true);
+        options.setDocumentSelector(Collections.singletonList(tomlFilter));
+        String method = Method.COMPLETION.getName();
+
+        Registration reg = new Registration(method, method);
+        List<Registration> regList = Collections.singletonList(reg);
+        RegistrationParams regParams = new RegistrationParams(regList);
+
+//        return regParams;
+    }
+
     private enum Method {
-        ON_TYPE_FORMATTING("textDocument/OnTypeFormatting");
+        ON_TYPE_FORMATTING("textDocument/OnTypeFormatting"),
+        COMPLETION("textDocument/OnTypeFormatting");
 
         private String name;
 

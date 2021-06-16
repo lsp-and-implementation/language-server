@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import { exec, execSync } from 'child_process';
-import {ChildProcess, spawn } from 'mz/child_process';
+import { ChildProcess, spawn } from 'mz/child_process';
 // import * as cp from 'child_process';
 // import ChildProcess = cp.ChildProcess;
 import * as vscode from 'vscode';
@@ -24,11 +24,10 @@ export function activate(context: vscode.ExtensionContext) {
 		const args: string[] = ['-cp', classPath];
 		let BAL_HOME = "/Users/nadeeshaan/Development/BalWS/jballerina-tools-2.0.0-beta.2-SNAPSHOT";
 		args.push('-Dballerina.home=' + BAL_HOME);
-		// if (process.env.LSDEBUG === "true") {
-		logChannel.appendLine('LSDEBUG is set to "true". Language Server is starting on debug mode');
-		args.push('-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005,quiet=y');
-
-		// }
+		if (process.env.LSDEBUG === "true") {
+			logChannel.appendLine('LSDEBUG is set to "true". Language Server is starting on debug mode');
+			args.push('-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005,quiet=y');
+		}
 
 		let serverOptions: ServerOptions = {
 			command: excecutable,
@@ -61,7 +60,7 @@ export function activate(context: vscode.ExtensionContext) {
 						// client.outputChannel.appendLine(str)
 					});
 					childProcess.stdout.on('data', (chunk: Buffer) => {
-					    console.log('PHP Language Server:', chunk + '');
+						console.log('PHP Language Server:', chunk + '');
 					});
 					childProcess.on('exit', (code, signal) => {
 						logChannel.appendLine(
@@ -88,8 +87,8 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		};
 
-		// let disposable = new LanguageClient('bal-ls-demo', serverOptions, clientOptions).start();
-		let disposable = new LanguageClient('bal-ls-demo', tcpServerOptions, clientOptions).start();
+		let disposable = new LanguageClient('bal-ls-demo', serverOptions, clientOptions).start();
+		// let disposable = new LanguageClient('bal-ls-demo', tcpServerOptions, clientOptions).start();
 		context.subscriptions.push(disposable);
 	});
 }

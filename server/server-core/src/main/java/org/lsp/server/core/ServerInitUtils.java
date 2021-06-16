@@ -30,6 +30,8 @@ import org.eclipse.lsp4j.SemanticTokensServerFull;
 import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.TextDocumentSyncOptions;
+import org.eclipse.lsp4j.WorkspaceFoldersOptions;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.lsp.server.core.semantictoken.SemanticTokensProvider;
 
 import java.util.Arrays;
@@ -99,7 +101,7 @@ public class ServerInitUtils {
     
     public static ReferenceOptions getReferenceOptions() {
         ReferenceOptions options = new ReferenceOptions();
-        
+        options.setWorkDoneProgress(true);
         return options;
     }
     
@@ -147,4 +149,11 @@ public class ServerInitUtils {
         
         return options;
     }
+    
+    public static WorkspaceFoldersOptions getWorkspaceFolderOptions() {
+        WorkspaceFoldersOptions options = new WorkspaceFoldersOptions();
+        options.setChangeNotifications(Either.forRight(true));
+        
+        return options;
+    } 
 }

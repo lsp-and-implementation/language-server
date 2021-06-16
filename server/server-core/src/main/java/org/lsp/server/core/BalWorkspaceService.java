@@ -25,9 +25,16 @@ import org.eclipse.lsp4j.DidChangeWorkspaceFoldersParams;
 import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.FileChangeType;
 import org.eclipse.lsp4j.FileEvent;
+import org.eclipse.lsp4j.ProgressParams;
 import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.WorkDoneProgressBegin;
+import org.eclipse.lsp4j.WorkDoneProgressCreateParams;
+import org.eclipse.lsp4j.WorkDoneProgressEnd;
+import org.eclipse.lsp4j.WorkDoneProgressNotification;
+import org.eclipse.lsp4j.WorkDoneProgressReport;
 import org.eclipse.lsp4j.WorkspaceFolder;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.WorkspaceService;
 import org.lsp.server.api.context.BalWorkspaceContext;
@@ -41,6 +48,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -120,16 +128,26 @@ public class BalWorkspaceService implements WorkspaceService {
     public void didChangeWorkspaceFolders(DidChangeWorkspaceFoldersParams params) {
         BalWorkspaceContext context = ContextBuilder.getWorkspaceContext(this.lsServerContext);
         List<WorkspaceFolder> added = params.getEvent().getAdded();
-        params.getEvent().getRemoved();
+        List<WorkspaceFolder> removed = params.getEvent().getRemoved();
+
+        Runnable task = () -> {
+            try {
+                this.reIndexWorkspace(context, this.lsServerContext.getClient());
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        };
+        Thread thread = new Thread(task);
+        thread.start();
     }
 
     @Override
     public CompletableFuture<Object> executeCommand(ExecuteCommandParams params) {
         return CompletableFuture.supplyAsync(() -> {
             String command = params.getCommand();
-            
+
             if (command.equals(Command.CREATE_VAR.getName())) {
-                
+
             }
             return null;
         });
@@ -144,6 +162,7 @@ public class BalWorkspaceService implements WorkspaceService {
         List<Path> projects = new ArrayList<>();
         for (WorkspaceFolder workspaceFolder : result.get()) {
             Path path = CommonUtils.uriToPath(workspaceFolder.getUri());
+            path = path.resolve("modules").resolve("mod1").resolve("mod1.bal");
             Optional<Path> project =
                     context.compilerManager().getProjectRoot(path);
             project.ifPresent(projects::add);
@@ -151,6 +170,56 @@ public class BalWorkspaceService implements WorkspaceService {
 
         return projects;
     }
-    
-    
+
+    private void reIndexWorkspace(BalWorkspaceContext context,
+                                  LanguageClient client)
+            throws ExecutionException, InterruptedException {
+        List<Path> projectRoots = getProjectRoots(context);
+        WorkDoneProgressCreateParams progressCreate =
+                new WorkDoneProgressCreateParams();
+        UUID uuid = UUID.randomUUID();
+        progressCreate.setToken(uuid.toString());
+        // Send the begin progress notification
+        client.createProgress(progressCreate);
+
+        // Notify the begin progress
+        WorkDoneProgressBegin begin = new WorkDoneProgressBegin();
+        begin.setTitle("Indexing");
+        ProgressParams beginParams = new ProgressParams();
+        beginParams.setValue(Either.forLeft(begin));
+        beginParams.setToken(Either.forLeft(uuid.toString()));
+        client.notifyProgress(beginParams);
+
+        for (int i = 0; i < projectRoots.size(); i++) {
+            WorkDoneProgressReport reportProgress =
+                    new WorkDoneProgressReport();
+            reportProgress.setCancellable(false);
+            reportProgress
+                    .setPercentage(((i + 1) / projectRoots.size()) * 100);
+            reportProgress.setMessage((i + 1)
+                    + " out of " + projectRoots.size()
+                    + " projects being indexing");
+            ProgressParams params = new ProgressParams();
+            params.setToken(uuid.toString());
+            params.setValue(Either.forLeft(reportProgress));
+            client.notifyProgress(params);
+            // Here goes the indexing logic.
+            // For testing purposes we add a thread sleep
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Notify Progress End
+        WorkDoneProgressEnd endProgress = new WorkDoneProgressEnd();
+        endProgress.setMessage("Successfully indexed "
+                + projectRoots.size() + " projects");
+        ProgressParams endParams = new ProgressParams();
+        endParams.setToken(uuid.toString());
+        endParams.setValue(Either.forLeft(endProgress));
+        client.notifyProgress(endParams);
+        
+    }
 }

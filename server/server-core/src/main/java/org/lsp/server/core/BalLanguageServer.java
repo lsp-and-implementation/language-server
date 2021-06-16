@@ -39,6 +39,8 @@ import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
+import org.lsp.server.core.extensions.services.parser.BallerinaParserService;
+import org.lsp.server.core.extensions.services.parser.impl.BallerinaParserServiceImpl;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,12 +53,13 @@ import java.util.concurrent.CompletableFuture;
  *
  * @since 1.0.0
  */
-public class BalLanguageServer implements LanguageServer, LanguageClientAware {
+public class BalLanguageServer implements BalExtendedLanguageServer, LanguageClientAware {
     private final TextDocumentService textDocumentService;
     private final WorkspaceService workspaceService;
     private final BallerinaLSContext serverContext;
     private LanguageClient client;
     private DynamicCapabilitySetter dynamicCapabilitySetter;
+    private BallerinaParserService parserService;
     private boolean shutdownInitiated = false;
 
     public BalLanguageServer() {
@@ -64,6 +67,7 @@ public class BalLanguageServer implements LanguageServer, LanguageClientAware {
         this.textDocumentService = new BalTextDocumentService(this.serverContext);
         this.workspaceService = new BalWorkspaceService(this.serverContext);
         this.dynamicCapabilitySetter = DynamicCapabilitySetter.getInstance(this.serverContext);
+        this.parserService = new BallerinaParserServiceImpl(this.serverContext);
     }
 
     @Override
@@ -154,5 +158,10 @@ public class BalLanguageServer implements LanguageServer, LanguageClientAware {
     public void connect(LanguageClient languageClient) {
         this.client = languageClient;
         this.serverContext.setClient(this.client);
+    }
+
+    @Override
+    public BallerinaParserService getBallerinaParserService() {
+        return null;
     }
 }
