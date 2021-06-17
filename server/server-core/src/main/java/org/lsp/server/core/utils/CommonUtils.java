@@ -23,6 +23,7 @@ import org.eclipse.lsp4j.SymbolInformation;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -32,6 +33,7 @@ import java.util.Optional;
  */
 public class CommonUtils {
     public static final String LINE_SEPARATOR = System.lineSeparator();
+    public static final String MD_LINE_SEPARATOR = LINE_SEPARATOR + LINE_SEPARATOR;
 
     private CommonUtils() {
     }
