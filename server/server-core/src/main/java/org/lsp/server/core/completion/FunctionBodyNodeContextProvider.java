@@ -3,6 +3,7 @@ package org.lsp.server.core.completion;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.syntax.tree.FunctionBodyBlockNode;
+import io.ballerina.compiler.syntax.tree.Node;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemCapabilities;
 import org.lsp.server.api.context.BalCompletionContext;
@@ -15,6 +16,11 @@ import java.util.stream.Collectors;
 
 public class FunctionBodyNodeContextProvider extends
         BalCompletionProviderImpl<FunctionBodyBlockNode> {
+
+    public FunctionBodyNodeContextProvider() {
+        super(FunctionBodyBlockNode.class);
+    }
+
     @Override
     public List<CompletionItem>
     getCompletions(FunctionBodyBlockNode node,
@@ -41,27 +47,6 @@ public class FunctionBodyNodeContextProvider extends
     @Override
     public void sort(FunctionBodyBlockNode node, BalCompletionContext context, CompletionItem item, Symbol symbol) {
 
-    }
-
-    /**
-     * Convert the symbols to the completion items.
-     *
-     * @param symbols symbols to be convert
-     * @param context Completion context
-     * @return {@link List} of completions
-     */
-    @Override
-    protected List<CompletionItem> convert(List<? extends Symbol> symbols, BalCompletionContext context) {
-        List<CompletionItem> completionItems = new ArrayList<>();
-        for (Symbol symbol : symbols) {
-            CompletionItem cItem = new CompletionItem();
-            // Set the insert text and the label
-            cItem.setInsertText(symbol.getName().get());
-            cItem.setLabel(symbol.getName().get());
-            completionItems.add(cItem);
-        }
-
-        return completionItems;
     }
 
     @Override

@@ -2,6 +2,7 @@ package org.lsp.server.core.completion;
 
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.syntax.tree.FunctionBodyBlockNode;
+import io.ballerina.compiler.syntax.tree.Node;
 import org.eclipse.lsp4j.CompletionItem;
 import org.lsp.server.api.context.BalCompletionContext;
 import org.lsp.server.core.completion.utils.SnippetBlock;
@@ -11,6 +12,11 @@ import java.util.List;
 
 public class FunctionBodyNodeContextProvider6_6 extends
         BalCompletionProviderImpl<FunctionBodyBlockNode> {
+    
+    public FunctionBodyNodeContextProvider6_6() {
+        super(FunctionBodyBlockNode.class);
+    }
+
     @Override
     public List<CompletionItem>
     getCompletions(FunctionBodyBlockNode node,

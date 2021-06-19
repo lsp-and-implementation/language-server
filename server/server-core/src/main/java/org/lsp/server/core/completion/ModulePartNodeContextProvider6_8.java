@@ -4,6 +4,7 @@ import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.syntax.tree.ImportDeclarationNode;
 import io.ballerina.compiler.syntax.tree.ImportOrgNameNode;
 import io.ballerina.compiler.syntax.tree.ModulePartNode;
+import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.NodeList;
 import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import io.ballerina.compiler.syntax.tree.Token;
@@ -24,6 +25,11 @@ import java.util.stream.Collectors;
 public class ModulePartNodeContextProvider6_8 extends
         BalCompletionProviderImpl<ModulePartNode> {
     private final String lineSeparator = System.lineSeparator();
+
+    public ModulePartNodeContextProvider6_8() {
+        super(ModulePartNode.class);
+    }
+
     @Override
     public List<CompletionItem>
     getCompletions(ModulePartNode node,

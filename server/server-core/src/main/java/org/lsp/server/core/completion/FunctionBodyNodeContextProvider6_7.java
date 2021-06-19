@@ -8,6 +8,7 @@ import io.ballerina.compiler.api.symbols.VariableSymbol;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
 import io.ballerina.compiler.syntax.tree.FieldAccessExpressionNode;
 import io.ballerina.compiler.syntax.tree.FunctionBodyBlockNode;
+import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.NonTerminalNode;
 import io.ballerina.compiler.syntax.tree.SimpleNameReferenceNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
@@ -27,6 +28,11 @@ import java.util.Optional;
 
 public class FunctionBodyNodeContextProvider6_7 extends
         BalCompletionProviderImpl<FunctionBodyBlockNode> {
+    
+    public FunctionBodyNodeContextProvider6_7(Class<? extends Node> attachmentPoint) {
+        super(FunctionBodyBlockNode.class);
+    }
+
     @Override
     public List<CompletionItem>
     getCompletions(FunctionBodyBlockNode node,

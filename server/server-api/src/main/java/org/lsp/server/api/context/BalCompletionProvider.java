@@ -14,4 +14,6 @@ public interface BalCompletionProvider<T extends Node> {
     void sort(T node, BalCompletionContext context, CompletionItem item, Symbol symbol);
     
     boolean enabled();
+    
+    Class<? extends Node> attachmentPoint();
 }

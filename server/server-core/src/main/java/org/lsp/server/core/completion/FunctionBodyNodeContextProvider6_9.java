@@ -2,6 +2,7 @@ package org.lsp.server.core.completion;
 
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.syntax.tree.FunctionBodyBlockNode;
+import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.NonTerminalNode;
 import io.ballerina.compiler.syntax.tree.QualifiedNameReferenceNode;
 import org.eclipse.lsp4j.CompletionItem;
@@ -18,6 +19,10 @@ import java.util.Map;
 public class FunctionBodyNodeContextProvider6_9 extends
         BalCompletionProviderImpl<FunctionBodyBlockNode> {
     private final String lineSeparator = System.lineSeparator();
+
+    public FunctionBodyNodeContextProvider6_9() {
+        super(FunctionBodyBlockNode.class);
+    }
 
     @Override
     public List<CompletionItem>
