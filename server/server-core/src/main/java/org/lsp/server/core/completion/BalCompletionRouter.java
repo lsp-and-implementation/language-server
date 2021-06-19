@@ -22,7 +22,7 @@ public class BalCompletionRouter {
                     .getCompletions((ModulePartNode) node, ctx);
         }
         if (node.kind() == SyntaxKind.FUNCTION_BODY_BLOCK) {
-            return new FunctionBodyNodeContextProvider6_5()
+            return new FunctionBodyNodeContextProvider()
                     .getCompletions((FunctionBodyBlockNode) node, ctx);
         }
         

@@ -4,15 +4,20 @@ import io.ballerina.compiler.api.symbols.AnnotationSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.Documentation;
 import io.ballerina.compiler.api.symbols.FunctionSymbol;
+import io.ballerina.compiler.api.symbols.FunctionTypeSymbol;
+import io.ballerina.compiler.api.symbols.ParameterSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TypeDefinitionSymbol;
+import io.ballerina.compiler.api.symbols.TypeDescKind;
+import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.syntax.tree.Node;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemCapabilities;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.CompletionItemTag;
 import org.eclipse.lsp4j.CompletionItemTagSupportCapabilities;
+import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -75,7 +80,7 @@ public abstract class BalCompletionProviderImpl<T extends Node> implements BalCo
             }
             CompletionItem cItem = new CompletionItem();
             // Set the insert text and the label
-            cItem.setInsertText(symbol.getName().get());
+            this.setInsertText(symbol, context, cItem);
             cItem.setLabel(symbol.getName().get());
             this.setDocumentation(symbol, context, cItem);
             this.setTags(symbol, context, cItem);
@@ -151,5 +156,27 @@ public abstract class BalCompletionProviderImpl<T extends Node> implements BalCo
         }
         
         cItem.setDocumentation(itemDocs);
+    }
+    
+    private void setInsertText(Symbol symbol, BalCompletionContext context, CompletionItem cItem) {
+        CompletionItemCapabilities capabilities = context.clientCapabilities().getCompletionItem();
+        StringBuilder insertTxtBuilder = new StringBuilder(symbol.getName().get());
+        InsertTextFormat insertTextFormat;
+        
+        if (symbol.kind() == SymbolKind.FUNCTION) {
+            insertTxtBuilder.append("(");
+            Optional<List<ParameterSymbol>> params = ((FunctionSymbol) symbol).typeDescriptor().params();
+            if (params.isPresent() && !params.get().isEmpty() && capabilities.getSnippetSupport()) {
+                insertTxtBuilder.append("${1}");
+                insertTextFormat = InsertTextFormat.Snippet;
+            } else {
+                insertTextFormat = InsertTextFormat.PlainText;
+            }
+            insertTxtBuilder.append(")");
+        } else {
+            insertTextFormat = InsertTextFormat.PlainText;
+        }
+        cItem.setInsertText(insertTxtBuilder.toString());
+        cItem.setInsertTextFormat(insertTextFormat);
     }
 }
