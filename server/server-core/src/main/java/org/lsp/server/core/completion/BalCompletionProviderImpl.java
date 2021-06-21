@@ -8,6 +8,8 @@ import io.ballerina.compiler.api.symbols.ParameterSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TypeDefinitionSymbol;
+import io.ballerina.compiler.api.symbols.TypeSymbol;
+import io.ballerina.compiler.api.symbols.VariableSymbol;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.NonTerminalNode;
 import io.ballerina.compiler.syntax.tree.SimpleNameReferenceNode;
@@ -19,6 +21,7 @@ import org.eclipse.lsp4j.CompletionItemCapabilities;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.CompletionItemTag;
 import org.eclipse.lsp4j.CompletionItemTagSupportCapabilities;
+import org.eclipse.lsp4j.InsertReplaceEdit;
 import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
@@ -97,7 +100,9 @@ public abstract class BalCompletionProviderImpl<T extends Node> implements BalCo
             CompletionItem cItem = new CompletionItem();
             // Set the insert text/ textEdit and the label
             // this.setInsertText(symbol, context, cItem);
-            this.setTextEdit(symbol, context, cItem);
+            // this.setTextEdit(symbol, context, cItem);
+            this.setInsertReplaceTextEdit(symbol, context, cItem);
+            this.setDetail(symbol, context, cItem);
             cItem.setLabel(symbol.getName().get());
             this.setDocumentation(symbol, context, cItem);
             this.setTags(symbol, context, cItem);
@@ -107,7 +112,33 @@ public abstract class BalCompletionProviderImpl<T extends Node> implements BalCo
         return completionItems;
     }
 
-    private void setTags(Symbol symbol, BalCompletionContext context, CompletionItem cItem) {
+    private void setDetail(Symbol symbol,
+                           BalCompletionContext context,
+                           CompletionItem cItem) {
+        String detail;
+        switch (symbol.kind()) {
+            case FUNCTION:
+                Optional<TypeSymbol> tSymbol =
+                        ((FunctionSymbol) symbol).typeDescriptor()
+                                .returnTypeDescriptor();
+                detail = tSymbol.isPresent() ? tSymbol.get().signature() : "()";
+                break;
+            case TYPE_DEFINITION:
+                detail = ((TypeDefinitionSymbol) symbol).typeDescriptor().signature();
+                break;
+            case VARIABLE:
+                detail = ((VariableSymbol) symbol).typeDescriptor().signature();
+                break;
+            default:
+                return;
+        }
+
+        cItem.setDetail(detail);
+    }
+
+    private void setTags(Symbol symbol,
+                         BalCompletionContext context,
+                         CompletionItem cItem) {
         List<AnnotationSymbol> annotations;
         switch (symbol.kind()) {
             case CLASS:
@@ -123,15 +154,18 @@ public abstract class BalCompletionProviderImpl<T extends Node> implements BalCo
                 annotations = Collections.emptyList();
                 break;
         }
-        CompletionItemCapabilities itemCapabilities = context.clientCapabilities().getCompletionItem();
-        CompletionItemTagSupportCapabilities tagSupport = itemCapabilities.getTagSupport();
+        CompletionItemCapabilities itemCapabilities =
+                context.clientCapabilities().getCompletionItem();
+        CompletionItemTagSupportCapabilities tagSupport =
+                itemCapabilities.getTagSupport();
         List<CompletionItemTag> supportedTags = tagSupport.getValueSet();
 
         Optional<AnnotationSymbol> deprecatedAnnotation = annotations.stream()
                 .filter(annot -> annot.getName().orElse("").equals("deprecated"))
                 .findAny();
 
-        if (deprecatedAnnotation.isPresent() && supportedTags.contains(CompletionItemTag.Deprecated)) {
+        if (deprecatedAnnotation.isPresent() &&
+                supportedTags.contains(CompletionItemTag.Deprecated)) {
             cItem.setTags(Collections.singletonList(CompletionItemTag.Deprecated));
         }
     }
@@ -227,6 +261,52 @@ public abstract class BalCompletionProviderImpl<T extends Node> implements BalCo
         textEdit.setRange(range);
         cItem.setTextEdit(Either.forLeft(textEdit));
         cItem.setInsertTextFormat(insertTextFormat);
+    }
+
+    private void setInsertReplaceTextEdit(Symbol symbol,
+                                          BalCompletionContext context,
+                                          CompletionItem cItem) {
+        CompletionItemCapabilities capabilities =
+                context.clientCapabilities().getCompletionItem();
+        StringBuilder insertTxtBuilder = new StringBuilder(symbol.getName().get());
+        InsertTextFormat insertTextFormat;
+        Position cursor = context.getCursorPosition();
+        Range insertRange;
+        Range replaceRange;
+        NonTerminalNode nodeAtCursor = context.getNodeAtCursor();
+
+        if (symbol.kind() == SymbolKind.FUNCTION) {
+            insertTxtBuilder.append("(");
+            Optional<List<ParameterSymbol>> params = ((FunctionSymbol) symbol).typeDescriptor().params();
+            if (params.isPresent() && !params.get().isEmpty() && capabilities.getSnippetSupport()) {
+                insertTxtBuilder.append("${1}");
+                insertTextFormat = InsertTextFormat.Snippet;
+            } else {
+                insertTextFormat = InsertTextFormat.PlainText;
+            }
+            insertTxtBuilder.append(")");
+        } else {
+            insertTextFormat = InsertTextFormat.PlainText;
+        }
+        cItem.setInsertTextFormat(insertTextFormat);
+        if (nodeAtCursor.kind() == SyntaxKind.SIMPLE_NAME_REFERENCE) {
+            LineRange lineRange =
+                    ((SimpleNameReferenceNode) nodeAtCursor).name().lineRange();
+            Position insertStart =
+                    this.toPosition(lineRange.startLine());
+            Position insertEnd =
+                    new Position(insertStart.getLine(), cursor.getCharacter());
+            insertRange = new Range(insertStart, insertEnd);
+            replaceRange = this.toRange(lineRange);
+
+            InsertReplaceEdit textEdit = new InsertReplaceEdit();
+            textEdit.setNewText(insertTxtBuilder.toString());
+            textEdit.setInsert(insertRange);
+            textEdit.setReplace(replaceRange);
+            cItem.setTextEdit(Either.forRight(textEdit));
+        } else {
+            cItem.setInsertText(insertTxtBuilder.toString());
+        }
     }
 
     private Position toPosition(LinePosition linePosition) {

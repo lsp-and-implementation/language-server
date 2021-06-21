@@ -15,7 +15,7 @@ public class BalCompletionRouter {
     static {
         completionProviders = new HashMap<>();
         FunctionBodyNodeContextProvider functionBodyProvider = new FunctionBodyNodeContextProvider();
-        ModulePartNodeContextProvider6_8 modulePartProvider = new ModulePartNodeContextProvider6_8();
+        ModulePartNodeContextProvider modulePartProvider = new ModulePartNodeContextProvider();
         completionProviders.put(functionBodyProvider.attachmentPoint(), functionBodyProvider);
         completionProviders.put(modulePartProvider.attachmentPoint(), modulePartProvider);
     }

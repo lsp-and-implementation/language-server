@@ -22,11 +22,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class ModulePartNodeContextProvider6_8 extends
+public class ModulePartNodeContextProvider extends
         BalCompletionProviderImpl<ModulePartNode> {
     private final String lineSeparator = System.lineSeparator();
 
-    public ModulePartNodeContextProvider6_8() {
+    public ModulePartNodeContextProvider() {
         super(ModulePartNode.class);
     }
 
@@ -81,6 +81,7 @@ public class ModulePartNodeContextProvider6_8 extends
                     Collections.singletonList(autoImport));
             item.setKind(CompletionItemKind.Snippet);
         }
+        item.setFilterText("main");
         
         return item;
     }
@@ -114,7 +115,7 @@ public class ModulePartNodeContextProvider6_8 extends
             end.setLine(0);
             end.setCharacter(0);
         } else {
-            ImportDeclarationNode lastImport = imports.get(imports.size());
+            ImportDeclarationNode lastImport = imports.get(imports.size() - 1);
             LinePosition linePosition = lastImport.lineRange().endLine();
             start.setLine(linePosition.line());
             start.setCharacter(linePosition.offset());
