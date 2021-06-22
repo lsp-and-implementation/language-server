@@ -1,51 +1,62 @@
 package org.lsp.server.core.completion;
 
-import io.ballerina.compiler.api.symbols.Documentation;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import org.eclipse.lsp4j.CompletionItem;
-import org.eclipse.lsp4j.CompletionItemCapabilities;
-import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.TextEdit;
 import org.lsp.server.api.context.BalCompletionResolveContext;
+import org.lsp.server.core.completion.resolve.AutoImportTextEditData;
+import org.lsp.server.core.completion.utils.TextEditGenerator;
+import org.lsp.server.core.utils.CommonUtils;
 
-import java.util.List;
-import java.util.Map;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Optional;
 
 public class CompletionItemResolver {
-    private static final String DOCUMENTATION = "";
+    private CompletionItemResolver() {
+    }
 
-    public static CompletionItem resolve(BalCompletionResolveContext
-                                                 context) {
-        CompletionItemCapabilities capabilities =
-                context.clientCapabilities().getCompletionItem();
-        List<String> properties =
-                capabilities.getResolveSupport().getProperties();
-        if (!properties.contains(DOCUMENTATION)) {
-//            return unresolved;
-            return null;
+    private static final Gson gson = new Gson();
+
+    public static CompletionItem
+    resolve(BalCompletionResolveContext context) {
+        CompletionItem unresolved = context.unresolved();
+        Optional<AutoImportTextEditData> data = getAutoImportTextEditData(unresolved.getData());
+        if (data.isEmpty()) {
+            return unresolved;
         }
 
-        CompletionItem unresolved = context.unresolved();
-        Map<String, Object> data =
-                (Map<String, Object>) unresolved.getData();
-        String alias = (String) data.get("alias");
-        String symbolName = (String) data.get("symbolName");
-        Position position = (Position) data.get("position");
-
-        Documentation symbolDocumentation =
-                getSymbolDocumentation(alias, symbolName, position);
-
-//        MarkupContent documentation =
-//                CommonUtils.getMarkupContent(symbolDocumentation);
+        // Create a clone for the unresolved CompletionItem
         CompletionItem clone = clone(unresolved);
-//        clone.setDocumentation(documentation);
+        Path path = CommonUtils.uriToPath(data.get().getUri());
+        SyntaxTree syntaxTree = context.compilerManager().getSyntaxTree(path).orElseThrow();
+        // Analyze the syntax tree and generate the text edit
+        TextEdit textEdit = TextEditGenerator.getAutoImport(data.get().getImportStatement(), syntaxTree);
+        clone.setAdditionalTextEdits(Collections.singletonList(textEdit));
 
         return clone;
     }
+    
+    private static CompletionItem clone(CompletionItem from) {
+        CompletionItem clone = new CompletionItem();
+        clone.setInsertText(from.getInsertText());
+        clone.setLabel(from.getLabel());
+        clone.setSortText(from.getSortText());
 
-    private static Documentation getSymbolDocumentation(String alias, String symbolName, Position position) {
-        return null;
+
+        return from;
     }
 
-    private static CompletionItem clone(CompletionItem completionItem) {
-        return new CompletionItem();
+    private static Optional<AutoImportTextEditData> getAutoImportTextEditData(Object jsonObject) {
+        if (!(jsonObject instanceof JsonObject)) {
+            return Optional.empty();
+        }
+        try {
+            return Optional.ofNullable(gson.fromJson((JsonObject) jsonObject, AutoImportTextEditData.class));
+        } catch (RuntimeException e) {
+            return Optional.empty();
+        }
     }
 }

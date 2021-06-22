@@ -3,14 +3,11 @@ package org.lsp.server.core.completion;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.syntax.tree.FunctionBodyBlockNode;
-import io.ballerina.compiler.syntax.tree.Node;
 import org.eclipse.lsp4j.CompletionItem;
-import org.eclipse.lsp4j.CompletionItemCapabilities;
 import org.lsp.server.api.context.BalCompletionContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,6 +22,7 @@ public class FunctionBodyNodeContextProvider extends
     public List<CompletionItem>
     getCompletions(FunctionBodyBlockNode node,
                    BalCompletionContext context) {
+        
         List<CompletionItem> completionItems = new ArrayList<>();
         List<Symbol> symbols = context.visibleSymbols().stream()
                 .filter(s -> s.kind() == SymbolKind.TYPE_DEFINITION

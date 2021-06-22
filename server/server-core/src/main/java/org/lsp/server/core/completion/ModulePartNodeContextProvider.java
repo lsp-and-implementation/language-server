@@ -15,6 +15,8 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
 import org.lsp.server.api.context.BalCompletionContext;
+import org.lsp.server.core.completion.resolve.AutoImportTextEditData;
+import org.lsp.server.core.completion.utils.TextEditGenerator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,6 +38,7 @@ public class ModulePartNodeContextProvider extends
                    BalCompletionContext context) {
         List<CompletionItem> items = new ArrayList<>(this.getTypeCompletionItems(context));
         items.add(getMainFunctionSnippet(context));
+        items.add(getHttpServiceSnippet(context));
         this.sort(node, context, items);
         return items;
     }
@@ -59,7 +62,8 @@ public class ModulePartNodeContextProvider extends
 
     }
 
-    private CompletionItem getMainFunctionSnippet(BalCompletionContext context) {
+    private CompletionItem
+    getMainFunctionSnippet(BalCompletionContext context) {
         String ioModuleOrg = "ballerina";
         String ioModuleAlias = "io";
         CompletionItem item = new CompletionItem();
@@ -67,12 +71,14 @@ public class ModulePartNodeContextProvider extends
                 + "\tio:println(\"Hello World!!\");"
                 + lineSeparator + "}";
         item.setInsertText(template);
-        item.setLabel("public main function");
-        if (!isModuleImported(ioModuleOrg, ioModuleAlias, context)) {
-            /*
-            Range starts from the last import statement if there are 
-            other imports, otherwise 0,0 is chosen
-             */
+        item.setLabel("main function");
+        SyntaxTree syntaxTree = context.compilerManager()
+                .getSyntaxTree(context.getPath()).orElseThrow();
+        if (!TextEditGenerator.isModuleImported(ioModuleOrg, ioModuleAlias, syntaxTree)) {
+        /*
+        Range starts from the last import statement if there are 
+        other imports, otherwise 0,0 is chosen
+         */
             Range range = getAutoImportRange(context);
 
             TextEdit autoImport =
@@ -82,24 +88,38 @@ public class ModulePartNodeContextProvider extends
             item.setKind(CompletionItemKind.Snippet);
         }
         item.setFilterText("main");
-        
+
         return item;
     }
 
-    private boolean isModuleImported(String moduleOrg, String moduleAlias, BalCompletionContext context) {
-        Optional<SyntaxTree> syntaxTree = context.compilerManager().getSyntaxTree(context.getPath());
-        if (syntaxTree.isEmpty()) {
-            return false;
+    private CompletionItem getHttpServiceSnippet(BalCompletionContext context) {
+        CompletionItem item = new CompletionItem();
+        String template = "service /${1} on new http:Listener(8080) {"
+                + lineSeparator + "\tresource function ${2:get} ${3:getResource}"
+                + "(http:Caller ${4:caller}, " + "http:Request ${5:req}) {" + lineSeparator
+                + "\t\t" + lineSeparator + "\t}" + lineSeparator + "}";
+        item.setInsertText(template);
+        item.setLabel("service - http");
+        item.setFilterText("service");
+        SyntaxTree syntaxTree = context.compilerManager()
+                .getSyntaxTree(context.getPath()).orElseThrow();
+        List<String> properties = context.clientCapabilities()
+                .getCompletionItem().getResolveSupport().getProperties();
+        String importStmt = "import ballerina/http;";
+        if (properties.contains("additionalTextEdits")) {
+            // proceed with resolve and set data
+            String uri = context.getPath().toUri().toString();
+            AutoImportTextEditData data =
+                    new AutoImportTextEditData(uri, importStmt);
+            item.setData(data);
+        } else {
+            TextEdit autoImport = TextEditGenerator
+                    .getAutoImport(importStmt, syntaxTree);
+            item.setAdditionalTextEdits(
+                    Collections.singletonList(autoImport));
         }
-        NodeList<ImportDeclarationNode> imports = ((ModulePartNode) syntaxTree.get().rootNode()).imports();
-        return imports.stream().anyMatch(importDecl -> {
-            Optional<ImportOrgNameNode> orgName = importDecl.orgName();
-            String modName = importDecl.moduleName().stream()
-                    .map(Token::text)
-                    .collect(Collectors.joining("."));
 
-            return orgName.isPresent() && orgName.get().orgName().text().equals(moduleOrg) && modName.equals(moduleAlias);
-        });
+        return item;
     }
 
     private Range getAutoImportRange(BalCompletionContext context) {
@@ -108,7 +128,7 @@ public class ModulePartNodeContextProvider extends
         Range range = new Range();
         Position start = new Position();
         Position end = new Position();
-        
+
         if (imports.isEmpty()) {
             start.setLine(0);
             start.setCharacter(0);
@@ -124,7 +144,7 @@ public class ModulePartNodeContextProvider extends
         }
         range.setStart(start);
         range.setEnd(end);
-        
+
         return range;
     }
 
@@ -132,7 +152,7 @@ public class ModulePartNodeContextProvider extends
         TextEdit edit = new TextEdit();
         edit.setRange(importStmtRange);
         edit.setNewText("import " + orgName + "/" + moduleName + ";");
-        
+
         return edit;
     }
 
