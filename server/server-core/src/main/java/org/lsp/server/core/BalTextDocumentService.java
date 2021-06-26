@@ -88,6 +88,7 @@ import org.lsp.server.api.context.BalPosBasedContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
 import org.lsp.server.api.context.BalRenameContext;
 import org.lsp.server.api.context.BalSemanticTokenContext;
+import org.lsp.server.api.context.BalSignatureContext;
 import org.lsp.server.api.context.BaseOperationContext;
 import org.lsp.server.api.context.LSContext;
 import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
@@ -103,6 +104,7 @@ import org.lsp.server.core.foldingrange.FoldingRangeProvider;
 import org.lsp.server.core.highlight.DocumentHighlightProvider;
 import org.lsp.server.core.rename.RenameProvider;
 import org.lsp.server.core.semantictoken.SemanticTokensProvider;
+import org.lsp.server.core.signature.SignatureProvider;
 import org.lsp.server.core.utils.CommonUtils;
 import org.lsp.server.core.utils.ContextEvaluator;
 import org.lsp.server.core.utils.TextModifierUtil;
@@ -227,8 +229,12 @@ public class BalTextDocumentService implements TextDocumentService {
 
     @Override
     public CompletableFuture<SignatureHelp> signatureHelp(SignatureHelpParams params) {
-        SignatureHelpContext context = params.getContext();
-        return null;
+        return CompletableFuture.supplyAsync(() -> {
+            BalSignatureContext context = ContextBuilder.getSignatureContext(serverContext, params);
+            ContextEvaluator.fillTokenInfoAtCursor(context);
+
+            return SignatureProvider.getSignatureHelp(context);
+        });
     }
 
     @Override

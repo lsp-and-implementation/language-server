@@ -12,9 +12,4 @@ public class BalCompletionContextImpl extends BalPosBasedContextImpl implements 
         super(serverContext, params.getTextDocument().getUri(), params.getPosition());
         this.serverContext = serverContext;
     }
-
-    @Override
-    public CompletionCapabilities clientCapabilities() {
-        return serverContext.getClientCapabilities().orElseThrow().getTextDocument().getCompletion();
-    }
 }

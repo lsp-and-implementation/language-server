@@ -28,7 +28,7 @@ getDocumentLink(BalDocumentLinkContext context) {
     calculated from the resolve request
      */
     for (DocumentLink link : links) {
-        if (context.clientCapabilities().getTooltipSupport()) {
+        if (context.clientCapabilities().getTextDocument().getDocumentLink().getTooltipSupport()) {
             link.setTooltip("cmd/ ctrl + click to navigate");
         }
         Map<String, String> dataMap = new HashMap<>();

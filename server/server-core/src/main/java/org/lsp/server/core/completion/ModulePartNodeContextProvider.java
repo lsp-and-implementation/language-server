@@ -11,6 +11,7 @@ import io.ballerina.compiler.syntax.tree.Token;
 import io.ballerina.tools.text.LinePosition;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemKind;
+import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
@@ -99,11 +100,12 @@ public class ModulePartNodeContextProvider extends
                 + "(http:Caller ${4:caller}, " + "http:Request ${5:req}) {" + lineSeparator
                 + "\t\t" + lineSeparator + "\t}" + lineSeparator + "}";
         item.setInsertText(template);
+        item.setInsertTextFormat(InsertTextFormat.Snippet);
         item.setLabel("service - http");
         item.setFilterText("service");
         SyntaxTree syntaxTree = context.compilerManager()
                 .getSyntaxTree(context.getPath()).orElseThrow();
-        List<String> properties = context.clientCapabilities()
+        List<String> properties = context.clientCapabilities().getTextDocument().getCompletion()
                 .getCompletionItem().getResolveSupport().getProperties();
         String importStmt = "import ballerina/http;";
         if (properties.contains("additionalTextEdits")) {

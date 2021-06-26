@@ -2,6 +2,7 @@ package org.lsp.server.core.contexts;
 
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.projects.Document;
+import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.CompletionCapabilities;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Position;
@@ -21,13 +22,11 @@ import java.util.Optional;
 public class BalCompletionResolveContextImpl extends BalTextDocumentContextImpl implements BalCompletionResolveContext {
     private final LSContext serverContext;
     private final CompletionItem unresolved;
-    private final CompletionCapabilities completionCapabilities;
 
     public BalCompletionResolveContextImpl(LSContext serverContext, CompletionItem unresolved) {
         super(serverContext, null);
         this.serverContext = serverContext;
         this.unresolved = unresolved;
-        this.completionCapabilities = serverContext.getClientCapabilities().get().getTextDocument().getCompletion();
     }
 
     @Override
@@ -70,11 +69,6 @@ public class BalCompletionResolveContextImpl extends BalTextDocumentContextImpl 
     @Override
     public CompletionItem unresolved() {
         return this.unresolved;
-    }
-
-    @Override
-    public CompletionCapabilities clientCapabilities() {
-        return this.completionCapabilities;
     }
 
     @Override

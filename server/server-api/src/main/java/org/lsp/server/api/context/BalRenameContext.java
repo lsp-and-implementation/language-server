@@ -13,8 +13,6 @@ import java.util.List;
 public interface BalRenameContext extends BalTextDocumentContext {
     List<Symbol> visibleSymbols();
     
-    RenameCapabilities clientCapabilities();
-
     /**
      * Set the token at the completion's cursor position.
      *

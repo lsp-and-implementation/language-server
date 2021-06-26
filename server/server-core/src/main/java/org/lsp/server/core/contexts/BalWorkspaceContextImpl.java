@@ -1,5 +1,7 @@
 package org.lsp.server.core.contexts;
 
+import org.eclipse.lsp4j.ClientCapabilities;
+import org.eclipse.lsp4j.CompletionCapabilities;
 import org.lsp.server.api.ClientLogManager;
 import org.lsp.server.api.DiagnosticsPublisher;
 import org.lsp.server.api.context.BalWorkspaceContext;
@@ -30,5 +32,10 @@ public class BalWorkspaceContextImpl implements BalWorkspaceContext {
     @Override
     public ClientLogManager clientLogManager() {
         return ClientLogManagerImpl.getInstance(this.serverContext);
+    }
+
+    @Override
+    public ClientCapabilities clientCapabilities() {
+        return this.serverContext.getClientCapabilities().orElseThrow();
     }
 }

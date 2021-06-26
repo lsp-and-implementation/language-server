@@ -155,7 +155,8 @@ public abstract class BalCompletionProviderImpl<T extends Node> implements BalCo
                 break;
         }
         CompletionItemCapabilities itemCapabilities =
-                context.clientCapabilities().getCompletionItem();
+                context.clientCapabilities().getTextDocument()
+                        .getCompletion().getCompletionItem();
         CompletionItemTagSupportCapabilities tagSupport =
                 itemCapabilities.getTagSupport();
         List<CompletionItemTag> supportedTags = tagSupport.getValueSet();
@@ -190,7 +191,9 @@ public abstract class BalCompletionProviderImpl<T extends Node> implements BalCo
         if (documentation.isEmpty() || documentation.get().description().isEmpty()) {
             return;
         }
-        CompletionItemCapabilities capabilities = context.clientCapabilities().getCompletionItem();
+        CompletionItemCapabilities capabilities =
+                context.clientCapabilities().getTextDocument()
+                        .getCompletion().getCompletionItem();
         String description = documentation.get().description().get();
         List<String> docFormat = capabilities.getDocumentationFormat();
         Either<String, MarkupContent> itemDocs;
@@ -208,7 +211,8 @@ public abstract class BalCompletionProviderImpl<T extends Node> implements BalCo
     }
 
     private void setInsertText(Symbol symbol, BalCompletionContext context, CompletionItem cItem) {
-        CompletionItemCapabilities capabilities = context.clientCapabilities().getCompletionItem();
+        CompletionItemCapabilities capabilities = context.clientCapabilities()
+                .getTextDocument().getCompletion().getCompletionItem();
         StringBuilder insertTxtBuilder = new StringBuilder(symbol.getName().get());
         InsertTextFormat insertTextFormat;
 
@@ -230,7 +234,8 @@ public abstract class BalCompletionProviderImpl<T extends Node> implements BalCo
     }
 
     private void setTextEdit(Symbol symbol, BalCompletionContext context, CompletionItem cItem) {
-        CompletionItemCapabilities capabilities = context.clientCapabilities().getCompletionItem();
+        CompletionItemCapabilities capabilities = context.clientCapabilities()
+                .getTextDocument().getCompletion().getCompletionItem();
         StringBuilder insertTxtBuilder = new StringBuilder(symbol.getName().get());
         InsertTextFormat insertTextFormat;
         TextEdit textEdit = new TextEdit();
@@ -267,7 +272,8 @@ public abstract class BalCompletionProviderImpl<T extends Node> implements BalCo
                                           BalCompletionContext context,
                                           CompletionItem cItem) {
         CompletionItemCapabilities capabilities =
-                context.clientCapabilities().getCompletionItem();
+                context.clientCapabilities().getTextDocument()
+                        .getCompletion().getCompletionItem();
         StringBuilder insertTxtBuilder = new StringBuilder(symbol.getName().get());
         InsertTextFormat insertTextFormat;
         Position cursor = context.getCursorPosition();

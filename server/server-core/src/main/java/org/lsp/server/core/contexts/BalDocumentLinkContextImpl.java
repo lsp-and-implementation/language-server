@@ -1,6 +1,5 @@
 package org.lsp.server.core.contexts;
 
-import org.eclipse.lsp4j.DocumentLinkCapabilities;
 import org.eclipse.lsp4j.DocumentLinkParams;
 import org.lsp.server.api.context.BalDocumentLinkContext;
 import org.lsp.server.api.context.LSContext;
@@ -26,10 +25,5 @@ public class BalDocumentLinkContextImpl extends BaseOperationContextImpl impleme
     @Override
     public Path getPath() {
         return CommonUtils.uriToPath(this.params.getTextDocument().getUri());
-    }
-
-    @Override
-    public DocumentLinkCapabilities clientCapabilities() {
-        return this.serverContext.getClientCapabilities().orElseThrow().getTextDocument().getDocumentLink();
     }
 }

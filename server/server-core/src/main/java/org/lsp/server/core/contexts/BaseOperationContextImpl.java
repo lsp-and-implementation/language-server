@@ -1,5 +1,7 @@
 package org.lsp.server.core.contexts;
 
+import org.eclipse.lsp4j.ClientCapabilities;
+import org.eclipse.lsp4j.CompletionCapabilities;
 import org.lsp.server.api.ClientLogManager;
 import org.lsp.server.api.DiagnosticsPublisher;
 import org.lsp.server.api.context.BaseOperationContext;
@@ -28,5 +30,10 @@ public class BaseOperationContextImpl implements BaseOperationContext {
     @Override
     public ClientLogManager clientLogManager() {
         return null;
+    }
+    
+    @Override
+    public ClientCapabilities clientCapabilities() {
+        return serverContext.getClientCapabilities().orElseThrow();
     }
 }

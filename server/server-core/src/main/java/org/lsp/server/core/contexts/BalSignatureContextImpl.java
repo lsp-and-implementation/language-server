@@ -1,32 +1,30 @@
 package org.lsp.server.core.contexts;
 
-import io.ballerina.projects.Document;
 import org.eclipse.lsp4j.SignatureHelpContext;
-import org.lsp.server.api.ClientLogManager;
-import org.lsp.server.api.DiagnosticsPublisher;
+import org.eclipse.lsp4j.SignatureHelpParams;
 import org.lsp.server.api.context.BalSignatureContext;
-import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
+import org.lsp.server.api.context.LSContext;
 
-import java.util.Optional;
+public class BalSignatureContextImpl extends BalPosBasedContextImpl implements BalSignatureContext {
+    private final SignatureHelpParams params;
 
-public class BalSignatureContextImpl implements BalSignatureContext {
-    @Override
-    public CompilerManager compilerManager() {
-        return null;
-    }
-
-    @Override
-    public DiagnosticsPublisher diagnosticPublisher() {
-        return null;
-    }
-
-    @Override
-    public ClientLogManager clientLogManager() {
-        return null;
+    public BalSignatureContextImpl(LSContext serverContext, SignatureHelpParams params) {
+        super(serverContext, params.getTextDocument().getUri(), params.getPosition());
+        this.params = params;
     }
 
     @Override
     public SignatureHelpContext signatureContext() {
         return null;
+    }
+
+    @Override
+    public int activeParameter() {
+        return 0;
+    }
+
+    @Override
+    public SignatureHelpParams getParams() {
+        return this.params;
     }
 }

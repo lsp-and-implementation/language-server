@@ -28,6 +28,7 @@ import org.eclipse.lsp4j.RenameOptions;
 import org.eclipse.lsp4j.SaveOptions;
 import org.eclipse.lsp4j.SemanticTokensServerFull;
 import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
+import org.eclipse.lsp4j.SignatureHelpOptions;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.TextDocumentSyncOptions;
 import org.eclipse.lsp4j.WorkspaceFoldersOptions;
@@ -153,6 +154,13 @@ public class ServerInitUtils {
     public static WorkspaceFoldersOptions getWorkspaceFolderOptions() {
         WorkspaceFoldersOptions options = new WorkspaceFoldersOptions();
         options.setChangeNotifications(Either.forRight(true));
+
+        return options;
+    }
+    
+    public static SignatureHelpOptions getSignatureHelpOptions() {
+        SignatureHelpOptions options = new SignatureHelpOptions();
+        options.setTriggerCharacters(Arrays.asList("(", ","));
         
         return options;
     } 

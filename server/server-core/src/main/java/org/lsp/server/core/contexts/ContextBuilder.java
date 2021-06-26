@@ -13,6 +13,7 @@ import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.SemanticTokensDeltaParams;
 import org.eclipse.lsp4j.SemanticTokensParams;
 import org.eclipse.lsp4j.SemanticTokensRangeParams;
+import org.eclipse.lsp4j.SignatureHelpParams;
 import org.lsp.server.api.context.BalCallHierarchyOutgoingContext;
 import org.lsp.server.api.context.BalCompletionContext;
 import org.lsp.server.api.context.BalCompletionResolveContext;
@@ -26,6 +27,7 @@ import org.lsp.server.api.context.BalRenameContext;
 import org.lsp.server.api.context.BalSemanticTokenContext;
 import org.lsp.server.api.context.BalSemanticTokenDeltaContext;
 import org.lsp.server.api.context.BalSemanticTokenRangeContext;
+import org.lsp.server.api.context.BalSignatureContext;
 import org.lsp.server.api.context.BalTextDocumentContext;
 import org.lsp.server.api.context.BalWorkspaceContext;
 import org.lsp.server.api.context.BaseOperationContext;
@@ -96,5 +98,9 @@ public class ContextBuilder {
     
     public static BalWorkspaceContext getWorkspaceContext(LSContext serverContext) {
         return new BalWorkspaceContextImpl(serverContext);
+    }
+    
+    public static BalSignatureContext getSignatureContext(LSContext serverContext, SignatureHelpParams params) {
+        return new BalSignatureContextImpl(serverContext, params);
     }
 }

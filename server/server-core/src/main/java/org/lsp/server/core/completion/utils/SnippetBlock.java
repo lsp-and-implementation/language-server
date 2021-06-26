@@ -25,7 +25,7 @@ public class SnippetBlock {
     public CompletionItem build(BalCompletionContext ctx) {
         CompletionItem item = new CompletionItem();
         String insertText = this.snippet;
-        CompletionCapabilities capabilities = ctx.clientCapabilities();
+        CompletionCapabilities capabilities = ctx.clientCapabilities().getTextDocument().getCompletion();
         Boolean snippetSupport =
                 capabilities.getCompletionItem().getSnippetSupport();
         if (snippetSupport) {

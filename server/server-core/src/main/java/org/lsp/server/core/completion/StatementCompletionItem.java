@@ -15,7 +15,8 @@ public enum StatementCompletionItem {
     }
 
     CompletionItem get(BalCompletionContext context) {
-        boolean snippetSupport = context.clientCapabilities().getCompletionItem().getSnippetSupport();
+        boolean snippetSupport = context.clientCapabilities().getTextDocument()
+                .getCompletion().getCompletionItem().getSnippetSupport();
         CompletionItem item = new CompletionItem();
         if (snippetSupport) {
             item.setInsertText(this.statementBlock.getSnippet());

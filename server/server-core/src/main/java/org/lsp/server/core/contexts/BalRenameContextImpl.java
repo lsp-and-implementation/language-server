@@ -67,11 +67,6 @@ public class BalRenameContextImpl extends BalTextDocumentContextImpl implements 
     }
 
     @Override
-    public RenameCapabilities clientCapabilities() {
-        return this.serverContext.getClientCapabilities().orElseThrow().getTextDocument().getRename();
-    }
-
-    @Override
     public void setTokenAtCursor(Token token) {
         this.tokenAtCursor = token;
     }

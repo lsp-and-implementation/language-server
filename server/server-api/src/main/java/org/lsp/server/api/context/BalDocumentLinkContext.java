@@ -14,6 +14,4 @@ public interface BalDocumentLinkContext extends BaseOperationContext {
      * @return {@link Path}
      */
     Path getPath();
-    
-    DocumentLinkCapabilities clientCapabilities();
 }
