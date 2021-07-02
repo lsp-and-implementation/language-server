@@ -52,6 +52,8 @@ import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.FoldingRange;
 import org.eclipse.lsp4j.FoldingRangeRequestParams;
+import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.PrepareRenameParams;
@@ -84,6 +86,7 @@ import org.lsp.server.api.context.BalDocumentColourContext;
 import org.lsp.server.api.context.BalDocumentHighlightContext;
 import org.lsp.server.api.context.BalDocumentSymbolContext;
 import org.lsp.server.api.context.BalFoldingRangeContext;
+import org.lsp.server.api.context.BalHoverContext;
 import org.lsp.server.api.context.BalPosBasedContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
 import org.lsp.server.api.context.BalRenameContext;
@@ -102,6 +105,7 @@ import org.lsp.server.core.docsync.BaseDocumentSyncHandler;
 import org.lsp.server.core.docsync.DocumentSyncHandler;
 import org.lsp.server.core.foldingrange.FoldingRangeProvider;
 import org.lsp.server.core.highlight.DocumentHighlightProvider;
+import org.lsp.server.core.hover.HoverProvider;
 import org.lsp.server.core.rename.RenameProvider;
 import org.lsp.server.core.semantictoken.SemanticTokensProvider;
 import org.lsp.server.core.signature.SignatureProvider;
@@ -205,6 +209,19 @@ public class BalTextDocumentService implements TextDocumentService {
             return textEdit
                     .map(Collections::singletonList)
                     .orElse(Collections.emptyList());
+        });
+    }
+
+    @Override
+    public CompletableFuture<Hover> hover(HoverParams params) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                BalHoverContext context = ContextBuilder.getHoverContext(this.serverContext, params);
+                ContextEvaluator.fillTokenInfoAtCursor(context);
+                return HoverProvider.getHover(context);
+            } catch (Throwable e) {
+                return null;
+            }
         });
     }
 

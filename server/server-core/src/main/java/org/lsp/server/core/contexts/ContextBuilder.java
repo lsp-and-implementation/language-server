@@ -7,6 +7,7 @@ import org.eclipse.lsp4j.DocumentColorParams;
 import org.eclipse.lsp4j.DocumentHighlightParams;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.FoldingRangeRequestParams;
+import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PrepareRenameParams;
 import org.eclipse.lsp4j.RenameParams;
@@ -21,6 +22,7 @@ import org.lsp.server.api.context.BalDocumentColourContext;
 import org.lsp.server.api.context.BalDocumentHighlightContext;
 import org.lsp.server.api.context.BalDocumentSymbolContext;
 import org.lsp.server.api.context.BalFoldingRangeContext;
+import org.lsp.server.api.context.BalHoverContext;
 import org.lsp.server.api.context.BalPosBasedContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
 import org.lsp.server.api.context.BalRenameContext;
@@ -102,5 +104,9 @@ public class ContextBuilder {
     
     public static BalSignatureContext getSignatureContext(LSContext serverContext, SignatureHelpParams params) {
         return new BalSignatureContextImpl(serverContext, params);
+    }
+    
+    public static BalHoverContext getHoverContext(LSContext serverContext, HoverParams params) {
+        return new BalHoverContextImpl(serverContext, params.getTextDocument().getUri(), params.getPosition());
     }
 }
