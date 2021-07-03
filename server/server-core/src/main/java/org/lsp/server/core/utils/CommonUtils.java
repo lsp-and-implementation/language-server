@@ -49,8 +49,8 @@ public class CommonUtils {
         return Paths.get(uri);
     }
 
-    public static boolean isKeyword(String newName) {
-        return false;
+    public static boolean isKeyword(String name) {
+        return name.equals("int") || name.equals("string");
     }
 
     public static Optional<TypeSymbol> getTypeDefinition(Symbol symbol) {

@@ -40,4 +40,6 @@ public abstract class CompilerManager {
     public abstract void reloadProject(Path projectRoot);
     
     public abstract List<SemanticModel> getSemanticModels(Path projectRoot);
+    
+    public abstract List<Module> getModules(Path path);
 }

@@ -48,6 +48,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Ballerina Compiler Manager implementation.
@@ -107,6 +109,9 @@ public class BallerinaCompilerManager extends CompilerManager {
 
     @Override
     public Optional<Project> getProject(Path path) {
+        if (this.projectsMap.containsKey(path)) {
+            return Optional.of(this.projectsMap.get(path));
+        }
         return Optional.ofNullable(this.projectsMap.get(ProjectPaths.packageRoot(path)));
     }
 
@@ -174,7 +179,25 @@ public class BallerinaCompilerManager extends CompilerManager {
 
     @Override
     public List<SemanticModel> getSemanticModels(Path projectRoot) {
-        return Collections.emptyList();
+        List<Module> modules = this.getModules(projectRoot);
+        return modules.stream()
+                .map(module -> module.getCompilation().getSemanticModel())
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get the modules of a given project specified with the project root.
+     *
+     * @param path project root of thr project
+     * @return {@link List} of modules in the project
+     */
+    public List<Module> getModules(Path path) {
+        Optional<Project> project = getProject(path);
+        if (project.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return StreamSupport.stream(project.get().currentPackage().modules().spliterator(), true)
+                .collect(Collectors.toList());
     }
 
     private Optional<DocumentId> getDocumentId(Path path) {
