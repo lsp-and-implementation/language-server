@@ -78,7 +78,8 @@ public class RenameProvider {
             Path modulePath = projectRoot.get().resolve("modules")
                     .resolve(moduleName);
             List<Location> references = semanticModel.references(symbol.get());
-            
+
+            // Looping the reference and generate edits
             for (Location reference : references) {
                 Range range = toRange(reference.lineRange());
                 List<TextEdit> textEdits = new ArrayList<>();
@@ -140,7 +141,7 @@ public class RenameProvider {
         Range range = new Range();
         range.setStart(new Position(startLine.line(), startLine.offset()));
         range.setEnd(new Position(endLine.line(), endLine.offset()));
-        renameResult.setPlaceholder("renamed" + tokenAtCursor.text());
+        renameResult.setPlaceholder("renamed_" + tokenAtCursor.text());
         renameResult.setRange(range);
 
         return renameResult;
@@ -170,26 +171,29 @@ public class RenameProvider {
 
         return range;
     }
-    
+
     enum RenameChangeAnnotation {
-        withQuote("withQuote", "Quoted Rename", "Rename keyword with a quote"),
-        withoutQuote("withoutQuote", "Un-quoted Rename", "Rename keyword without a quote");
+        withQuote("withQuote", "Quoted Rename",
+                "Rename keyword with a quote"),
+        withoutQuote("withoutQuote", "Un-quoted Rename",
+                "Rename keyword without a quote");
 
         private final String id;
         private final String label;
         private final String description;
+
         RenameChangeAnnotation(String id, String label, String description) {
-            this.id  = id;
+            this.id = id;
             this.label = label;
             this.description = description;
         }
-        
+
         public ChangeAnnotation get() {
             ChangeAnnotation changeAnnotation = new ChangeAnnotation();
             changeAnnotation.setDescription(this.description);
             changeAnnotation.setLabel(this.label);
             changeAnnotation.setNeedsConfirmation(true);
-            
+
             return changeAnnotation;
         }
 
