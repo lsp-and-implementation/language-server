@@ -92,6 +92,7 @@ public class DynamicCapabilitySetter {
         for unregister a capability
          */
         Registration reg = new Registration(method, method);
+        reg.setRegisterOptions(opts);
         List<Registration> regList = Collections.singletonList(reg);
         RegistrationParams regParams = new RegistrationParams(regList);
 
@@ -135,8 +136,8 @@ public class DynamicCapabilitySetter {
     }
 
     private enum Method {
-        ON_TYPE_FORMATTING("textDocument/OnTypeFormatting"),
-        COMPLETION("textDocument/OnTypeFormatting");
+        ON_TYPE_FORMATTING("textDocument/onTypeFormatting"),
+        COMPLETION("textDocument/completion");
 
         private String name;
 

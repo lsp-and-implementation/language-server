@@ -96,7 +96,7 @@ public class ServerInitUtils {
                 new DocumentOnTypeFormattingOptions();
         options.setFirstTriggerCharacter("}");
         options.setMoreTriggerCharacter(Collections.singletonList(";"));
-
+        
         return options;
     }
 

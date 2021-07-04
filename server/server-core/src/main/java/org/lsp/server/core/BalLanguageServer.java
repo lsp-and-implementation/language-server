@@ -107,13 +107,12 @@ public class BalLanguageServer implements BalExtendedLanguageServer, LanguageCli
 
     @Override
     public void initialized(InitializedParams params) {
-        // Registering the onTypeFormatting capability
-        this.dynamicCapabilitySetter.registerOnTypeFormatting(this.serverContext);
         // Other initializing tasks can be handled here
         MessageParams messageParams = new MessageParams();
         messageParams.setMessage("Server Initiated!");
         messageParams.setType(MessageType.Info);
-        this.dynamicCapabilitySetter.registerOnTypeFormatting(this.serverContext);
+        // Registering the onTypeFormatting capability
+//        this.dynamicCapabilitySetter.registerOnTypeFormatting(this.serverContext);
         this.client.showMessage(messageParams);
 
         // Register file watchers

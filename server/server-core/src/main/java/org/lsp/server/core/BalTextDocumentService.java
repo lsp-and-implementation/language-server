@@ -48,6 +48,8 @@ import org.eclipse.lsp4j.DocumentHighlight;
 import org.eclipse.lsp4j.DocumentHighlightParams;
 import org.eclipse.lsp4j.DocumentLink;
 import org.eclipse.lsp4j.DocumentLinkParams;
+import org.eclipse.lsp4j.DocumentOnTypeFormattingParams;
+import org.eclipse.lsp4j.DocumentRangeFormattingParams;
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.FoldingRange;
@@ -56,6 +58,7 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
+import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PrepareRenameParams;
 import org.eclipse.lsp4j.PrepareRenameResult;
 import org.eclipse.lsp4j.Range;
@@ -105,6 +108,7 @@ import org.lsp.server.core.docsymbol.DocumentSymbolProvider;
 import org.lsp.server.core.docsync.BaseDocumentSyncHandler;
 import org.lsp.server.core.docsync.DocumentSyncHandler;
 import org.lsp.server.core.foldingrange.FoldingRangeProvider;
+import org.lsp.server.core.format.FormatProvider;
 import org.lsp.server.core.highlight.DocumentHighlightProvider;
 import org.lsp.server.core.hover.HoverProvider;
 import org.lsp.server.core.rename.RenameProvider;
@@ -280,8 +284,22 @@ public class BalTextDocumentService implements TextDocumentService {
     @Override
     public CompletableFuture<List<? extends TextEdit>> formatting(DocumentFormattingParams params) {
         BaseOperationContext context = ContextBuilder.baseContext(this.serverContext);
+        return CompletableFuture.supplyAsync(() -> FormatProvider.format(context, params));
+    }
 
-        return null;
+    @Override
+    public CompletableFuture<List<? extends TextEdit>> rangeFormatting(DocumentRangeFormattingParams params) {
+        BaseOperationContext context = ContextBuilder.baseContext(this.serverContext);
+        return CompletableFuture.supplyAsync(() -> FormatProvider.formatRange(context, params));
+    }
+
+    @Override
+    public CompletableFuture<List<? extends TextEdit>> onTypeFormatting(DocumentOnTypeFormattingParams params) {
+        String uri = params.getTextDocument().getUri();
+        Position position = params.getPosition();
+        BalPosBasedContext context = ContextBuilder.getPosBasedContext(this.serverContext, uri, position);
+        ContextEvaluator.fillTokenInfoAtCursor(context);
+        return CompletableFuture.supplyAsync(() -> FormatProvider.onTypeFormat(context, params));
     }
 
     @Override
