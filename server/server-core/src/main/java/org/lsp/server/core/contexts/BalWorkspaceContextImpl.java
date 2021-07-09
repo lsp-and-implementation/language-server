@@ -2,6 +2,7 @@ package org.lsp.server.core.contexts;
 
 import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.CompletionCapabilities;
+import org.eclipse.lsp4j.services.LanguageClient;
 import org.lsp.server.api.ClientLogManager;
 import org.lsp.server.api.DiagnosticsPublisher;
 import org.lsp.server.api.context.BalWorkspaceContext;
@@ -37,5 +38,10 @@ public class BalWorkspaceContextImpl implements BalWorkspaceContext {
     @Override
     public ClientCapabilities clientCapabilities() {
         return this.serverContext.getClientCapabilities().orElseThrow();
+    }
+
+    @Override
+    public LanguageClient getClient() {
+        return serverContext.getClient();
     }
 }

@@ -16,7 +16,7 @@
 				"${workspaceFolder}/out/**/*.js"
 			],
 			"env": {
-				"LSDEBUG": "false",
+				"LSDEBUG": "true",
 			},
 			"preLaunchTask": "${defaultBuildTask}"
 		},

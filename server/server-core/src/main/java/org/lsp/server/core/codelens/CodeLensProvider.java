@@ -12,7 +12,7 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.lsp.server.api.context.BalCodeActionContext;
 import org.lsp.server.api.context.BalCodeLensContext;
-import org.lsp.server.core.codeaction.Command;
+import org.lsp.server.core.codeaction.BalCommand;
 import org.lsp.server.core.codeaction.CommandArgument;
 
 import java.util.ArrayList;
@@ -29,8 +29,8 @@ public class CodeLensProvider {
         for (FunctionDefinitionNode function : functions) {
             CodeLens codeLens = new CodeLens();
             org.eclipse.lsp4j.Command command = new org.eclipse.lsp4j.Command();
-            command.setCommand(Command.ADD_DOC.getName());
-            command.setTitle(Command.ADD_DOC.getTitle());
+            command.setCommand(BalCommand.ADD_DOC.getCommand());
+            command.setTitle(BalCommand.ADD_DOC.getTitle());
             codeLens.setCommand(command);
             codeLens.setRange(getRangeForFunction(function));
         }
@@ -52,8 +52,8 @@ public class CodeLensProvider {
 
     private static org.eclipse.lsp4j.Command getCreateVarCommand(Range range) {
         org.eclipse.lsp4j.Command command = new org.eclipse.lsp4j.Command();
-        command.setCommand(Command.CREATE_VAR.getName());
-        command.setTitle(Command.CREATE_VAR.getTitle());
+        command.setCommand(BalCommand.CREATE_VAR.getCommand());
+        command.setTitle(BalCommand.CREATE_VAR.getTitle());
         List<Object> args = new ArrayList<>();
         String typeDescriptor = getExpectedTypeDescriptor(range);
         args.add(new CommandArgument("type", typeDescriptor));
@@ -67,7 +67,7 @@ public class CodeLensProvider {
                            Range range, Diagnostic diagnostic,
                            CodeActionParams params) {
         CodeAction codeAction = new CodeAction();
-        codeAction.setTitle(Command.CREATE_VAR.getTitle());
+        codeAction.setTitle(BalCommand.CREATE_VAR.getTitle());
         codeAction.setKind(CodeActionKind.QuickFix);
         /*
         Setting the diagnostic will show a quickfix link when hover over

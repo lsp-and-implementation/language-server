@@ -33,11 +33,14 @@ import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.TextDocumentSyncOptions;
 import org.eclipse.lsp4j.WorkspaceFoldersOptions;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.lsp.server.core.codeaction.BalCommand;
 import org.lsp.server.core.semantictoken.SemanticTokensProvider;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Holds the server initializing utilities.
@@ -167,6 +170,15 @@ public class ServerInitUtils {
     
     public static HoverOptions getHoverOptions() {
         HoverOptions options = new HoverOptions();
+        
+        return options;
+    }
+    
+    public static ExecuteCommandOptions getExecuteCommandOptions() {
+        ExecuteCommandOptions options = new ExecuteCommandOptions();
+        List<String> commands = Arrays.stream(BalCommand.values())
+                .map(BalCommand::getCommand).collect(Collectors.toList());
+        options.setCommands(commands);
         
         return options;
     }

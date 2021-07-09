@@ -18,7 +18,8 @@ package org.lsp.server.core;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.ballerina.compiler.api.SemanticModel;
-import io.ballerina.projects.Project;
+import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
+import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.DidChangeWorkspaceFoldersParams;
@@ -26,12 +27,16 @@ import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.FileChangeType;
 import org.eclipse.lsp4j.FileEvent;
 import org.eclipse.lsp4j.ProgressParams;
+import org.eclipse.lsp4j.ResourceOperation;
 import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.TextDocumentEdit;
+import org.eclipse.lsp4j.TextEdit;
+import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkDoneProgressBegin;
 import org.eclipse.lsp4j.WorkDoneProgressCreateParams;
 import org.eclipse.lsp4j.WorkDoneProgressEnd;
-import org.eclipse.lsp4j.WorkDoneProgressNotification;
 import org.eclipse.lsp4j.WorkDoneProgressReport;
+import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.WorkspaceFolder;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -39,13 +44,17 @@ import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.WorkspaceService;
 import org.lsp.server.api.context.BalWorkspaceContext;
 import org.lsp.server.api.context.LSContext;
-import org.lsp.server.core.codeaction.Command;
+import org.lsp.server.core.codeaction.BalCommand;
+import org.lsp.server.core.codeaction.CodeActionProvider;
+import org.lsp.server.core.codeaction.CommandArgument;
 import org.lsp.server.core.configdidchange.ConfigurationHolder;
 import org.lsp.server.core.contexts.ContextBuilder;
+import org.lsp.server.core.executecommand.CreateVariableArgs;
 import org.lsp.server.core.utils.CommonUtils;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -145,12 +154,46 @@ public class BalWorkspaceService implements WorkspaceService {
     public CompletableFuture<Object> executeCommand(ExecuteCommandParams params) {
         return CompletableFuture.supplyAsync(() -> {
             String command = params.getCommand();
+            BalWorkspaceContext context =
+                    ContextBuilder.getWorkspaceContext(this.lsServerContext);
 
-            if (command.equals(Command.CREATE_VAR.getName())) {
-
+            if (command.equals(BalCommand.CREATE_VAR.getCommand())) {
+                return applyCreateVarWorkspaceEdit(context, params);
             }
+            
             return null;
         });
+    }
+    
+    private ApplyWorkspaceEditResponse
+    applyCreateVarWorkspaceEdit(BalWorkspaceContext context, ExecuteCommandParams params) {
+        CommandArgument commandArg = (CommandArgument) params.getArguments().get(0);
+        if (!commandArg.getKey().equals("params")) {
+            return null;
+        }
+        CreateVariableArgs createVarArgs = (CreateVariableArgs) commandArg.getValue();
+        WorkspaceEdit workspaceEdit = new WorkspaceEdit();
+        TextDocumentEdit documentEdit = new TextDocumentEdit();
+        VersionedTextDocumentIdentifier identifier =
+                new VersionedTextDocumentIdentifier();
+        identifier.setUri(createVarArgs.getUri());
+        TextEdit textEdit = new TextEdit(createVarArgs.getRange(), createVarArgs.getNewText());
+        
+        documentEdit.setEdits(Collections.singletonList(textEdit));
+        documentEdit.setTextDocument(identifier);
+        Either<TextDocumentEdit, ResourceOperation> documentChanges = Either.forLeft(documentEdit);
+        workspaceEdit.setDocumentChanges(Collections.singletonList(documentChanges));
+
+        ApplyWorkspaceEditParams applyEditParams = new ApplyWorkspaceEditParams();
+        applyEditParams.setEdit(workspaceEdit);
+        CompletableFuture<ApplyWorkspaceEditResponse> response = context.getClient().applyEdit(applyEditParams);
+
+        try {
+            return response.get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private List<Path> getProjectRoots(BalWorkspaceContext context)

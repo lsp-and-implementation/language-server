@@ -1,18 +1,18 @@
 package org.lsp.server.core.codeaction;
 
-public enum Command {
+public enum BalCommand {
     CREATE_VAR("CREATE_VAR", "Create Variable"),
     ADD_DOC("ADD_DOC", "Add Documentation");
 
-    private String command;
-    private String title;
+    private final String command;
+    private final String title;
     
-    Command(String command, String title) {
+    BalCommand(String command, String title) {
         this.command = command;
         this.title = title;
     }
 
-    public String getName() {
+    public String getCommand() {
         return command;
     }
 

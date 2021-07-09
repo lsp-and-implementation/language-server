@@ -1,9 +1,9 @@
 package org.lsp.server.core.contexts;
 
-import org.eclipse.lsp4j.CompletionCapabilities;
 import org.eclipse.lsp4j.CompletionParams;
-import org.lsp.server.api.context.LSContext;
+import org.eclipse.lsp4j.services.LanguageClient;
 import org.lsp.server.api.context.BalCompletionContext;
+import org.lsp.server.api.context.LSContext;
 
 public class BalCompletionContextImpl extends BalPosBasedContextImpl implements BalCompletionContext {
     private final LSContext serverContext;

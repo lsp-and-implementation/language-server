@@ -84,6 +84,7 @@ import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.lsp.server.api.DiagnosticsPublisher;
 import org.lsp.server.api.context.BalCallHierarchyOutgoingContext;
+import org.lsp.server.api.context.BalCodeActionContext;
 import org.lsp.server.api.context.BalCompletionContext;
 import org.lsp.server.api.context.BalCompletionResolveContext;
 import org.lsp.server.api.context.BalDocumentColourContext;
@@ -100,6 +101,7 @@ import org.lsp.server.api.context.BaseOperationContext;
 import org.lsp.server.api.context.LSContext;
 import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
 import org.lsp.server.core.callhierarchy.CallHierarchyProvider;
+import org.lsp.server.core.codeaction.CodeActionProvider;
 import org.lsp.server.core.completion.BalCompletionRouter;
 import org.lsp.server.core.completion.CompletionItemResolver;
 import org.lsp.server.core.contexts.ContextBuilder;
@@ -305,7 +307,9 @@ public class BalTextDocumentService implements TextDocumentService {
     @Override
     public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params) {
         return CompletableFuture.supplyAsync(() -> {
-            return null;
+            BalCodeActionContext context = ContextBuilder.getCodeActionContext(this.serverContext, params);
+            ContextEvaluator.fillTokenInfoAtCursor(context);
+            return CodeActionProvider.getCodeAction(context, params);
         });
     }
 
