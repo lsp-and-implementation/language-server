@@ -1,6 +1,8 @@
 package org.lsp.server.core.codeaction;
 
+import com.google.gson.JsonObject;
 import io.ballerina.compiler.api.SemanticModel;
+import io.ballerina.compiler.syntax.tree.ImportDeclarationNode;
 import io.ballerina.compiler.syntax.tree.ModuleMemberDeclarationNode;
 import io.ballerina.compiler.syntax.tree.ModulePartNode;
 import io.ballerina.compiler.syntax.tree.Node;
@@ -11,23 +13,29 @@ import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.text.LinePosition;
 import io.ballerina.tools.text.LineRange;
 import org.eclipse.lsp4j.CodeAction;
+import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.ConfigurationItem;
 import org.eclipse.lsp4j.ConfigurationParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.lsp.server.api.context.BalCodeActionContext;
+import org.lsp.server.api.context.BalTextDocumentContext;
 import org.lsp.server.core.executecommand.CreateVariableArgs;
+import org.lsp.server.core.utils.CommonUtils;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -35,23 +43,30 @@ import java.util.stream.Collectors;
 
 public class CodeActionProvider {
     private static final String VAR_ASSIGNMENT_REQUIRED = "variable assignment is required";
-    
+
     public static List<Either<Command, CodeAction>>
     getCodeAction(BalCodeActionContext context, CodeActionParams params) {
         List<Either<Command, CodeAction>> codeActions = new ArrayList<>();
         List<Diagnostic> diags = getDiagnostics(context, params.getRange());
-        Optional<Node> topLevelNode = getTopLevelNode(context, params.getRange());
+        Optional<Node> topLevelNode =
+                getTopLevelNode(context, params.getRange());
         List<String> diagMessages = diags.stream()
                 .map(diag -> diag.message().toLowerCase(Locale.ROOT))
                 .collect(Collectors.toList());
         if (diagMessages.contains(VAR_ASSIGNMENT_REQUIRED)) {
-            Diagnostic diagnostic = diags.get(diagMessages.indexOf(VAR_ASSIGNMENT_REQUIRED));
-            Command createVarCommand = getCreateVarCommand(context, diagnostic, params.getRange());
-            Either<Command, CodeAction> command = Either.forLeft(createVarCommand);
+            Diagnostic diagnostic = diags.get(diagMessages
+                    .indexOf(VAR_ASSIGNMENT_REQUIRED));
+            Command createVarCommand =
+                    getCreateVarCommand(context, diagnostic,
+                            params.getRange());
+            Either<Command, CodeAction> command =
+                    Either.forLeft(createVarCommand);
             return Collections.singletonList(command);
         }
+        codeActions.add(getOrganizeImportsCodeAction(params));
         if (topLevelNode.isPresent() && topLevelNode.get().kind()
                 == SyntaxKind.FUNCTION_DEFINITION && documentationEnabled(context)) {
+            // TODO: implement
 //            CodeAction codeAction = getAddDocsCodeAction.get(context, params);
 //                codeActions.add(Either.forRight(codeAction));
         }
@@ -59,8 +74,21 @@ public class CodeActionProvider {
         return codeActions;
     }
 
+    public static CodeAction
+    resolve(BalTextDocumentContext context, CodeAction unresolved) {
+        if (unresolved.getTitle().equals(BalCommand.ORGANIZE_IMPORTS.getTitle())) {
+            WorkspaceEdit workspaceEdit =
+                    getOrganizeImportEdit(context, context.getPath());
+            unresolved.setEdit(workspaceEdit);
+
+            return unresolved;
+        }
+
+        return null;
+    }
+
     private static Optional<Node> getTopLevelNode(BalCodeActionContext context,
-                                        Range range) {
+                                                  Range range) {
         Optional<SyntaxTree> syntaxTree = context.currentSyntaxTree();
         if (syntaxTree.isEmpty()) {
             return Optional.empty();
@@ -78,10 +106,23 @@ public class CodeActionProvider {
                 return Optional.of(member);
             }
         }
-        
+
         return Optional.empty();
     }
-    
+
+    private static Either<Command, CodeAction>
+    getOrganizeImportsCodeAction(CodeActionParams params) {
+        CodeAction codeAction = new CodeAction();
+        JsonObject data = new JsonObject();
+        data.addProperty("uri", params.getTextDocument().getUri());
+        codeAction.setKind(CodeActionKind.SourceOrganizeImports);
+        codeAction.setIsPreferred(true);
+        codeAction.setTitle(BalCommand.ORGANIZE_IMPORTS.getTitle());
+        codeAction.setData(data);
+
+        return Either.forRight(codeAction);
+    }
+
     private static Command
     getCreateVarCommand(BalCodeActionContext context,
                         Diagnostic diagnostic,
@@ -102,8 +143,40 @@ public class CodeActionProvider {
         return command;
     }
 
-    private static WorkspaceEdit getWorkspaceEdit(BalCodeActionContext context, Range range, CodeActionParams params) {
-        return null;
+    private static WorkspaceEdit
+    getOrganizeImportEdit(BalTextDocumentContext context,
+                          Path path) {
+        SyntaxTree syntaxTree =
+                context.compilerManager()
+                        .getSyntaxTree(path).orElseThrow();
+        NodeList<ImportDeclarationNode> imports =
+                ((ModulePartNode) syntaxTree.rootNode()).imports();
+
+        if (imports.size() < 1) {
+            return null;
+        }
+        ImportDeclarationNode firstImport = imports.get(0);
+        ImportDeclarationNode lastImport =
+                imports.get(imports.size() - 1);
+
+        String reOrdered = imports.stream()
+                .map(importNode -> importNode.toSourceCode().trim())
+                .sorted()
+                .collect(Collectors.joining(CommonUtils.LINE_SEPARATOR));
+
+        WorkspaceEdit workspaceEdit = new WorkspaceEdit();
+        TextEdit textEdit = new TextEdit();
+
+        LinePosition startLine = firstImport.lineRange().startLine();
+        LinePosition endLine = lastImport.lineRange().endLine();
+        Range range = toRange(LineRange.from(path.toString(), startLine, endLine));
+        textEdit.setRange(range);
+        textEdit.setNewText(reOrdered);
+        Map<String, List<TextEdit>> textEditMap = new HashMap<>();
+        textEditMap.put(path.toUri().toString(), Collections.singletonList(textEdit));
+
+        workspaceEdit.setChanges(textEditMap);
+        return workspaceEdit;
     }
 
     private static org.eclipse.lsp4j.Diagnostic toDiagnostic(Diagnostic diagnostic) {
@@ -148,5 +221,21 @@ public class CodeActionProvider {
         }
 
         return (Boolean) (configValue.get(0));
+    }
+
+    private static Position toPosition(LinePosition linePosition) {
+        Position position = new Position();
+        position.setLine(linePosition.line());
+        position.setCharacter(linePosition.offset());
+
+        return position;
+    }
+
+    private static Range toRange(LineRange lineRange) {
+        Range range = new Range();
+        range.setStart(toPosition(lineRange.startLine()));
+        range.setEnd(toPosition(lineRange.endLine()));
+
+        return range;
     }
 }

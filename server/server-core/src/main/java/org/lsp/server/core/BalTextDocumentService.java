@@ -15,6 +15,7 @@
  */
 package org.lsp.server.core;
 
+import com.google.gson.JsonObject;
 import io.ballerina.projects.Project;
 import io.ballerina.projects.ProjectKind;
 import org.eclipse.lsp4j.CallHierarchyIncomingCall;
@@ -97,6 +98,7 @@ import org.lsp.server.api.context.BalPrepareRenameContext;
 import org.lsp.server.api.context.BalRenameContext;
 import org.lsp.server.api.context.BalSemanticTokenContext;
 import org.lsp.server.api.context.BalSignatureContext;
+import org.lsp.server.api.context.BalTextDocumentContext;
 import org.lsp.server.api.context.BaseOperationContext;
 import org.lsp.server.api.context.LSContext;
 import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
@@ -310,6 +312,15 @@ public class BalTextDocumentService implements TextDocumentService {
             BalCodeActionContext context = ContextBuilder.getCodeActionContext(this.serverContext, params);
             ContextEvaluator.fillTokenInfoAtCursor(context);
             return CodeActionProvider.getCodeAction(context, params);
+        });
+    }
+
+    @Override
+    public CompletableFuture<CodeAction> resolveCodeAction(CodeAction unresolved) {
+        return CompletableFuture.supplyAsync(() -> {
+            String uri = ((JsonObject) unresolved.getData()).get("uri").getAsString();
+            BalTextDocumentContext context = ContextBuilder.getTextDocumentContext(this.serverContext, uri);
+            return CodeActionProvider.resolve(context, unresolved);
         });
     }
 

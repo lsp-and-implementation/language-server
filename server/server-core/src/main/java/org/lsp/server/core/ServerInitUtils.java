@@ -15,6 +15,7 @@
  */
 package org.lsp.server.core;
 
+import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.CodeActionOptions;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.DefinitionOptions;
@@ -99,7 +100,7 @@ public class ServerInitUtils {
                 new DocumentOnTypeFormattingOptions();
         options.setFirstTriggerCharacter("}");
         options.setMoreTriggerCharacter(Collections.singletonList(";"));
-        
+
         return options;
     }
 
@@ -150,6 +151,11 @@ public class ServerInitUtils {
     public static CodeActionOptions getCodeActionOptions() {
         CodeActionOptions options = new CodeActionOptions();
         options.setResolveProvider(true);
+        options.setCodeActionKinds(
+                Arrays.asList(CodeActionKind.SourceOrganizeImports,
+                        CodeActionKind.Source,
+                        CodeActionKind.QuickFix)
+        );
 
         return options;
     }
@@ -167,19 +173,19 @@ public class ServerInitUtils {
 
         return options;
     }
-    
+
     public static HoverOptions getHoverOptions() {
         HoverOptions options = new HoverOptions();
-        
+
         return options;
     }
-    
+
     public static ExecuteCommandOptions getExecuteCommandOptions() {
         ExecuteCommandOptions options = new ExecuteCommandOptions();
         List<String> commands = Arrays.stream(BalCommand.values())
                 .map(BalCommand::getCommand).collect(Collectors.toList());
         options.setCommands(commands);
-        
+
         return options;
     }
 }

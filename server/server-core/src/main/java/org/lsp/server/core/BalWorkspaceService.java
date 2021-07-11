@@ -15,6 +15,7 @@
  */
 package org.lsp.server.core;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.ballerina.compiler.api.SemanticModel;
@@ -167,7 +168,7 @@ public class BalWorkspaceService implements WorkspaceService {
     
     private ApplyWorkspaceEditResponse
     applyCreateVarWorkspaceEdit(BalWorkspaceContext context, ExecuteCommandParams params) {
-        CommandArgument commandArg = (CommandArgument) params.getArguments().get(0);
+        CommandArgument commandArg = (new Gson()).fromJson(((JsonObject) params.getArguments().get(0)), CommandArgument.class);
         if (!commandArg.getKey().equals("params")) {
             return null;
         }
