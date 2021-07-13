@@ -17,6 +17,7 @@ package org.lsp.server.core;
 
 import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.CodeActionOptions;
+import org.eclipse.lsp4j.CodeLensOptions;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.DefinitionOptions;
 import org.eclipse.lsp4j.DocumentLinkOptions;
@@ -186,6 +187,13 @@ public class ServerInitUtils {
                 .map(BalCommand::getCommand).collect(Collectors.toList());
         options.setCommands(commands);
 
+        return options;
+    }
+    
+    public static CodeLensOptions getCodeLensOptions() {
+        CodeLensOptions options = new CodeLensOptions();
+        options.setResolveProvider(true);
+        
         return options;
     }
 }

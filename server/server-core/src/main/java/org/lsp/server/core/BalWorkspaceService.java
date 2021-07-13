@@ -46,7 +46,6 @@ import org.eclipse.lsp4j.services.WorkspaceService;
 import org.lsp.server.api.context.BalWorkspaceContext;
 import org.lsp.server.api.context.LSContext;
 import org.lsp.server.core.codeaction.BalCommand;
-import org.lsp.server.core.codeaction.CodeActionProvider;
 import org.lsp.server.core.codeaction.CommandArgument;
 import org.lsp.server.core.configdidchange.ConfigurationHolder;
 import org.lsp.server.core.contexts.ContextBuilder;
@@ -64,7 +63,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 public class BalWorkspaceService implements WorkspaceService {
-    private static final String TOML_CONFIG = "Ballerina.toml";
+    private static final String BALLERINA_TOML = "Ballerina.toml";
+    private static final String CLOUD_TOML = "Cloud.toml";
     private final LSContext lsServerContext;
 
     public BalWorkspaceService(LSContext lsServerContext) {
@@ -86,13 +86,17 @@ public class BalWorkspaceService implements WorkspaceService {
     public void didChangeWatchedFiles(DidChangeWatchedFilesParams params) {
         BalWorkspaceContext context =
                 ContextBuilder.getWorkspaceContext(this.lsServerContext);
-        Optional<FileEvent> tomlEvent = params.getChanges().stream()
-                .filter(fileEvent -> fileEvent.getUri().endsWith(TOML_CONFIG)
+        Optional<FileEvent> ballerinaTomlEvent = params.getChanges().stream()
+                .filter(fileEvent -> fileEvent.getUri().endsWith(BALLERINA_TOML)
+                        && fileEvent.getType() != FileChangeType.Changed)
+                .findAny();
+        Optional<FileEvent> cloudTomlEvent = params.getChanges().stream()
+                .filter(fileEvent -> fileEvent.getUri().endsWith(CLOUD_TOML)
                         && fileEvent.getType() != FileChangeType.Changed)
                 .findAny();
 
-        if (tomlEvent.isPresent()) {
-            Path path = CommonUtils.uriToPath(tomlEvent.get().getUri());
+        if (ballerinaTomlEvent.isPresent()) {
+            Path path = CommonUtils.uriToPath(ballerinaTomlEvent.get().getUri());
             Optional<Path> projectRoot =
                     context.compilerManager().getProjectRoot(path);
             if (projectRoot.isEmpty()) {
@@ -100,6 +104,8 @@ public class BalWorkspaceService implements WorkspaceService {
             }
             // Reload the project
             context.compilerManager().reloadProject(projectRoot.get());
+        }
+        if (cloudTomlEvent.isPresent()) {
             // Send codelens refresh request to client
             LanguageClient client = this.lsServerContext.getClient();
             client.refreshCodeLenses();
@@ -161,11 +167,11 @@ public class BalWorkspaceService implements WorkspaceService {
             if (command.equals(BalCommand.CREATE_VAR.getCommand())) {
                 return applyCreateVarWorkspaceEdit(context, params);
             }
-            
+
             return null;
         });
     }
-    
+
     private ApplyWorkspaceEditResponse
     applyCreateVarWorkspaceEdit(BalWorkspaceContext context, ExecuteCommandParams params) {
         CommandArgument commandArg = (new Gson()).fromJson(((JsonObject) params.getArguments().get(0)), CommandArgument.class);
@@ -179,7 +185,7 @@ public class BalWorkspaceService implements WorkspaceService {
                 new VersionedTextDocumentIdentifier();
         identifier.setUri(createVarArgs.getUri());
         TextEdit textEdit = new TextEdit(createVarArgs.getRange(), createVarArgs.getNewText());
-        
+
         documentEdit.setEdits(Collections.singletonList(textEdit));
         documentEdit.setTextDocument(identifier);
         Either<TextDocumentEdit, ResourceOperation> documentChanges = Either.forLeft(documentEdit);
@@ -264,6 +270,6 @@ public class BalWorkspaceService implements WorkspaceService {
         endParams.setToken(uuid.toString());
         endParams.setValue(Either.forLeft(endProgress));
         client.notifyProgress(endParams);
-        
+
     }
 }

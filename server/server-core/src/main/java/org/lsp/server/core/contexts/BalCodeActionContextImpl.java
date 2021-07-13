@@ -1,6 +1,5 @@
 package org.lsp.server.core.contexts;
 
-import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.lsp.server.api.context.BalCodeActionContext;
 import org.lsp.server.api.context.LSContext;

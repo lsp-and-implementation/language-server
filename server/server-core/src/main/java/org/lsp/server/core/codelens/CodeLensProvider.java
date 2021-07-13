@@ -1,13 +1,18 @@
 package org.lsp.server.core.codelens;
 
 import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
-import io.ballerina.compiler.syntax.tree.Node;
+import io.ballerina.compiler.syntax.tree.ModulePartNode;
+import io.ballerina.compiler.syntax.tree.SyntaxKind;
+import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import io.ballerina.tools.diagnostics.Diagnostic;
+import io.ballerina.tools.text.LinePosition;
+import io.ballerina.tools.text.LineRange;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
+import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.lsp.server.api.context.BalCodeActionContext;
@@ -18,13 +23,13 @@ import org.lsp.server.core.codeaction.CommandArgument;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CodeLensProvider {
-    private static final String VAR_ASSIGNMENT_REQUIRED = "";
 
     public static List<CodeLens>
-    getCodeAction(BalCodeLensContext context, CodeLensParams params) {
-        List<FunctionDefinitionNode> functions = getPublicFunctions(params);
+    getCodeLenses(BalCodeLensContext context, CodeLensParams params) {
+        List<FunctionDefinitionNode> functions = getPublicFunctions(context);
         List<CodeLens> codeLensList = new ArrayList<>();
         for (FunctionDefinitionNode function : functions) {
             CodeLens codeLens = new CodeLens();
@@ -32,22 +37,22 @@ public class CodeLensProvider {
             command.setCommand(BalCommand.ADD_DOC.getCommand());
             command.setTitle(BalCommand.ADD_DOC.getTitle());
             codeLens.setCommand(command);
-            codeLens.setRange(getRangeForFunction(function));
-        }
+            // The range is set to the function name.
+            // It is a must, that the range spans for a single line
+            codeLens.setRange(toRange(function.functionName().lineRange()));
 
+            codeLensList.add(codeLens);
+        }
+    
         return codeLensList;
     }
 
-    private static Range getRangeForFunction(FunctionDefinitionNode function) {
-        return null;
-    }
-
-    private static List<FunctionDefinitionNode> getPublicFunctions(CodeLensParams params) {
-        return Collections.emptyList();
-    }
-
-    private static Node getTopLevelNode(Range range) {
-        return null;
+    private static List<FunctionDefinitionNode> getPublicFunctions(BalCodeLensContext context) {
+        SyntaxTree syntaxTree = context.currentSyntaxTree().orElseThrow();
+        return ((ModulePartNode) syntaxTree.rootNode()).members().stream()
+                .filter(member -> member.kind() == SyntaxKind.FUNCTION_DEFINITION)
+                .map(member -> (FunctionDefinitionNode) member)
+                .collect(Collectors.toList());
     }
 
     private static org.eclipse.lsp4j.Command getCreateVarCommand(Range range) {
@@ -94,5 +99,21 @@ public class CodeLensProvider {
 
     private static Diagnostic getDiagnostic(Range range) {
         return null;
+    }
+
+    private static Position toPosition(LinePosition linePosition) {
+        Position position = new Position();
+        position.setLine(linePosition.line());
+        position.setCharacter(linePosition.offset());
+
+        return position;
+    }
+
+    private static Range toRange(LineRange lineRange) {
+        Range range = new Range();
+        range.setStart(toPosition(lineRange.startLine()));
+        range.setEnd(toPosition(lineRange.endLine()));
+
+        return range;
     }
 }

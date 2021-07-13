@@ -86,6 +86,7 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 import org.lsp.server.api.DiagnosticsPublisher;
 import org.lsp.server.api.context.BalCallHierarchyOutgoingContext;
 import org.lsp.server.api.context.BalCodeActionContext;
+import org.lsp.server.api.context.BalCodeLensContext;
 import org.lsp.server.api.context.BalCompletionContext;
 import org.lsp.server.api.context.BalCompletionResolveContext;
 import org.lsp.server.api.context.BalDocumentColourContext;
@@ -104,6 +105,7 @@ import org.lsp.server.api.context.LSContext;
 import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
 import org.lsp.server.core.callhierarchy.CallHierarchyProvider;
 import org.lsp.server.core.codeaction.CodeActionProvider;
+import org.lsp.server.core.codelens.CodeLensProvider;
 import org.lsp.server.core.completion.BalCompletionRouter;
 import org.lsp.server.core.completion.CompletionItemResolver;
 import org.lsp.server.core.contexts.ContextBuilder;
@@ -326,7 +328,10 @@ public class BalTextDocumentService implements TextDocumentService {
 
     @Override
     public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params) {
-        return null;
+        return CompletableFuture.supplyAsync(() -> {
+            BalCodeLensContext context = ContextBuilder.getCodeLensContext(this.serverContext, params);
+            return CodeLensProvider.getCodeLenses(context, params);
+        });
     }
 
     @Override

@@ -94,6 +94,7 @@ public class BalLanguageServer implements BalExtendedLanguageServer, LanguageCli
             sCapabilities.setCodeActionProvider(ServerInitUtils.getCodeActionOptions());
             sCapabilities.setSignatureHelpProvider(ServerInitUtils.getSignatureHelpOptions());
             sCapabilities.setColorProvider(true);
+            sCapabilities.setCodeLensProvider(ServerInitUtils.getCodeLensOptions());
             sCapabilities.setFoldingRangeProvider(true);
             sCapabilities.setCallHierarchyProvider(true);
             sCapabilities.setHoverProvider(Either.forRight(ServerInitUtils.getHoverOptions()));
@@ -120,6 +121,9 @@ public class BalLanguageServer implements BalExtendedLanguageServer, LanguageCli
         List<FileSystemWatcher> watchers = new ArrayList<>();
         watchers.add(new FileSystemWatcher("/**/"
                 + ProjectConstants.BALLERINA_TOML,
+                WatchKind.Create + WatchKind.Delete + WatchKind.Change));
+        watchers.add(new FileSystemWatcher("/**/"
+                + ProjectConstants.CLOUD_TOML,
                 WatchKind.Create + WatchKind.Delete));
         DidChangeWatchedFilesRegistrationOptions opts =
                 new DidChangeWatchedFilesRegistrationOptions(watchers);

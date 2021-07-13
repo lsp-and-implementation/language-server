@@ -2,6 +2,7 @@ package org.lsp.server.core.contexts;
 
 import org.eclipse.lsp4j.CallHierarchyItem;
 import org.eclipse.lsp4j.CodeActionParams;
+import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DocumentColorParams;
@@ -18,6 +19,7 @@ import org.eclipse.lsp4j.SemanticTokensRangeParams;
 import org.eclipse.lsp4j.SignatureHelpParams;
 import org.lsp.server.api.context.BalCallHierarchyOutgoingContext;
 import org.lsp.server.api.context.BalCodeActionContext;
+import org.lsp.server.api.context.BalCodeLensContext;
 import org.lsp.server.api.context.BalCompletionContext;
 import org.lsp.server.api.context.BalCompletionResolveContext;
 import org.lsp.server.api.context.BalDocumentColourContext;
@@ -114,5 +116,9 @@ public class ContextBuilder {
     
     public static BalCodeActionContext getCodeActionContext(LSContext serverContext, CodeActionParams params) {
         return new BalCodeActionContextImpl(serverContext, params.getTextDocument().getUri(), params.getRange());
+    }
+    
+    public static BalCodeLensContext getCodeLensContext(LSContext serverContext, CodeLensParams params) {
+        return new BalCodeLensContextImpl(serverContext, params.getTextDocument().getUri());
     }
 }
