@@ -98,6 +98,7 @@ public class BalLanguageServer implements BalExtendedLanguageServer, LanguageCli
             sCapabilities.setFoldingRangeProvider(true);
             sCapabilities.setCallHierarchyProvider(true);
             sCapabilities.setHoverProvider(Either.forRight(ServerInitUtils.getHoverOptions()));
+            sCapabilities.setReferencesProvider(Either.forRight(ServerInitUtils.getReferencesOptions()));
             sCapabilities.setExecuteCommandProvider(ServerInitUtils.getExecuteCommandOptions());
 
             // Set the workspace capabilities

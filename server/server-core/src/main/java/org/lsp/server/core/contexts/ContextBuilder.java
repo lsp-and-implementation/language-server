@@ -12,6 +12,7 @@ import org.eclipse.lsp4j.FoldingRangeRequestParams;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PrepareRenameParams;
+import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.SemanticTokensDeltaParams;
 import org.eclipse.lsp4j.SemanticTokensParams;
@@ -29,6 +30,7 @@ import org.lsp.server.api.context.BalFoldingRangeContext;
 import org.lsp.server.api.context.BalHoverContext;
 import org.lsp.server.api.context.BalPosBasedContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
+import org.lsp.server.api.context.BalReferencesContext;
 import org.lsp.server.api.context.BalRenameContext;
 import org.lsp.server.api.context.BalSemanticTokenContext;
 import org.lsp.server.api.context.BalSemanticTokenDeltaContext;
@@ -120,5 +122,9 @@ public class ContextBuilder {
     
     public static BalCodeLensContext getCodeLensContext(LSContext serverContext, CodeLensParams params) {
         return new BalCodeLensContextImpl(serverContext, params.getTextDocument().getUri());
+    }
+    
+    public static BalReferencesContext getReferencesContext(LSContext serverContext, ReferenceParams params) {
+        return new BalReferencesContextImpl(serverContext, params);
     }
 }

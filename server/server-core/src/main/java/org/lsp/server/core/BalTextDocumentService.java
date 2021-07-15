@@ -96,6 +96,7 @@ import org.lsp.server.api.context.BalFoldingRangeContext;
 import org.lsp.server.api.context.BalHoverContext;
 import org.lsp.server.api.context.BalPosBasedContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
+import org.lsp.server.api.context.BalReferencesContext;
 import org.lsp.server.api.context.BalRenameContext;
 import org.lsp.server.api.context.BalSemanticTokenContext;
 import org.lsp.server.api.context.BalSignatureContext;
@@ -117,6 +118,7 @@ import org.lsp.server.core.foldingrange.FoldingRangeProvider;
 import org.lsp.server.core.format.FormatProvider;
 import org.lsp.server.core.highlight.DocumentHighlightProvider;
 import org.lsp.server.core.hover.HoverProvider;
+import org.lsp.server.core.references.ReferencesProvider;
 import org.lsp.server.core.rename.RenameProvider;
 import org.lsp.server.core.semantictoken.SemanticTokensProvider;
 import org.lsp.server.core.signature.SignatureProvider;
@@ -336,10 +338,9 @@ public class BalTextDocumentService implements TextDocumentService {
 
     @Override
     public CompletableFuture<List<? extends Location>> references(ReferenceParams params) {
-        // TODO: Add a separate section the chapters regarding the workdone progress for 
-        return CompletableFuture.supplyAsync(() -> {
-            return null;
-        });
+        BalReferencesContext context = ContextBuilder.getReferencesContext(this.serverContext, params);
+        
+        return CompletableFuture.supplyAsync(() -> ReferencesProvider.references(context));
     }
 
     @Override

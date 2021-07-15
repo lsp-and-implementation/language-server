@@ -196,4 +196,10 @@ public class ServerInitUtils {
         
         return options;
     }
+    
+    public static ReferenceOptions getReferencesOptions() {
+        ReferenceOptions options = new ReferenceOptions();
+        
+        return options;
+    }
 }
