@@ -89,6 +89,7 @@ import org.lsp.server.api.context.BalCodeActionContext;
 import org.lsp.server.api.context.BalCodeLensContext;
 import org.lsp.server.api.context.BalCompletionContext;
 import org.lsp.server.api.context.BalCompletionResolveContext;
+import org.lsp.server.api.context.BalDefinitionContext;
 import org.lsp.server.api.context.BalDocumentColourContext;
 import org.lsp.server.api.context.BalDocumentHighlightContext;
 import org.lsp.server.api.context.BalDocumentSymbolContext;
@@ -110,6 +111,7 @@ import org.lsp.server.core.codelens.CodeLensProvider;
 import org.lsp.server.core.completion.BalCompletionRouter;
 import org.lsp.server.core.completion.CompletionItemResolver;
 import org.lsp.server.core.contexts.ContextBuilder;
+import org.lsp.server.core.definition.DefinitionProvider;
 import org.lsp.server.core.doccolour.DocumentColourProvider;
 import org.lsp.server.core.docsymbol.DocumentSymbolProvider;
 import org.lsp.server.core.docsync.BaseDocumentSyncHandler;
@@ -347,7 +349,10 @@ public class BalTextDocumentService implements TextDocumentService {
     public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>>
     definition(DefinitionParams params) {
         return CompletableFuture.supplyAsync(() -> {
-            return null;
+            BalDefinitionContext context = ContextBuilder.getDefinitionContext(this.serverContext, params);
+            List<Location> definitions = DefinitionProvider.definition(context);
+            
+            return Either.forLeft(definitions);
         });
     }
 
