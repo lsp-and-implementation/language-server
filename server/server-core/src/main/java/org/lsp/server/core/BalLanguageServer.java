@@ -101,6 +101,8 @@ public class BalLanguageServer implements BalExtendedLanguageServer, LanguageCli
             sCapabilities.setReferencesProvider(Either.forRight(ServerInitUtils.getReferencesOptions()));
             sCapabilities.setExecuteCommandProvider(ServerInitUtils.getExecuteCommandOptions());
             sCapabilities.setDefinitionProvider(ServerInitUtils.getDefinitionOptions());
+            sCapabilities.setTypeDefinitionProvider(ServerInitUtils.getTypeDefinitionOptions());
+            sCapabilities.setImplementationProvider(ServerInitUtils.getImplementationOptions());
 
             // Set the workspace capabilities
             sCapabilities.setWorkspace(wsCapabilities);

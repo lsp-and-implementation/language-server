@@ -1,6 +1,8 @@
 package org.lsp.server.core.highlight;
 
 import io.ballerina.compiler.api.SemanticModel;
+import io.ballerina.compiler.api.symbols.Symbol;
+import io.ballerina.compiler.syntax.tree.NonTerminalNode;
 import io.ballerina.projects.Document;
 import io.ballerina.tools.diagnostics.Location;
 import io.ballerina.tools.text.LinePosition;
@@ -9,9 +11,11 @@ import org.eclipse.lsp4j.DocumentHighlightKind;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.lsp.server.api.context.BalDocumentHighlightContext;
+import org.lsp.server.core.utils.ContextEvaluator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class DocumentHighlightProvider {
     private DocumentHighlightProvider() {
@@ -54,7 +58,15 @@ public class DocumentHighlightProvider {
     private static boolean isWrite(BalDocumentHighlightContext context, Location location) {
         SemanticModel semanticModel = context.compilerManager()
                 .getSemanticModel(context.getPath()).orElseThrow();
-        
-        return location.lineRange().startLine().line() == 13;
+        LinePosition startLine = location.lineRange().startLine();
+        Position pos = new Position(startLine.line(), startLine.offset() + 1);
+        NonTerminalNode nodeAtPosition = ContextEvaluator.nodeAtPosition(pos, context);
+        Optional<Symbol> symbol = semanticModel.symbol(nodeAtPosition);
+        if (symbol.isEmpty()) {
+            return false;
+        }
+        // TODO: Revamp and improve with a comparator
+        LinePosition symbolStart = symbol.get().getLocation().get().lineRange().startLine();
+        return symbolStart.line() == startLine.line() && symbolStart.offset() == startLine.offset();
     }
 }

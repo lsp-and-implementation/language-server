@@ -16,7 +16,10 @@
 package org.lsp.server.core.utils;
 
 import io.ballerina.compiler.api.symbols.Symbol;
+import io.ballerina.compiler.api.symbols.SymbolKind;
+import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
+import io.ballerina.compiler.api.symbols.VariableSymbol;
 import io.ballerina.compiler.syntax.tree.ModuleMemberDeclarationNode;
 import org.eclipse.lsp4j.SymbolInformation;
 
@@ -54,16 +57,30 @@ public class CommonUtils {
     }
 
     public static Optional<TypeSymbol> getTypeDefinition(Symbol symbol) {
-        return Optional.empty();
+        TypeSymbol typeSymbol;
+        // TODO: Can support other symbol kinds
+        switch (symbol.kind()) {
+            case VARIABLE:
+                typeSymbol = ((VariableSymbol) symbol).typeDescriptor();
+                break;
+            default:
+                typeSymbol = null;
+                break;
+        }
+        if (typeSymbol == null || typeSymbol.typeKind() != TypeDescKind.TYPE_REFERENCE) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(typeSymbol);
+
     }
 
     public static boolean isDeprecated(ModuleMemberDeclarationNode member) {
         return false;
     }
-    
+
     public static SymbolInformation getSymbolInformation(Symbol symbol) {
         SymbolInformation symbolInformation = new SymbolInformation();
-        
+
         return symbolInformation;
     }
 }

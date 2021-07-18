@@ -36,8 +36,6 @@ import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
-import org.eclipse.lsp4j.ConfigurationItem;
-import org.eclipse.lsp4j.ConfigurationParams;
 import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
@@ -57,6 +55,7 @@ import org.eclipse.lsp4j.FoldingRange;
 import org.eclipse.lsp4j.FoldingRangeRequestParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
+import org.eclipse.lsp4j.ImplementationParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.Position;
@@ -73,15 +72,13 @@ import org.eclipse.lsp4j.SemanticTokensDeltaParams;
 import org.eclipse.lsp4j.SemanticTokensParams;
 import org.eclipse.lsp4j.SemanticTokensRangeParams;
 import org.eclipse.lsp4j.SignatureHelp;
-import org.eclipse.lsp4j.SignatureHelpContext;
 import org.eclipse.lsp4j.SignatureHelpParams;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextEdit;
+import org.eclipse.lsp4j.TypeDefinitionParams;
 import org.eclipse.lsp4j.WillSaveTextDocumentParams;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
-import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.lsp.server.api.DiagnosticsPublisher;
 import org.lsp.server.api.context.BalCallHierarchyOutgoingContext;
@@ -94,6 +91,7 @@ import org.lsp.server.api.context.BalDocumentColourContext;
 import org.lsp.server.api.context.BalDocumentHighlightContext;
 import org.lsp.server.api.context.BalDocumentSymbolContext;
 import org.lsp.server.api.context.BalFoldingRangeContext;
+import org.lsp.server.api.context.BalGotoImplContext;
 import org.lsp.server.api.context.BalHoverContext;
 import org.lsp.server.api.context.BalPosBasedContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
@@ -102,6 +100,7 @@ import org.lsp.server.api.context.BalRenameContext;
 import org.lsp.server.api.context.BalSemanticTokenContext;
 import org.lsp.server.api.context.BalSignatureContext;
 import org.lsp.server.api.context.BalTextDocumentContext;
+import org.lsp.server.api.context.BalTypeDefContext;
 import org.lsp.server.api.context.BaseOperationContext;
 import org.lsp.server.api.context.LSContext;
 import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
@@ -133,7 +132,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Implementation of the {@link TextDocumentService}.
@@ -341,7 +339,7 @@ public class BalTextDocumentService implements TextDocumentService {
     @Override
     public CompletableFuture<List<? extends Location>> references(ReferenceParams params) {
         BalReferencesContext context = ContextBuilder.getReferencesContext(this.serverContext, params);
-        
+
         return CompletableFuture.supplyAsync(() -> ReferencesProvider.references(context));
     }
 
@@ -350,8 +348,32 @@ public class BalTextDocumentService implements TextDocumentService {
     definition(DefinitionParams params) {
         return CompletableFuture.supplyAsync(() -> {
             BalDefinitionContext context = ContextBuilder.getDefinitionContext(this.serverContext, params);
+            ContextEvaluator.fillTokenInfoAtCursor(context);
+            if (this.serverContext.getClientCapabilities().get().getTextDocument().getDefinition().getLinkSupport()) {
+                List<LocationLink> locationLinks = DefinitionProvider.definitionWithLocationLink(context);
+                return Either.forRight(locationLinks);
+            }
             List<Location> definitions = DefinitionProvider.definition(context);
-            
+            return Either.forLeft(definitions);
+        });
+    }
+
+    @Override
+    public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> typeDefinition(TypeDefinitionParams params) {
+        return CompletableFuture.supplyAsync(() -> {
+            BalTypeDefContext context = ContextBuilder.getTypeDefinitionContext(this.serverContext, params);
+            ContextEvaluator.fillTokenInfoAtCursor(context);
+            List<Location> definitions = DefinitionProvider.typeDefinition(context);
+            return Either.forLeft(definitions);
+        });
+    }
+
+    @Override
+    public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> implementation(ImplementationParams params) {
+        return CompletableFuture.supplyAsync(() -> {
+            BalGotoImplContext context = ContextBuilder.getGotoImplContext(this.serverContext, params);
+            ContextEvaluator.fillTokenInfoAtCursor(context);
+            List<Location> definitions = DefinitionProvider.implementation(context);
             return Either.forLeft(definitions);
         });
     }
@@ -361,7 +383,8 @@ public class BalTextDocumentService implements TextDocumentService {
     documentSymbol(DocumentSymbolParams params) {
         return CompletableFuture.supplyAsync(() -> {
             BalDocumentSymbolContext context = ContextBuilder.documentSymbolContext(this.serverContext, params);
-            return DocumentSymbolProvider.getDocumentSymbol(context);
+            // return DocumentSymbolProvider.getDocumentSymbol(context);
+            return DocumentSymbolProvider.getSymbolInformation(context);
         });
     }
 

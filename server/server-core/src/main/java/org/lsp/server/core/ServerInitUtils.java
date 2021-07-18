@@ -25,6 +25,7 @@ import org.eclipse.lsp4j.DocumentOnTypeFormattingOptions;
 import org.eclipse.lsp4j.DocumentSymbolOptions;
 import org.eclipse.lsp4j.ExecuteCommandOptions;
 import org.eclipse.lsp4j.HoverOptions;
+import org.eclipse.lsp4j.ImplementationRegistrationOptions;
 import org.eclipse.lsp4j.ReferenceOptions;
 import org.eclipse.lsp4j.RenameOptions;
 import org.eclipse.lsp4j.SaveOptions;
@@ -33,6 +34,9 @@ import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
 import org.eclipse.lsp4j.SignatureHelpOptions;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.TextDocumentSyncOptions;
+import org.eclipse.lsp4j.TypeDefinitionOptions;
+import org.eclipse.lsp4j.TypeDefinitionParams;
+import org.eclipse.lsp4j.TypeDefinitionRegistrationOptions;
 import org.eclipse.lsp4j.WorkspaceFoldersOptions;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.lsp.server.core.codeaction.BalCommand;
@@ -113,6 +117,18 @@ public class ServerInitUtils {
     public static DefinitionOptions getDefinitionOptions() {
         DefinitionOptions options = new DefinitionOptions();
 
+        return options;
+    }
+
+    public static TypeDefinitionRegistrationOptions getTypeDefinitionOptions() {
+        TypeDefinitionRegistrationOptions options = new TypeDefinitionRegistrationOptions();
+
+        return options;
+    }
+
+    public static ImplementationRegistrationOptions getImplementationOptions() {
+        ImplementationRegistrationOptions options = new ImplementationRegistrationOptions();
+        
         return options;
     }
 
