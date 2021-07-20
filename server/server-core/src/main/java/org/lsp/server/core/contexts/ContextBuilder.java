@@ -8,6 +8,7 @@ import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.DocumentColorParams;
 import org.eclipse.lsp4j.DocumentHighlightParams;
+import org.eclipse.lsp4j.DocumentLinkParams;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.FoldingRangeRequestParams;
 import org.eclipse.lsp4j.HoverParams;
@@ -29,6 +30,7 @@ import org.lsp.server.api.context.BalCompletionResolveContext;
 import org.lsp.server.api.context.BalDefinitionContext;
 import org.lsp.server.api.context.BalDocumentColourContext;
 import org.lsp.server.api.context.BalDocumentHighlightContext;
+import org.lsp.server.api.context.BalDocumentLinkContext;
 import org.lsp.server.api.context.BalDocumentSymbolContext;
 import org.lsp.server.api.context.BalFoldingRangeContext;
 import org.lsp.server.api.context.BalGotoImplContext;
@@ -76,6 +78,11 @@ public class ContextBuilder {
     public static BalDocumentHighlightContext documentHighlightContext(LSContext context,
                                                                        DocumentHighlightParams params) {
         return new BalDocumentHighlightContextImpl(context, params);
+    }
+
+    public static BalDocumentLinkContext documentLinkContext(LSContext context,
+                                                                  DocumentLinkParams params) {
+        return new BalDocumentLinkContextImpl(context, params);
     }
 
     public static BalSemanticTokenContext semanticTokensContext(LSContext serverContext, SemanticTokensParams params) {

@@ -89,6 +89,7 @@ import org.lsp.server.api.context.BalCompletionResolveContext;
 import org.lsp.server.api.context.BalDefinitionContext;
 import org.lsp.server.api.context.BalDocumentColourContext;
 import org.lsp.server.api.context.BalDocumentHighlightContext;
+import org.lsp.server.api.context.BalDocumentLinkContext;
 import org.lsp.server.api.context.BalDocumentSymbolContext;
 import org.lsp.server.api.context.BalFoldingRangeContext;
 import org.lsp.server.api.context.BalGotoImplContext;
@@ -115,6 +116,7 @@ import org.lsp.server.core.doccolour.DocumentColourProvider;
 import org.lsp.server.core.docsymbol.DocumentSymbolProvider;
 import org.lsp.server.core.docsync.BaseDocumentSyncHandler;
 import org.lsp.server.core.docsync.DocumentSyncHandler;
+import org.lsp.server.core.documentlink.DocumentLinkProvider;
 import org.lsp.server.core.foldingrange.FoldingRangeProvider;
 import org.lsp.server.core.format.FormatProvider;
 import org.lsp.server.core.highlight.DocumentHighlightProvider;
@@ -398,7 +400,10 @@ public class BalTextDocumentService implements TextDocumentService {
 
     @Override
     public CompletableFuture<List<DocumentLink>> documentLink(DocumentLinkParams params) {
-        return null;
+        return CompletableFuture.supplyAsync(() -> {
+            BalDocumentLinkContext context = ContextBuilder.documentLinkContext(this.serverContext, params);
+            return DocumentLinkProvider.getDocumentLink(context);
+        });
     }
 
     @Override
