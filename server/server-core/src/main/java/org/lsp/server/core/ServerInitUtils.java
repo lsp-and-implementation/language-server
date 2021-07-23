@@ -158,8 +158,9 @@ public class ServerInitUtils {
         SemanticTokensWithRegistrationOptions options = new SemanticTokensWithRegistrationOptions();
         SemanticTokensServerFull serverFull = new SemanticTokensServerFull();
         serverFull.setDelta(false);
-        options.setLegend(SemanticTokensProvider.SEMANTIC_TOKENS_LEGEND);
         options.setFull(serverFull);
+        options.setRange(true);
+        options.setLegend(SemanticTokensProvider.SEMANTIC_TOKENS_LEGEND);
 
         return options;
     }

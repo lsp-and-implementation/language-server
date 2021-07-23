@@ -99,6 +99,7 @@ import org.lsp.server.api.context.BalPrepareRenameContext;
 import org.lsp.server.api.context.BalReferencesContext;
 import org.lsp.server.api.context.BalRenameContext;
 import org.lsp.server.api.context.BalSemanticTokenContext;
+import org.lsp.server.api.context.BalSemanticTokenRangeContext;
 import org.lsp.server.api.context.BalSignatureContext;
 import org.lsp.server.api.context.BalTextDocumentContext;
 import org.lsp.server.api.context.BalTypeDefContext;
@@ -432,7 +433,11 @@ public class BalTextDocumentService implements TextDocumentService {
 
     @Override
     public CompletableFuture<SemanticTokens> semanticTokensRange(SemanticTokensRangeParams params) {
-        return null;
+        return CompletableFuture.supplyAsync(() -> {
+            BalSemanticTokenRangeContext context = ContextBuilder.semanticTokensRangeContext(this.serverContext, params);
+
+            return SemanticTokensProvider.getSemanticTokensInRange(context);
+        });
     }
 
     @Override

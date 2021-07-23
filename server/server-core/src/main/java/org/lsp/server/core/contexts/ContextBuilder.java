@@ -90,7 +90,7 @@ public class ContextBuilder {
     }
 
     public static BalSemanticTokenRangeContext semanticTokensRangeContext(LSContext serverContext, SemanticTokensRangeParams params) {
-        return null;
+        return new BalSemanticTokenRangeContextImpl(serverContext, params);
     }
 
     public static BalSemanticTokenDeltaContext semanticTokensDeltaContext(LSContext serverContext, SemanticTokensDeltaParams params) {
