@@ -17,6 +17,7 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PrepareRenameParams;
 import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.RenameParams;
+import org.eclipse.lsp4j.SelectionRangeParams;
 import org.eclipse.lsp4j.SemanticTokensDeltaParams;
 import org.eclipse.lsp4j.SemanticTokensParams;
 import org.eclipse.lsp4j.SemanticTokensRangeParams;
@@ -39,6 +40,7 @@ import org.lsp.server.api.context.BalPosBasedContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
 import org.lsp.server.api.context.BalReferencesContext;
 import org.lsp.server.api.context.BalRenameContext;
+import org.lsp.server.api.context.BalSelectionRangeContext;
 import org.lsp.server.api.context.BalSemanticTokenContext;
 import org.lsp.server.api.context.BalSemanticTokenDeltaContext;
 import org.lsp.server.api.context.BalSemanticTokenRangeContext;
@@ -160,5 +162,9 @@ public class ContextBuilder {
         Position position = params.getPosition();
         
         return new BalGotoImplementationContextImpl(serverContext, uri, position);
+    }
+    
+    public static BalSelectionRangeContext getSelectionRangeContext(LSContext serverContext, SelectionRangeParams params) {
+        return new BalSelectionRangeContextImpl(serverContext, params);
     }
 }

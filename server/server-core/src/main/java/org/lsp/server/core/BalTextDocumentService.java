@@ -98,6 +98,7 @@ import org.lsp.server.api.context.BalPosBasedContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
 import org.lsp.server.api.context.BalReferencesContext;
 import org.lsp.server.api.context.BalRenameContext;
+import org.lsp.server.api.context.BalSelectionRangeContext;
 import org.lsp.server.api.context.BalSemanticTokenContext;
 import org.lsp.server.api.context.BalSemanticTokenRangeContext;
 import org.lsp.server.api.context.BalSignatureContext;
@@ -124,6 +125,7 @@ import org.lsp.server.core.highlight.DocumentHighlightProvider;
 import org.lsp.server.core.hover.HoverProvider;
 import org.lsp.server.core.references.ReferencesProvider;
 import org.lsp.server.core.rename.RenameProvider;
+import org.lsp.server.core.selectionrange.SelectionRangeProvider;
 import org.lsp.server.core.semantictoken.SemanticTokensProvider;
 import org.lsp.server.core.signature.SignatureProvider;
 import org.lsp.server.core.utils.CommonUtils;
@@ -414,7 +416,10 @@ public class BalTextDocumentService implements TextDocumentService {
 
     @Override
     public CompletableFuture<List<SelectionRange>> selectionRange(SelectionRangeParams params) {
-        return null;
+        return CompletableFuture.supplyAsync(() -> {
+            BalSelectionRangeContext context = ContextBuilder.getSelectionRangeContext(this.serverContext, params);
+            return SelectionRangeProvider.getSelectionRange(context);
+        });
     }
 
     @Override
