@@ -56,6 +56,8 @@ import org.eclipse.lsp4j.FoldingRangeRequestParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.ImplementationParams;
+import org.eclipse.lsp4j.LinkedEditingRangeParams;
+import org.eclipse.lsp4j.LinkedEditingRanges;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.Position;
@@ -94,6 +96,7 @@ import org.lsp.server.api.context.BalDocumentSymbolContext;
 import org.lsp.server.api.context.BalFoldingRangeContext;
 import org.lsp.server.api.context.BalGotoImplContext;
 import org.lsp.server.api.context.BalHoverContext;
+import org.lsp.server.api.context.BalLinkedEditingRangeContext;
 import org.lsp.server.api.context.BalPosBasedContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
 import org.lsp.server.api.context.BalReferencesContext;
@@ -123,6 +126,7 @@ import org.lsp.server.core.foldingrange.FoldingRangeProvider;
 import org.lsp.server.core.format.FormatProvider;
 import org.lsp.server.core.highlight.DocumentHighlightProvider;
 import org.lsp.server.core.hover.HoverProvider;
+import org.lsp.server.core.linkedediting.LinkedEditingRangeProvider;
 import org.lsp.server.core.references.ReferencesProvider;
 import org.lsp.server.core.rename.RenameProvider;
 import org.lsp.server.core.selectionrange.SelectionRangeProvider;
@@ -442,6 +446,15 @@ public class BalTextDocumentService implements TextDocumentService {
             BalSemanticTokenRangeContext context = ContextBuilder.semanticTokensRangeContext(this.serverContext, params);
 
             return SemanticTokensProvider.getSemanticTokensInRange(context);
+        });
+    }
+
+    @Override
+    public CompletableFuture<LinkedEditingRanges> linkedEditingRange(LinkedEditingRangeParams params) {
+        return CompletableFuture.supplyAsync(() -> {
+            BalLinkedEditingRangeContext context = ContextBuilder.getLinkedEditingRangeContext(this.serverContext, params);
+            ContextEvaluator.fillTokenInfoAtCursor(context);
+            return LinkedEditingRangeProvider.getLinkedEditingRanges(context);
         });
     }
 

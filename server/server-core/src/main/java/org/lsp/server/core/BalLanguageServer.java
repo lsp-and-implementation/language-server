@@ -88,6 +88,7 @@ public class BalLanguageServer implements BalExtendedLanguageServer, LanguageCli
             sCapabilities.setDocumentHighlightProvider(true);
             sCapabilities.setDocumentLinkProvider(ServerInitUtils.getDocumentLinkOptions());
             sCapabilities.setSelectionRangeProvider(true);
+            sCapabilities.setLinkedEditingRangeProvider(true);
             sCapabilities.setSemanticTokensProvider(ServerInitUtils.getSemanticTokenOptions());
             sCapabilities.setCodeActionProvider(ServerInitUtils.getCodeActionOptions());
             sCapabilities.setSignatureHelpProvider(ServerInitUtils.getSignatureHelpOptions());

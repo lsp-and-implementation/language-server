@@ -15,14 +15,17 @@ import java.util.List;
 import java.util.Optional;
 
 public class SelectionRangeProvider extends AbstractProvider {
-    public static List<SelectionRange> getSelectionRange(BalSelectionRangeContext context) {
-        Optional<SyntaxTree> syntaxTree = context.compilerManager().getSyntaxTree(context.getPath());
+    public static List<SelectionRange>
+    getSelectionRange(BalSelectionRangeContext context) {
+        Optional<SyntaxTree> syntaxTree =
+                context.compilerManager().getSyntaxTree(context.getPath());
         if (syntaxTree.isEmpty()) {
             return Collections.emptyList();
         }
         List<SelectionRange> selectionRanges = new ArrayList<>();
         for (Position position : context.positions()) {
-            NonTerminalNode nodeAtPosition = ContextEvaluator.nodeAtPosition(position, context);
+            NonTerminalNode nodeAtPosition =
+                    ContextEvaluator.nodeAtPosition(position, context);
             NonTerminalNode parent = nodeAtPosition.parent();
             SelectionRange selectionRange = new SelectionRange();
             Range range = toRange(parent.lineRange());
@@ -35,7 +38,7 @@ public class SelectionRangeProvider extends AbstractProvider {
             }
             selectionRanges.add(selectionRange);
         }
-        
+
         return selectionRanges;
     }
 }

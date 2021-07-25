@@ -13,6 +13,7 @@ import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.FoldingRangeRequestParams;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.ImplementationParams;
+import org.eclipse.lsp4j.LinkedEditingRangeParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PrepareRenameParams;
 import org.eclipse.lsp4j.ReferenceParams;
@@ -36,6 +37,7 @@ import org.lsp.server.api.context.BalDocumentSymbolContext;
 import org.lsp.server.api.context.BalFoldingRangeContext;
 import org.lsp.server.api.context.BalGotoImplContext;
 import org.lsp.server.api.context.BalHoverContext;
+import org.lsp.server.api.context.BalLinkedEditingRangeContext;
 import org.lsp.server.api.context.BalPosBasedContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
 import org.lsp.server.api.context.BalReferencesContext;
@@ -97,6 +99,13 @@ public class ContextBuilder {
 
     public static BalSemanticTokenDeltaContext semanticTokensDeltaContext(LSContext serverContext, SemanticTokensDeltaParams params) {
         return null;
+    }
+
+    public static BalLinkedEditingRangeContext getLinkedEditingRangeContext(LSContext serverContext,
+                                                                          LinkedEditingRangeParams params) {
+        return new BalLinkedEditingRangeContextImpl(serverContext,
+                params.getTextDocument().getUri(),
+                params.getPosition());
     }
 
     public static BalDocumentColourContext getColourContext(LSContext serverContext, DocumentColorParams params) {
