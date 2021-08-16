@@ -47,7 +47,7 @@ import org.lsp.server.api.context.BalWorkspaceContext;
 import org.lsp.server.api.context.LSContext;
 import org.lsp.server.core.codeaction.BalCommand;
 import org.lsp.server.core.codeaction.CommandArgument;
-import org.lsp.server.core.configdidchange.ConfigurationHolder;
+import org.lsp.server.core.configdidchange.ConfigurationHolderImpl;
 import org.lsp.server.core.contexts.ContextBuilder;
 import org.lsp.server.core.executecommand.CreateVariableArgs;
 import org.lsp.server.core.utils.CommonUtils;
@@ -74,11 +74,13 @@ public class BalWorkspaceService implements WorkspaceService {
     @Override
     public void didChangeConfiguration(
             DidChangeConfigurationParams params) {
+        BalWorkspaceContext context =
+                ContextBuilder.getWorkspaceContext(this.lsServerContext);
         JsonObject settings = (JsonObject) params.getSettings();
         JsonElement configSection =
-                settings.get(ConfigurationHolder.CONFIG_SECTION);
+                settings.get(ConfigurationHolderImpl.CONFIG_SECTION);
         if (configSection != null) {
-            ConfigurationHolder.getInstance().update(configSection);
+            context.clientConfigHolder().update(configSection);
         }
     }
 

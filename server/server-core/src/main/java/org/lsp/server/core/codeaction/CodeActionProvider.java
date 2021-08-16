@@ -65,10 +65,8 @@ public class CodeActionProvider {
         }
         codeActions.add(getOrganizeImportsCodeAction(params));
         if (topLevelNode.isPresent() && topLevelNode.get().kind()
-                == SyntaxKind.FUNCTION_DEFINITION && documentationEnabled(context)) {
-            // TODO: implement
-//            CodeAction codeAction = getAddDocsCodeAction.get(context, params);
-//                codeActions.add(Either.forRight(codeAction));
+                == SyntaxKind.FUNCTION_DEFINITION && documentationEnabled2(context)) {
+            codeActions.add(getAddDocsCodeAction(context, params, topLevelNode.get()));
         }
 
         return codeActions;
@@ -112,6 +110,20 @@ public class CodeActionProvider {
 
     private static Either<Command, CodeAction>
     getOrganizeImportsCodeAction(CodeActionParams params) {
+        CodeAction codeAction = new CodeAction();
+        JsonObject data = new JsonObject();
+        data.addProperty("uri", params.getTextDocument().getUri());
+        codeAction.setKind(CodeActionKind.SourceOrganizeImports);
+        codeAction.setIsPreferred(true);
+        codeAction.setTitle(BalCommand.ORGANIZE_IMPORTS.getTitle());
+        codeAction.setData(data);
+
+        return Either.forRight(codeAction);
+    }
+
+    private static Either<Command, CodeAction>
+    getAddDocsCodeAction(BalCodeActionContext context, CodeActionParams params, Node node) {
+        // TODO: Finalize
         CodeAction codeAction = new CodeAction();
         JsonObject data = new JsonObject();
         data.addProperty("uri", params.getTextDocument().getUri());
@@ -221,6 +233,10 @@ public class CodeActionProvider {
         }
 
         return (Boolean) (configValue.get(0));
+    }
+
+    private static boolean documentationEnabled2(BalCodeActionContext context) {
+        return context.clientConfigHolder().isDocumentationCodeActionEnabled();
     }
 
     private static Position toPosition(LinePosition linePosition) {
