@@ -1,6 +1,7 @@
 package org.lsp.server.core.configdidchange;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.lsp.server.api.ConfigurationHolder;
 import org.lsp.server.api.context.LSContext;
 
@@ -30,6 +31,7 @@ public class ConfigurationHolderImpl implements ConfigurationHolder {
             return false;
         }
 
-        return false;
+        return ((JsonObject) this.config).get("codeAction")
+                .getAsJsonObject().get("documentation").getAsBoolean();
     }
 }

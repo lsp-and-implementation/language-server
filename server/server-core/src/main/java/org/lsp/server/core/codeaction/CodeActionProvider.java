@@ -24,6 +24,7 @@ import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
+import org.lsp.server.api.ConfigurationHolder;
 import org.lsp.server.api.context.BalCodeActionContext;
 import org.lsp.server.api.context.BalTextDocumentContext;
 import org.lsp.server.core.executecommand.CreateVariableArgs;
@@ -64,10 +65,23 @@ public class CodeActionProvider {
             return Collections.singletonList(command);
         }
         codeActions.add(getOrganizeImportsCodeAction(params));
+        ConfigurationHolder configHolder = context.clientConfigHolder();
         if (topLevelNode.isPresent() && topLevelNode.get().kind()
-                == SyntaxKind.FUNCTION_DEFINITION && documentationEnabled2(context)) {
-            codeActions.add(getAddDocsCodeAction(context, params, topLevelNode.get()));
+                == SyntaxKind.FUNCTION_DEFINITION
+                && configHolder.isDocumentationCodeActionEnabled()) {
+            codeActions.add(getAddDocsCodeAction(context,
+                    params,
+                    topLevelNode.get())
+            );
         }
+//        if (topLevelNode.isPresent() && topLevelNode.get().kind()
+//                == SyntaxKind.FUNCTION_DEFINITION
+//                && documentationEnabled(context)) {
+//            codeActions.add(getAddDocsCodeAction(context,
+//                    params,
+//                    topLevelNode.get())
+//            );
+//        }
 
         return codeActions;
     }
@@ -99,8 +113,8 @@ public class CodeActionProvider {
             LineRange lineRange = member.lineRange();
             LinePosition mStart = lineRange.startLine();
             LinePosition mEnd = lineRange.endLine();
-            if (mStart.line() >= diagStart.getLine()
-                    && mEnd.line() <= diagEnd.getLine()) {
+            if (mStart.line() <= diagStart.getLine()
+                    && mEnd.line() >= diagEnd.getLine()) {
                 return Optional.of(member);
             }
         }
@@ -217,6 +231,12 @@ public class CodeActionProvider {
                 }).collect(Collectors.toList());
     }
 
+    /**
+     * Get the configuration for ballerina.codeAction.documentation config option.
+     * Can be used alongside the 
+     * @param context
+     * @return
+     */
     private static boolean documentationEnabled(BalCodeActionContext context) {
         LanguageClient client = context.getClient();
         ConfigurationParams params = new ConfigurationParams();
@@ -233,10 +253,6 @@ public class CodeActionProvider {
         }
 
         return (Boolean) (configValue.get(0));
-    }
-
-    private static boolean documentationEnabled2(BalCodeActionContext context) {
-        return context.clientConfigHolder().isDocumentationCodeActionEnabled();
     }
 
     private static Position toPosition(LinePosition linePosition) {
