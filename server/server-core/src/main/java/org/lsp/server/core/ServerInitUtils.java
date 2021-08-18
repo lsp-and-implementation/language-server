@@ -38,6 +38,7 @@ import org.eclipse.lsp4j.TypeDefinitionOptions;
 import org.eclipse.lsp4j.TypeDefinitionParams;
 import org.eclipse.lsp4j.TypeDefinitionRegistrationOptions;
 import org.eclipse.lsp4j.WorkspaceFoldersOptions;
+import org.eclipse.lsp4j.WorkspaceSymbolOptions;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.lsp.server.core.codeaction.BalCommand;
 import org.lsp.server.core.semantictoken.SemanticTokensProvider;
@@ -215,6 +216,12 @@ public class ServerInitUtils {
     
     public static ReferenceOptions getReferencesOptions() {
         ReferenceOptions options = new ReferenceOptions();
+        
+        return options;
+    }
+    
+    public static WorkspaceSymbolOptions getWorkspaceSymbolOptions() {
+        WorkspaceSymbolOptions options = new WorkspaceSymbolOptions();
         
         return options;
     }

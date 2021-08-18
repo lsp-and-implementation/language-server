@@ -90,11 +90,11 @@ public class BalWorkspaceService implements WorkspaceService {
                 ContextBuilder.getWorkspaceContext(this.lsServerContext);
         Optional<FileEvent> ballerinaTomlEvent = params.getChanges().stream()
                 .filter(fileEvent -> fileEvent.getUri().endsWith(BALLERINA_TOML)
-                        && fileEvent.getType() != FileChangeType.Changed)
+                        && fileEvent.getType() == FileChangeType.Changed)
                 .findAny();
         Optional<FileEvent> cloudTomlEvent = params.getChanges().stream()
                 .filter(fileEvent -> fileEvent.getUri().endsWith(CLOUD_TOML)
-                        && fileEvent.getType() != FileChangeType.Changed)
+                        && fileEvent.getType() == FileChangeType.Changed)
                 .findAny();
 
         if (ballerinaTomlEvent.isPresent()) {
@@ -130,7 +130,8 @@ public class BalWorkspaceService implements WorkspaceService {
                     for (SemanticModel semanticModel : semanticModels) {
                         List<SymbolInformation> symbols =
                                 semanticModel.moduleSymbols().stream()
-                                        .map(CommonUtils::getSymbolInformation)
+                                        .map(symbol -> CommonUtils
+                                                .getSymbolInformation(symbol, context, projectRoot))
                                         .collect(Collectors.toList());
                         wsSymbols.addAll(symbols);
                     }
