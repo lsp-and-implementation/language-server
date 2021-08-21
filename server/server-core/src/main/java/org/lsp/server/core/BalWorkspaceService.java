@@ -170,14 +170,18 @@ public class BalWorkspaceService implements WorkspaceService {
             if (command.equals(BalCommand.CREATE_VAR.getCommand())) {
                 return applyCreateVarWorkspaceEdit(context, params);
             }
+            
+            // TODO: IMPLEMENT THE MOVE FUNCTION CODE ACTION WHICH CREATES A FILE
 
             return null;
         });
     }
 
     private ApplyWorkspaceEditResponse
-    applyCreateVarWorkspaceEdit(BalWorkspaceContext context, ExecuteCommandParams params) {
-        CommandArgument commandArg = (new Gson()).fromJson(((JsonObject) params.getArguments().get(0)), CommandArgument.class);
+    applyCreateVarWorkspaceEdit(BalWorkspaceContext context,
+                                ExecuteCommandParams params) {
+        JsonObject arg = (JsonObject) params.getArguments().get(0);
+        CommandArgument commandArg = new Gson().fromJson(arg, CommandArgument.class);
         if (!commandArg.getKey().equals("params")) {
             return null;
         }
@@ -187,16 +191,19 @@ public class BalWorkspaceService implements WorkspaceService {
         VersionedTextDocumentIdentifier identifier =
                 new VersionedTextDocumentIdentifier();
         identifier.setUri(createVarArgs.getUri());
-        TextEdit textEdit = new TextEdit(createVarArgs.getRange(), createVarArgs.getNewText());
+        TextEdit textEdit = new TextEdit(createVarArgs.getRange(),
+                createVarArgs.getNewText());
 
         documentEdit.setEdits(Collections.singletonList(textEdit));
         documentEdit.setTextDocument(identifier);
-        Either<TextDocumentEdit, ResourceOperation> documentChanges = Either.forLeft(documentEdit);
+        Either<TextDocumentEdit, ResourceOperation> documentChanges =
+                Either.forLeft(documentEdit);
         workspaceEdit.setDocumentChanges(Collections.singletonList(documentChanges));
 
         ApplyWorkspaceEditParams applyEditParams = new ApplyWorkspaceEditParams();
         applyEditParams.setEdit(workspaceEdit);
-        CompletableFuture<ApplyWorkspaceEditResponse> response = context.getClient().applyEdit(applyEditParams);
+        CompletableFuture<ApplyWorkspaceEditResponse> response =
+                context.getClient().applyEdit(applyEditParams);
 
         try {
             return response.get();
