@@ -1,5 +1,6 @@
 package org.lsp.server.core.docsymbol;
 
+import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.api.symbols.AnnotationSymbol;
 import io.ballerina.compiler.api.symbols.FunctionSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
@@ -35,6 +36,7 @@ import org.lsp.server.core.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class DocumentSymbolProvider {
     public static List<Either<SymbolInformation, DocumentSymbol>>
@@ -63,6 +65,9 @@ public class DocumentSymbolProvider {
                         endLine.offset()));
                 Location funcLocation = new Location(uri, range);
                 funcInfo.setLocation(funcLocation);
+                if (isDeprecatedFunction(context, functionDef)) {
+                    funcInfo.setTags(Collections.singletonList(SymbolTag.Deprecated));
+                }
 
                 // Generate the symbols for the function parameters
                 SeparatedNodeList<ParameterNode> parameters =
@@ -216,6 +221,17 @@ public class DocumentSymbolProvider {
         }
 
         return symbols;
+    }
+    
+    private static boolean isDeprecatedFunction(BalDocumentSymbolContext context, FunctionDefinitionNode functionNode) {
+        SemanticModel semanticModel = context.compilerManager().getSemanticModel(context.getPath()).orElseThrow();
+        Optional<Symbol> symbol = semanticModel.symbol(functionNode);
+        if (symbol.isEmpty()) {
+            return false;
+        }
+        return ((FunctionSymbol) symbol.get()).annotations().stream()
+                .anyMatch(annotationSymbol -> annotationSymbol.getName()
+                        .orElse("").equals("deprecated"));
     }
 
     private static boolean isRecordTypeDefinition(ModuleMemberDeclarationNode memberDeclarationNode) {

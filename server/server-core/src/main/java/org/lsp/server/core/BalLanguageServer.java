@@ -29,7 +29,6 @@ import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.Registration;
 import org.eclipse.lsp4j.RegistrationParams;
-import org.eclipse.lsp4j.SelectionRangeRegistrationOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncOptions;
 import org.eclipse.lsp4j.WatchKind;
@@ -37,7 +36,6 @@ import org.eclipse.lsp4j.WorkspaceServerCapabilities;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
-import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
 import org.lsp.server.core.extensions.services.parser.BallerinaParserService;
@@ -90,14 +88,21 @@ public class BalLanguageServer implements BalExtendedLanguageServer, LanguageCli
             sCapabilities.setDocumentHighlightProvider(true);
             sCapabilities.setDocumentLinkProvider(ServerInitUtils.getDocumentLinkOptions());
             sCapabilities.setSelectionRangeProvider(true);
+            sCapabilities.setLinkedEditingRangeProvider(true);
             sCapabilities.setSemanticTokensProvider(ServerInitUtils.getSemanticTokenOptions());
             sCapabilities.setCodeActionProvider(ServerInitUtils.getCodeActionOptions());
             sCapabilities.setSignatureHelpProvider(ServerInitUtils.getSignatureHelpOptions());
             sCapabilities.setColorProvider(true);
+            sCapabilities.setCodeLensProvider(ServerInitUtils.getCodeLensOptions());
             sCapabilities.setFoldingRangeProvider(true);
             sCapabilities.setCallHierarchyProvider(true);
             sCapabilities.setHoverProvider(Either.forRight(ServerInitUtils.getHoverOptions()));
+            sCapabilities.setReferencesProvider(Either.forRight(ServerInitUtils.getReferencesOptions()));
             sCapabilities.setExecuteCommandProvider(ServerInitUtils.getExecuteCommandOptions());
+            sCapabilities.setDefinitionProvider(ServerInitUtils.getDefinitionOptions());
+            sCapabilities.setTypeDefinitionProvider(ServerInitUtils.getTypeDefinitionOptions());
+            sCapabilities.setImplementationProvider(ServerInitUtils.getImplementationOptions());
+            sCapabilities.setWorkspaceSymbolProvider(ServerInitUtils.getWorkspaceSymbolOptions());
 
             // Set the workspace capabilities
             sCapabilities.setWorkspace(wsCapabilities);
@@ -120,6 +125,9 @@ public class BalLanguageServer implements BalExtendedLanguageServer, LanguageCli
         List<FileSystemWatcher> watchers = new ArrayList<>();
         watchers.add(new FileSystemWatcher("/**/"
                 + ProjectConstants.BALLERINA_TOML,
+                WatchKind.Create + WatchKind.Delete + WatchKind.Change));
+        watchers.add(new FileSystemWatcher("/**/"
+                + ProjectConstants.CLOUD_TOML,
                 WatchKind.Create + WatchKind.Delete));
         DidChangeWatchedFilesRegistrationOptions opts =
                 new DidChangeWatchedFilesRegistrationOptions(watchers);

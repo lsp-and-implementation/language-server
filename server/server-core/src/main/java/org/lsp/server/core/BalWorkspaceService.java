@@ -15,6 +15,7 @@
  */
 package org.lsp.server.core;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.ballerina.compiler.api.SemanticModel;
@@ -45,9 +46,8 @@ import org.eclipse.lsp4j.services.WorkspaceService;
 import org.lsp.server.api.context.BalWorkspaceContext;
 import org.lsp.server.api.context.LSContext;
 import org.lsp.server.core.codeaction.BalCommand;
-import org.lsp.server.core.codeaction.CodeActionProvider;
 import org.lsp.server.core.codeaction.CommandArgument;
-import org.lsp.server.core.configdidchange.ConfigurationHolder;
+import org.lsp.server.core.configdidchange.ConfigurationHolderImpl;
 import org.lsp.server.core.contexts.ContextBuilder;
 import org.lsp.server.core.executecommand.CreateVariableArgs;
 import org.lsp.server.core.utils.CommonUtils;
@@ -63,7 +63,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 public class BalWorkspaceService implements WorkspaceService {
-    private static final String TOML_CONFIG = "Ballerina.toml";
+    private static final String BALLERINA_TOML = "Ballerina.toml";
+    private static final String CLOUD_TOML = "Cloud.toml";
     private final LSContext lsServerContext;
 
     public BalWorkspaceService(LSContext lsServerContext) {
@@ -73,11 +74,13 @@ public class BalWorkspaceService implements WorkspaceService {
     @Override
     public void didChangeConfiguration(
             DidChangeConfigurationParams params) {
+        BalWorkspaceContext context =
+                ContextBuilder.getWorkspaceContext(this.lsServerContext);
         JsonObject settings = (JsonObject) params.getSettings();
         JsonElement configSection =
-                settings.get(ConfigurationHolder.CONFIG_SECTION);
+                settings.get(ConfigurationHolderImpl.CONFIG_SECTION);
         if (configSection != null) {
-            ConfigurationHolder.getInstance().update(configSection);
+            context.clientConfigHolder().update(configSection);
         }
     }
 
@@ -85,13 +88,17 @@ public class BalWorkspaceService implements WorkspaceService {
     public void didChangeWatchedFiles(DidChangeWatchedFilesParams params) {
         BalWorkspaceContext context =
                 ContextBuilder.getWorkspaceContext(this.lsServerContext);
-        Optional<FileEvent> tomlEvent = params.getChanges().stream()
-                .filter(fileEvent -> fileEvent.getUri().endsWith(TOML_CONFIG)
-                        && fileEvent.getType() != FileChangeType.Changed)
+        Optional<FileEvent> ballerinaTomlEvent = params.getChanges().stream()
+                .filter(fileEvent -> fileEvent.getUri().endsWith(BALLERINA_TOML)
+                        && fileEvent.getType() == FileChangeType.Changed)
+                .findAny();
+        Optional<FileEvent> cloudTomlEvent = params.getChanges().stream()
+                .filter(fileEvent -> fileEvent.getUri().endsWith(CLOUD_TOML)
+                        && fileEvent.getType() == FileChangeType.Changed)
                 .findAny();
 
-        if (tomlEvent.isPresent()) {
-            Path path = CommonUtils.uriToPath(tomlEvent.get().getUri());
+        if (ballerinaTomlEvent.isPresent()) {
+            Path path = CommonUtils.uriToPath(ballerinaTomlEvent.get().getUri());
             Optional<Path> projectRoot =
                     context.compilerManager().getProjectRoot(path);
             if (projectRoot.isEmpty()) {
@@ -99,6 +106,8 @@ public class BalWorkspaceService implements WorkspaceService {
             }
             // Reload the project
             context.compilerManager().reloadProject(projectRoot.get());
+        }
+        if (cloudTomlEvent.isPresent()) {
             // Send codelens refresh request to client
             LanguageClient client = this.lsServerContext.getClient();
             client.refreshCodeLenses();
@@ -121,7 +130,8 @@ public class BalWorkspaceService implements WorkspaceService {
                     for (SemanticModel semanticModel : semanticModels) {
                         List<SymbolInformation> symbols =
                                 semanticModel.moduleSymbols().stream()
-                                        .map(CommonUtils::getSymbolInformation)
+                                        .map(symbol -> CommonUtils
+                                                .getSymbolInformation(symbol, context, projectRoot))
                                         .collect(Collectors.toList());
                         wsSymbols.addAll(symbols);
                     }
@@ -161,13 +171,17 @@ public class BalWorkspaceService implements WorkspaceService {
                 return applyCreateVarWorkspaceEdit(context, params);
             }
             
+            // TODO: IMPLEMENT THE MOVE FUNCTION CODE ACTION WHICH CREATES A FILE
+
             return null;
         });
     }
-    
+
     private ApplyWorkspaceEditResponse
-    applyCreateVarWorkspaceEdit(BalWorkspaceContext context, ExecuteCommandParams params) {
-        CommandArgument commandArg = (CommandArgument) params.getArguments().get(0);
+    applyCreateVarWorkspaceEdit(BalWorkspaceContext context,
+                                ExecuteCommandParams params) {
+        JsonObject arg = (JsonObject) params.getArguments().get(0);
+        CommandArgument commandArg = new Gson().fromJson(arg, CommandArgument.class);
         if (!commandArg.getKey().equals("params")) {
             return null;
         }
@@ -177,16 +191,19 @@ public class BalWorkspaceService implements WorkspaceService {
         VersionedTextDocumentIdentifier identifier =
                 new VersionedTextDocumentIdentifier();
         identifier.setUri(createVarArgs.getUri());
-        TextEdit textEdit = new TextEdit(createVarArgs.getRange(), createVarArgs.getNewText());
-        
+        TextEdit textEdit = new TextEdit(createVarArgs.getRange(),
+                createVarArgs.getNewText());
+
         documentEdit.setEdits(Collections.singletonList(textEdit));
         documentEdit.setTextDocument(identifier);
-        Either<TextDocumentEdit, ResourceOperation> documentChanges = Either.forLeft(documentEdit);
+        Either<TextDocumentEdit, ResourceOperation> documentChanges =
+                Either.forLeft(documentEdit);
         workspaceEdit.setDocumentChanges(Collections.singletonList(documentChanges));
 
         ApplyWorkspaceEditParams applyEditParams = new ApplyWorkspaceEditParams();
         applyEditParams.setEdit(workspaceEdit);
-        CompletableFuture<ApplyWorkspaceEditResponse> response = context.getClient().applyEdit(applyEditParams);
+        CompletableFuture<ApplyWorkspaceEditResponse> response =
+                context.getClient().applyEdit(applyEditParams);
 
         try {
             return response.get();
@@ -263,6 +280,6 @@ public class BalWorkspaceService implements WorkspaceService {
         endParams.setToken(uuid.toString());
         endParams.setValue(Either.forLeft(endProgress));
         client.notifyProgress(endParams);
-        
+
     }
 }

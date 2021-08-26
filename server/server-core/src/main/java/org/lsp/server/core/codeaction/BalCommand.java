@@ -1,6 +1,7 @@
 package org.lsp.server.core.codeaction;
 
 public enum BalCommand {
+    ORGANIZE_IMPORTS("ORGANIZE_IMPORTS", "Organize Imports"),
     CREATE_VAR("CREATE_VAR", "Create Variable"),
     ADD_DOC("ADD_DOC", "Add Documentation");
 

@@ -15,14 +15,29 @@
  */
 package org.lsp.server.core.utils;
 
+import io.ballerina.compiler.api.symbols.AnnotationSymbol;
+import io.ballerina.compiler.api.symbols.FunctionSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
+import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
+import io.ballerina.compiler.api.symbols.VariableSymbol;
 import io.ballerina.compiler.syntax.tree.ModuleMemberDeclarationNode;
+import io.ballerina.projects.Project;
+import io.ballerina.tools.text.LinePosition;
+import io.ballerina.tools.text.LineRange;
+import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.SymbolKind;
+import org.eclipse.lsp4j.SymbolTag;
+import org.lsp.server.api.context.BalPosBasedContext;
+import org.lsp.server.api.context.BaseOperationContext;
 
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,16 +69,99 @@ public class CommonUtils {
     }
 
     public static Optional<TypeSymbol> getTypeDefinition(Symbol symbol) {
-        return Optional.empty();
+        TypeSymbol typeSymbol;
+        // TODO: Can support other symbol kinds
+        switch (symbol.kind()) {
+            case VARIABLE:
+                typeSymbol = ((VariableSymbol) symbol).typeDescriptor();
+                break;
+            default:
+                typeSymbol = null;
+                break;
+        }
+        if (typeSymbol == null || typeSymbol.typeKind() != TypeDescKind.TYPE_REFERENCE) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(typeSymbol);
+
     }
 
     public static boolean isDeprecated(ModuleMemberDeclarationNode member) {
         return false;
     }
-    
-    public static SymbolInformation getSymbolInformation(Symbol symbol) {
+
+    public static SymbolInformation getSymbolInformation(Symbol symbol, BaseOperationContext context, Path projRoot) {
         SymbolInformation symbolInformation = new SymbolInformation();
-        
+        symbolInformation.setName(symbol.getName().get());
+        List<SymbolTag> tags = new ArrayList<>();
+        SymbolKind kind;
+        switch (symbol.kind()) {
+            case FUNCTION:
+                kind = SymbolKind.Function;
+                FunctionSymbol functionSymbol = (FunctionSymbol) symbol;
+                Optional<AnnotationSymbol> deprecated = functionSymbol.annotations().stream()
+                        .filter(annotationSymbol -> annotationSymbol.getName().orElse("").equals("deprecated"))
+                        .findAny();
+                if (deprecated.isPresent()) {
+                    tags.add(SymbolTag.Deprecated);
+                }
+                break;
+            case CLASS:
+                kind = SymbolKind.Class;
+                break;
+            case ENUM:
+                kind = SymbolKind.Enum;
+                break;
+            case TYPE_DEFINITION:
+                kind = SymbolKind.TypeParameter;
+                break;
+            default:
+                kind = null;
+                break;
+        }
+        if (kind != null) {
+            symbolInformation.setKind(kind);
+        }
+        symbolInformation.setTags(tags);
+        symbolInformation.setLocation(toLspLocation(context, projRoot, symbol));
         return symbolInformation;
+    }
+
+    private static Location toLspLocation(BaseOperationContext context, Path projRoot, Symbol symbol) {
+        io.ballerina.tools.diagnostics.Location location = symbol.getLocation().get();
+        Location defLocation = new Location();
+        Range range = toRange(location.lineRange());
+        defLocation.setRange(range);
+        defLocation.setUri(getUri(context, projRoot, symbol, location));
+
+        return defLocation;
+    }
+
+    private static Position toPosition(LinePosition linePosition) {
+        Position position = new Position();
+        position.setLine(linePosition.line());
+        position.setCharacter(linePosition.offset());
+
+        return position;
+    }
+
+    private static Range toRange(LineRange lineRange) {
+        Range range = new Range();
+        range.setStart(toPosition(lineRange.startLine()));
+        range.setEnd(toPosition(lineRange.endLine()));
+
+        return range;
+    }
+
+    private static String getUri( BaseOperationContext context, Path projRoot, Symbol symbol,
+                                 io.ballerina.tools.diagnostics.Location location) {
+        Optional<Project> project = context.compilerManager().getProject(projRoot);
+        String moduleName = symbol.getModule().orElseThrow().id().moduleName();
+
+        String packageName = project.get().currentPackage().packageName().value();
+        moduleName = moduleName.replace(packageName + ".", "");
+        Path definitionPath = projRoot.resolve("modules").resolve(moduleName)
+                .resolve(location.lineRange().filePath());
+        return definitionPath.toUri().toString();
     }
 }

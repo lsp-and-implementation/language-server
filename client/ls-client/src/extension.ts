@@ -75,8 +75,8 @@ export function activate(context: vscode.ExtensionContext) {
 			documentSelector: [{ scheme: 'file', language: 'ballerina' }],
 			initializationOptions: {
 				enableDocumentationCodeLenses: false,
-				synchronize: { configurationSection: ['editor'] },
 			},
+			synchronize: { configurationSection: ['ballerina'] },
 			outputChannel: logChannel
 		};
 

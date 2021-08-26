@@ -76,7 +76,7 @@ public class SemanticTokensProvider {
         Map<Integer, Token> lastTokenInLine = new HashMap<>();
         int lastLine = 0;
         for (ModuleMemberDeclarationNode member : ((ModulePartNode) syntaxTree.rootNode()).members()) {
-            if (member.kind() == SyntaxKind.TYPE_DEFINITION) {
+            if (member.kind() == SyntaxKind.TYPE_DEFINITION && withinRange(member, range)) {
                 Token typeName = ((TypeDefinitionNode) member).typeName();
                 LinePosition startLine = typeName.lineRange().startLine();
                 int startChar = startLine.offset();
@@ -103,6 +103,8 @@ public class SemanticTokensProvider {
     
     private static boolean withinRange(ModuleMemberDeclarationNode member, Range range) {
         LinePosition startLine = member.lineRange().startLine();
-        return true;
+        LinePosition endLine = member.lineRange().endLine();
+        
+        return startLine.line() >= range.getStart().getLine() && endLine.line() <= range.getEnd().getLine();
     }
 }

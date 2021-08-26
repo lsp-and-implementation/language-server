@@ -81,7 +81,8 @@ public class BallerinaLinter {
     private static Diagnostic getUnusedFunctionDiagnostic(FunctionDefinitionNode node, String path) {
         String message = "Unused Function: " + node.functionName().text();
         NodeLocation location = node.functionName().location();
-        DiagnosticInfo diagnosticInfo = new DiagnosticInfo("LINTER001", "Unused Function",
+        LinterDiagnosticCodes code = LinterDiagnosticCodes.LINTER001;
+        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(code.getDiagnosticCode(), code.getMessage(),
                 DiagnosticSeverity.WARNING);
         return new LinterDiagnostic(diagnosticInfo, location, message, path);
     }
@@ -89,7 +90,8 @@ public class BallerinaLinter {
     private static Diagnostic getDeprecatedFunctionDiagnostic(FunctionDefinitionNode node, String path) {
         String message = "Deprecated Function: " + node.functionName().text();
         NodeLocation location = node.functionName().location();
-        DiagnosticInfo diagnosticInfo = new DiagnosticInfo("LINTER002", "Deprecated Function",
+        LinterDiagnosticCodes code = LinterDiagnosticCodes.LINTER002;
+        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(code.getDiagnosticCode(), code.getMessage(),
                 DiagnosticSeverity.WARNING);
         return new LinterDiagnostic(diagnosticInfo, location, message, path);
     }

@@ -15,7 +15,9 @@
  */
 package org.lsp.server.core;
 
+import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.CodeActionOptions;
+import org.eclipse.lsp4j.CodeLensOptions;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.DefinitionOptions;
 import org.eclipse.lsp4j.DocumentLinkOptions;
@@ -23,6 +25,7 @@ import org.eclipse.lsp4j.DocumentOnTypeFormattingOptions;
 import org.eclipse.lsp4j.DocumentSymbolOptions;
 import org.eclipse.lsp4j.ExecuteCommandOptions;
 import org.eclipse.lsp4j.HoverOptions;
+import org.eclipse.lsp4j.ImplementationRegistrationOptions;
 import org.eclipse.lsp4j.ReferenceOptions;
 import org.eclipse.lsp4j.RenameOptions;
 import org.eclipse.lsp4j.SaveOptions;
@@ -31,7 +34,11 @@ import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
 import org.eclipse.lsp4j.SignatureHelpOptions;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.TextDocumentSyncOptions;
+import org.eclipse.lsp4j.TypeDefinitionOptions;
+import org.eclipse.lsp4j.TypeDefinitionParams;
+import org.eclipse.lsp4j.TypeDefinitionRegistrationOptions;
 import org.eclipse.lsp4j.WorkspaceFoldersOptions;
+import org.eclipse.lsp4j.WorkspaceSymbolOptions;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.lsp.server.core.codeaction.BalCommand;
 import org.lsp.server.core.semantictoken.SemanticTokensProvider;
@@ -40,7 +47,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /**
  * Holds the server initializing utilities.
@@ -59,7 +65,10 @@ public class ServerInitUtils {
     public static TextDocumentSyncOptions getDocumentSyncOption() {
         TextDocumentSyncOptions syncOptions = new TextDocumentSyncOptions();
         SaveOptions saveOptions = new SaveOptions(true);
+        // Can use Incremental for diff based approach
+        // Can use None and if not set, default is None
         syncOptions.setChange(TextDocumentSyncKind.Full);
+        // Client will send open and close notifications
         syncOptions.setOpenClose(true);
         syncOptions.setWillSave(true);
         syncOptions.setWillSaveWaitUntil(true);
@@ -99,7 +108,7 @@ public class ServerInitUtils {
                 new DocumentOnTypeFormattingOptions();
         options.setFirstTriggerCharacter("}");
         options.setMoreTriggerCharacter(Collections.singletonList(";"));
-        
+
         return options;
     }
 
@@ -112,6 +121,18 @@ public class ServerInitUtils {
     public static DefinitionOptions getDefinitionOptions() {
         DefinitionOptions options = new DefinitionOptions();
 
+        return options;
+    }
+
+    public static TypeDefinitionRegistrationOptions getTypeDefinitionOptions() {
+        TypeDefinitionRegistrationOptions options = new TypeDefinitionRegistrationOptions();
+
+        return options;
+    }
+
+    public static ImplementationRegistrationOptions getImplementationOptions() {
+        ImplementationRegistrationOptions options = new ImplementationRegistrationOptions();
+        
         return options;
     }
 
@@ -141,8 +162,9 @@ public class ServerInitUtils {
         SemanticTokensWithRegistrationOptions options = new SemanticTokensWithRegistrationOptions();
         SemanticTokensServerFull serverFull = new SemanticTokensServerFull();
         serverFull.setDelta(false);
-        options.setLegend(SemanticTokensProvider.SEMANTIC_TOKENS_LEGEND);
         options.setFull(serverFull);
+        options.setRange(true);
+        options.setLegend(SemanticTokensProvider.SEMANTIC_TOKENS_LEGEND);
 
         return options;
     }
@@ -150,6 +172,11 @@ public class ServerInitUtils {
     public static CodeActionOptions getCodeActionOptions() {
         CodeActionOptions options = new CodeActionOptions();
         options.setResolveProvider(true);
+        options.setCodeActionKinds(
+                Arrays.asList(CodeActionKind.SourceOrganizeImports,
+                        CodeActionKind.Source,
+                        CodeActionKind.QuickFix)
+        );
 
         return options;
     }
@@ -167,18 +194,37 @@ public class ServerInitUtils {
 
         return options;
     }
-    
+
     public static HoverOptions getHoverOptions() {
         HoverOptions options = new HoverOptions();
-        
+
         return options;
     }
-    
+
     public static ExecuteCommandOptions getExecuteCommandOptions() {
         ExecuteCommandOptions options = new ExecuteCommandOptions();
         List<String> commands = Arrays.stream(BalCommand.values())
                 .map(BalCommand::getCommand).collect(Collectors.toList());
         options.setCommands(commands);
+
+        return options;
+    }
+    
+    public static CodeLensOptions getCodeLensOptions() {
+        CodeLensOptions options = new CodeLensOptions();
+        options.setResolveProvider(true);
+        
+        return options;
+    }
+    
+    public static ReferenceOptions getReferencesOptions() {
+        ReferenceOptions options = new ReferenceOptions();
+        
+        return options;
+    }
+    
+    public static WorkspaceSymbolOptions getWorkspaceSymbolOptions() {
+        WorkspaceSymbolOptions options = new WorkspaceSymbolOptions();
         
         return options;
     }

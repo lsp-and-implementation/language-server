@@ -15,6 +15,7 @@
  */
 package org.lsp.server.core;
 
+import com.google.gson.JsonObject;
 import io.ballerina.projects.Project;
 import io.ballerina.projects.ProjectKind;
 import org.eclipse.lsp4j.CallHierarchyIncomingCall;
@@ -35,8 +36,6 @@ import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
-import org.eclipse.lsp4j.ConfigurationItem;
-import org.eclipse.lsp4j.ConfigurationParams;
 import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
@@ -56,6 +55,9 @@ import org.eclipse.lsp4j.FoldingRange;
 import org.eclipse.lsp4j.FoldingRangeRequestParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
+import org.eclipse.lsp4j.ImplementationParams;
+import org.eclipse.lsp4j.LinkedEditingRangeParams;
+import org.eclipse.lsp4j.LinkedEditingRanges;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.Position;
@@ -72,48 +74,62 @@ import org.eclipse.lsp4j.SemanticTokensDeltaParams;
 import org.eclipse.lsp4j.SemanticTokensParams;
 import org.eclipse.lsp4j.SemanticTokensRangeParams;
 import org.eclipse.lsp4j.SignatureHelp;
-import org.eclipse.lsp4j.SignatureHelpContext;
 import org.eclipse.lsp4j.SignatureHelpParams;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextEdit;
+import org.eclipse.lsp4j.TypeDefinitionParams;
 import org.eclipse.lsp4j.WillSaveTextDocumentParams;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
-import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.lsp.server.api.DiagnosticsPublisher;
 import org.lsp.server.api.context.BalCallHierarchyOutgoingContext;
 import org.lsp.server.api.context.BalCodeActionContext;
+import org.lsp.server.api.context.BalCodeLensContext;
 import org.lsp.server.api.context.BalCompletionContext;
 import org.lsp.server.api.context.BalCompletionResolveContext;
+import org.lsp.server.api.context.BalDefinitionContext;
 import org.lsp.server.api.context.BalDocumentColourContext;
 import org.lsp.server.api.context.BalDocumentHighlightContext;
+import org.lsp.server.api.context.BalDocumentLinkContext;
 import org.lsp.server.api.context.BalDocumentSymbolContext;
 import org.lsp.server.api.context.BalFoldingRangeContext;
+import org.lsp.server.api.context.BalGotoImplContext;
 import org.lsp.server.api.context.BalHoverContext;
+import org.lsp.server.api.context.BalLinkedEditingRangeContext;
 import org.lsp.server.api.context.BalPosBasedContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
+import org.lsp.server.api.context.BalReferencesContext;
 import org.lsp.server.api.context.BalRenameContext;
+import org.lsp.server.api.context.BalSelectionRangeContext;
 import org.lsp.server.api.context.BalSemanticTokenContext;
+import org.lsp.server.api.context.BalSemanticTokenRangeContext;
 import org.lsp.server.api.context.BalSignatureContext;
+import org.lsp.server.api.context.BalTextDocumentContext;
+import org.lsp.server.api.context.BalTypeDefContext;
 import org.lsp.server.api.context.BaseOperationContext;
 import org.lsp.server.api.context.LSContext;
 import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
 import org.lsp.server.core.callhierarchy.CallHierarchyProvider;
 import org.lsp.server.core.codeaction.CodeActionProvider;
+import org.lsp.server.core.codelens.CodeLensProvider;
 import org.lsp.server.core.completion.BalCompletionRouter;
 import org.lsp.server.core.completion.CompletionItemResolver;
 import org.lsp.server.core.contexts.ContextBuilder;
+import org.lsp.server.core.definition.DefinitionProvider;
 import org.lsp.server.core.doccolour.DocumentColourProvider;
 import org.lsp.server.core.docsymbol.DocumentSymbolProvider;
 import org.lsp.server.core.docsync.BaseDocumentSyncHandler;
 import org.lsp.server.core.docsync.DocumentSyncHandler;
+import org.lsp.server.core.documentlink.DocumentLinkProvider;
 import org.lsp.server.core.foldingrange.FoldingRangeProvider;
 import org.lsp.server.core.format.FormatProvider;
 import org.lsp.server.core.highlight.DocumentHighlightProvider;
 import org.lsp.server.core.hover.HoverProvider;
+import org.lsp.server.core.linkedediting.LinkedEditingRangeProvider;
+import org.lsp.server.core.references.ReferencesProvider;
 import org.lsp.server.core.rename.RenameProvider;
+import org.lsp.server.core.selectionrange.SelectionRangeProvider;
 import org.lsp.server.core.semantictoken.SemanticTokensProvider;
 import org.lsp.server.core.signature.SignatureProvider;
 import org.lsp.server.core.utils.CommonUtils;
@@ -125,7 +141,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Implementation of the {@link TextDocumentService}.
@@ -314,23 +329,61 @@ public class BalTextDocumentService implements TextDocumentService {
     }
 
     @Override
+    public CompletableFuture<CodeAction> resolveCodeAction(CodeAction unresolved) {
+        return CompletableFuture.supplyAsync(() -> {
+            String uri = ((JsonObject) unresolved.getData()).get("uri").getAsString();
+            BalTextDocumentContext context = ContextBuilder.getTextDocumentContext(this.serverContext, uri);
+            return CodeActionProvider.resolve(context, unresolved);
+        });
+    }
+
+    @Override
     public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params) {
-        return null;
+        return CompletableFuture.supplyAsync(() -> {
+            BalCodeLensContext context = ContextBuilder.getCodeLensContext(this.serverContext, params);
+            return CodeLensProvider.getCodeLenses(context, params);
+        });
     }
 
     @Override
     public CompletableFuture<List<? extends Location>> references(ReferenceParams params) {
-        // TODO: Add a separate section the chapters regarding the workdone progress for 
-        return CompletableFuture.supplyAsync(() -> {
-            return null;
-        });
+        BalReferencesContext context = ContextBuilder.getReferencesContext(this.serverContext, params);
+
+        return CompletableFuture.supplyAsync(() -> ReferencesProvider.references(context));
     }
 
     @Override
     public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>>
     definition(DefinitionParams params) {
         return CompletableFuture.supplyAsync(() -> {
-            return null;
+            BalDefinitionContext context = ContextBuilder.getDefinitionContext(this.serverContext, params);
+            ContextEvaluator.fillTokenInfoAtCursor(context);
+            if (this.serverContext.getClientCapabilities().get().getTextDocument().getDefinition().getLinkSupport()) {
+                List<LocationLink> locationLinks = DefinitionProvider.definitionWithLocationLink(context);
+                return Either.forRight(locationLinks);
+            }
+            List<Location> definitions = DefinitionProvider.definition(context);
+            return Either.forLeft(definitions);
+        });
+    }
+
+    @Override
+    public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> typeDefinition(TypeDefinitionParams params) {
+        return CompletableFuture.supplyAsync(() -> {
+            BalTypeDefContext context = ContextBuilder.getTypeDefinitionContext(this.serverContext, params);
+            ContextEvaluator.fillTokenInfoAtCursor(context);
+            List<Location> definitions = DefinitionProvider.typeDefinition(context);
+            return Either.forLeft(definitions);
+        });
+    }
+
+    @Override
+    public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> implementation(ImplementationParams params) {
+        return CompletableFuture.supplyAsync(() -> {
+            BalGotoImplContext context = ContextBuilder.getGotoImplContext(this.serverContext, params);
+            ContextEvaluator.fillTokenInfoAtCursor(context);
+            List<Location> definitions = DefinitionProvider.implementation(context);
+            return Either.forLeft(definitions);
         });
     }
 
@@ -339,7 +392,8 @@ public class BalTextDocumentService implements TextDocumentService {
     documentSymbol(DocumentSymbolParams params) {
         return CompletableFuture.supplyAsync(() -> {
             BalDocumentSymbolContext context = ContextBuilder.documentSymbolContext(this.serverContext, params);
-            return DocumentSymbolProvider.getDocumentSymbol(context);
+            // return DocumentSymbolProvider.getDocumentSymbol(context);
+            return DocumentSymbolProvider.getSymbolInformation(context);
         });
     }
 
@@ -353,7 +407,10 @@ public class BalTextDocumentService implements TextDocumentService {
 
     @Override
     public CompletableFuture<List<DocumentLink>> documentLink(DocumentLinkParams params) {
-        return null;
+        return CompletableFuture.supplyAsync(() -> {
+            BalDocumentLinkContext context = ContextBuilder.documentLinkContext(this.serverContext, params);
+            return DocumentLinkProvider.getDocumentLink(context);
+        });
     }
 
     @Override
@@ -363,7 +420,10 @@ public class BalTextDocumentService implements TextDocumentService {
 
     @Override
     public CompletableFuture<List<SelectionRange>> selectionRange(SelectionRangeParams params) {
-        return null;
+        return CompletableFuture.supplyAsync(() -> {
+            BalSelectionRangeContext context = ContextBuilder.getSelectionRangeContext(this.serverContext, params);
+            return SelectionRangeProvider.getSelectionRange(context);
+        });
     }
 
     @Override
@@ -382,7 +442,20 @@ public class BalTextDocumentService implements TextDocumentService {
 
     @Override
     public CompletableFuture<SemanticTokens> semanticTokensRange(SemanticTokensRangeParams params) {
-        return null;
+        return CompletableFuture.supplyAsync(() -> {
+            BalSemanticTokenRangeContext context = ContextBuilder.semanticTokensRangeContext(this.serverContext, params);
+
+            return SemanticTokensProvider.getSemanticTokensInRange(context);
+        });
+    }
+
+    @Override
+    public CompletableFuture<LinkedEditingRanges> linkedEditingRange(LinkedEditingRangeParams params) {
+        return CompletableFuture.supplyAsync(() -> {
+            BalLinkedEditingRangeContext context = ContextBuilder.getLinkedEditingRangeContext(this.serverContext, params);
+            ContextEvaluator.fillTokenInfoAtCursor(context);
+            return LinkedEditingRangeProvider.getLinkedEditingRanges(context);
+        });
     }
 
     @Override

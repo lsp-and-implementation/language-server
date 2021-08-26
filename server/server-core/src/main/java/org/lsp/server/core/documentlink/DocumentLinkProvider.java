@@ -1,47 +1,57 @@
 package org.lsp.server.core.documentlink;
 
-import io.ballerina.compiler.api.SemanticModel;
-import io.ballerina.tools.diagnostics.Location;
+import io.ballerina.compiler.syntax.tree.ModulePartNode;
+import io.ballerina.compiler.syntax.tree.SyntaxTree;
+import io.ballerina.tools.text.LineRange;
 import org.eclipse.lsp4j.DocumentLink;
 import org.eclipse.lsp4j.Range;
-import org.lsp.server.api.context.BalDocumentHighlightContext;
 import org.lsp.server.api.context.BalDocumentLinkContext;
 import org.lsp.server.api.context.BaseOperationContext;
+import org.lsp.server.core.AbstractProvider;
 import org.lsp.server.core.utils.CommonUtils;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-public class DocumentLinkProvider {
+public class DocumentLinkProvider extends AbstractProvider {
     private static final String DOC_URI = "uri";
     private DocumentLinkProvider() {
     }
     
 public static List<DocumentLink>
 getDocumentLink(BalDocumentLinkContext context) {
-    List<DocumentLink> links = getLinks(context);
+    Map<LineRange, String> linkRanges = getLinkRanges(context);
+    List<DocumentLink> documentLinks = new ArrayList<>();
     /*
-    Here we do not set the target. Target will be 
+    Here we set the target. Target can also be 
     calculated from the resolve request
      */
-    for (DocumentLink link : links) {
-        if (context.clientCapabilities().getTextDocument().getDocumentLink().getTooltipSupport()) {
+    linkRanges.forEach((lineRange, target) -> {
+        DocumentLink link = new DocumentLink();
+        if (context.clientCapabilities().getTextDocument()
+                .getDocumentLink().getTooltipSupport()) {
             link.setTooltip("cmd/ ctrl + click to navigate");
         }
-        Map<String, String> dataMap = new HashMap<>();
+        Range range = toRange(lineRange);
+        link.setRange(range);
         /*
         Preserve the document URI in the data field.
         This will be referred during the resolve request 
          */
-        dataMap.put(DOC_URI,
-                context.params().getTextDocument().getUri());
-        link.setData(dataMap);
-    }
+        // Map<String, String> dataMap = new HashMap<>();
+        // dataMap.put(DOC_URI,
+        // context.params().getTextDocument().getUri());
+        // link.setData(dataMap);
+        link.setTarget(target);
+        documentLinks.add(link);
+    });
     
-    return links;
+    return documentLinks;
 }
 
 public static DocumentLink
@@ -67,14 +77,15 @@ getDocumentLinkResolved(BaseOperationContext context, DocumentLink documentLink)
         return "http://localhost";
     }
 
-    private static List<DocumentLink> getLinks(BalDocumentLinkContext context) {
-        return Collections.emptyList();
-    }
+    private static Map<LineRange, String> getLinkRanges(BalDocumentLinkContext context) {
+        Optional<SyntaxTree> syntaxTree = context.compilerManager().getSyntaxTree(context.getPath());
+        if (syntaxTree.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        ModulePartNode modulePartNode = syntaxTree.get().rootNode();
+        DocumentLinkVisitor linkVisitor = new DocumentLinkVisitor();
+        modulePartNode.accept(linkVisitor);
 
-    private static boolean isWrite(BalDocumentHighlightContext context, Location location) {
-        SemanticModel semanticModel = context.compilerManager()
-                .getSemanticModel(context.getPath()).orElseThrow();
-        
-        return location.lineRange().startLine().line() == 13;
+        return linkVisitor.getLinkRanges();
     }
 }

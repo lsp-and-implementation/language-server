@@ -29,10 +29,11 @@ import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.lsp.server.api.DiagnosticsPublisher;
-import org.lsp.server.api.context.LSContext;
 import org.lsp.server.api.context.BaseOperationContext;
+import org.lsp.server.api.context.LSContext;
 import org.lsp.server.core.utils.BallerinaLinter;
 import org.lsp.server.core.utils.LinterDiagnostic;
+import org.lsp.server.core.utils.LinterDiagnosticCodes;
 import org.lsp.server.core.utils.RedeclaredVarDiagnostic;
 
 import java.net.URI;
@@ -49,7 +50,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @since 1.0.0
  */
-public class DiagnosticsPublisherImpl implements org.lsp.server.api.DiagnosticsPublisher {
+public class DiagnosticsPublisherImpl implements DiagnosticsPublisher {
     private final LanguageClient client;
     private Map<String, List<Diagnostic>> previousDiagnostics = new ConcurrentHashMap<>();
     private static final LSContext.Key<DiagnosticsPublisher> DIAGNOSTICS_PUBLISHER_KEY = new LSContext.Key<>();
@@ -59,7 +60,7 @@ public class DiagnosticsPublisherImpl implements org.lsp.server.api.DiagnosticsP
         if (diagnosticsPublisher == null) {
             diagnosticsPublisher = new DiagnosticsPublisherImpl(serverContext);
         }
-        
+
         return diagnosticsPublisher;
     }
 
@@ -96,10 +97,10 @@ public class DiagnosticsPublisherImpl implements org.lsp.server.api.DiagnosticsP
             }
             Diagnostic computedDiag = this.getDiagnostic(diagnostic);
             List<DiagnosticTag> tags = new ArrayList<>();
-            if (diagnostic.diagnosticInfo().code().equals("LINTER001")) {
+            if (diagnostic.diagnosticInfo().code().equals(LinterDiagnosticCodes.LINTER001.getDiagnosticCode())) {
                 tags.add(DiagnosticTag.Unnecessary);
             }
-            if (diagnostic.diagnosticInfo().code().equals("LINTER002")) {
+            if (diagnostic.diagnosticInfo().code().equals(LinterDiagnosticCodes.LINTER002.getDiagnosticCode())) {
                 tags.add(DiagnosticTag.Deprecated);
             }
             computedDiag.setTags(tags);
@@ -135,13 +136,13 @@ public class DiagnosticsPublisherImpl implements org.lsp.server.api.DiagnosticsP
             params.setDiagnostics(diagList);
             URI uri = project.get().sourceRoot().resolve(diagPath).toUri();
             params.setUri(uri.toString());
-            
+
             this.client.publishDiagnostics(params);
         });
-        
+
         this.previousDiagnostics = diagnostics;
     }
-    
+
     private Diagnostic getDiagnostic(io.ballerina.tools.diagnostics.Diagnostic diagnostic) {
         DiagnosticInfo diagnosticInfo = diagnostic.diagnosticInfo();
         Diagnostic diag = new Diagnostic();
@@ -152,7 +153,7 @@ public class DiagnosticsPublisherImpl implements org.lsp.server.api.DiagnosticsP
         Position start = new Position(lineRange.startLine().line(), lineRange.startLine().offset());
         Position end = new Position(lineRange.endLine().line(), lineRange.endLine().offset());
         diag.setRange(new Range(start, end));
-        
+
         switch (diagnosticInfo.severity()) {
             case ERROR:
                 diag.setSeverity(DiagnosticSeverity.Error);
@@ -169,10 +170,10 @@ public class DiagnosticsPublisherImpl implements org.lsp.server.api.DiagnosticsP
             default:
                 break;
         }
-        
+
         return diag;
     }
-    
+
     private Location getRelatedInfoLocation(io.ballerina.tools.diagnostics.DiagnosticRelatedInformation info,
                                             Project project) {
         return null;

@@ -2,37 +2,53 @@ package org.lsp.server.core.contexts;
 
 import org.eclipse.lsp4j.CallHierarchyItem;
 import org.eclipse.lsp4j.CodeActionParams;
+import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionParams;
+import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.DocumentColorParams;
 import org.eclipse.lsp4j.DocumentHighlightParams;
+import org.eclipse.lsp4j.DocumentLinkParams;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.FoldingRangeRequestParams;
 import org.eclipse.lsp4j.HoverParams;
+import org.eclipse.lsp4j.ImplementationParams;
+import org.eclipse.lsp4j.LinkedEditingRangeParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PrepareRenameParams;
+import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.RenameParams;
+import org.eclipse.lsp4j.SelectionRangeParams;
 import org.eclipse.lsp4j.SemanticTokensDeltaParams;
 import org.eclipse.lsp4j.SemanticTokensParams;
 import org.eclipse.lsp4j.SemanticTokensRangeParams;
 import org.eclipse.lsp4j.SignatureHelpParams;
+import org.eclipse.lsp4j.TypeDefinitionParams;
 import org.lsp.server.api.context.BalCallHierarchyOutgoingContext;
 import org.lsp.server.api.context.BalCodeActionContext;
+import org.lsp.server.api.context.BalCodeLensContext;
 import org.lsp.server.api.context.BalCompletionContext;
 import org.lsp.server.api.context.BalCompletionResolveContext;
+import org.lsp.server.api.context.BalDefinitionContext;
 import org.lsp.server.api.context.BalDocumentColourContext;
 import org.lsp.server.api.context.BalDocumentHighlightContext;
+import org.lsp.server.api.context.BalDocumentLinkContext;
 import org.lsp.server.api.context.BalDocumentSymbolContext;
 import org.lsp.server.api.context.BalFoldingRangeContext;
+import org.lsp.server.api.context.BalGotoImplContext;
 import org.lsp.server.api.context.BalHoverContext;
+import org.lsp.server.api.context.BalLinkedEditingRangeContext;
 import org.lsp.server.api.context.BalPosBasedContext;
 import org.lsp.server.api.context.BalPrepareRenameContext;
+import org.lsp.server.api.context.BalReferencesContext;
 import org.lsp.server.api.context.BalRenameContext;
+import org.lsp.server.api.context.BalSelectionRangeContext;
 import org.lsp.server.api.context.BalSemanticTokenContext;
 import org.lsp.server.api.context.BalSemanticTokenDeltaContext;
 import org.lsp.server.api.context.BalSemanticTokenRangeContext;
 import org.lsp.server.api.context.BalSignatureContext;
 import org.lsp.server.api.context.BalTextDocumentContext;
+import org.lsp.server.api.context.BalTypeDefContext;
 import org.lsp.server.api.context.BalWorkspaceContext;
 import org.lsp.server.api.context.BaseOperationContext;
 import org.lsp.server.api.context.LSContext;
@@ -68,16 +84,28 @@ public class ContextBuilder {
         return new BalDocumentHighlightContextImpl(context, params);
     }
 
+    public static BalDocumentLinkContext documentLinkContext(LSContext context,
+                                                                  DocumentLinkParams params) {
+        return new BalDocumentLinkContextImpl(context, params);
+    }
+
     public static BalSemanticTokenContext semanticTokensContext(LSContext serverContext, SemanticTokensParams params) {
         return new BalSemanticTokenContextImpl(serverContext, params);
     }
 
     public static BalSemanticTokenRangeContext semanticTokensRangeContext(LSContext serverContext, SemanticTokensRangeParams params) {
-        return null;
+        return new BalSemanticTokenRangeContextImpl(serverContext, params);
     }
 
     public static BalSemanticTokenDeltaContext semanticTokensDeltaContext(LSContext serverContext, SemanticTokensDeltaParams params) {
         return null;
+    }
+
+    public static BalLinkedEditingRangeContext getLinkedEditingRangeContext(LSContext serverContext,
+                                                                          LinkedEditingRangeParams params) {
+        return new BalLinkedEditingRangeContextImpl(serverContext,
+                params.getTextDocument().getUri(),
+                params.getPosition());
     }
 
     public static BalDocumentColourContext getColourContext(LSContext serverContext, DocumentColorParams params) {
@@ -114,5 +142,38 @@ public class ContextBuilder {
     
     public static BalCodeActionContext getCodeActionContext(LSContext serverContext, CodeActionParams params) {
         return new BalCodeActionContextImpl(serverContext, params.getTextDocument().getUri(), params.getRange());
+    }
+    
+    public static BalCodeLensContext getCodeLensContext(LSContext serverContext, CodeLensParams params) {
+        return new BalCodeLensContextImpl(serverContext, params.getTextDocument().getUri());
+    }
+    
+    public static BalReferencesContext getReferencesContext(LSContext serverContext, ReferenceParams params) {
+        return new BalReferencesContextImpl(serverContext, params);
+    }
+    
+    public static BalDefinitionContext getDefinitionContext(LSContext serverContext, DefinitionParams params) {
+        String uri = params.getTextDocument().getUri();
+        Position position = params.getPosition();
+        
+        return new BalDefinitionContextImpl(serverContext, uri, position);
+    }
+    
+    public static BalTypeDefContext getTypeDefinitionContext(LSContext serverContext, TypeDefinitionParams params) {
+        String uri = params.getTextDocument().getUri();
+        Position position = params.getPosition();
+        
+        return new BalTypeDefinitionContextImpl(serverContext, uri, position);
+    }
+    
+    public static BalGotoImplContext getGotoImplContext(LSContext serverContext, ImplementationParams params) {
+        String uri = params.getTextDocument().getUri();
+        Position position = params.getPosition();
+        
+        return new BalGotoImplementationContextImpl(serverContext, uri, position);
+    }
+    
+    public static BalSelectionRangeContext getSelectionRangeContext(LSContext serverContext, SelectionRangeParams params) {
+        return new BalSelectionRangeContextImpl(serverContext, params);
     }
 }
