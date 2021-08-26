@@ -33,6 +33,7 @@ import org.lsp.server.api.context.BaseOperationContext;
 import org.lsp.server.api.context.LSContext;
 import org.lsp.server.core.utils.BallerinaLinter;
 import org.lsp.server.core.utils.LinterDiagnostic;
+import org.lsp.server.core.utils.LinterDiagnosticCodes;
 import org.lsp.server.core.utils.RedeclaredVarDiagnostic;
 
 import java.net.URI;
@@ -96,10 +97,10 @@ public class DiagnosticsPublisherImpl implements DiagnosticsPublisher {
             }
             Diagnostic computedDiag = this.getDiagnostic(diagnostic);
             List<DiagnosticTag> tags = new ArrayList<>();
-            if (diagnostic.diagnosticInfo().code().equals("LINTER001")) {
+            if (diagnostic.diagnosticInfo().code().equals(LinterDiagnosticCodes.LINTER001.getDiagnosticCode())) {
                 tags.add(DiagnosticTag.Unnecessary);
             }
-            if (diagnostic.diagnosticInfo().code().equals("LINTER002")) {
+            if (diagnostic.diagnosticInfo().code().equals(LinterDiagnosticCodes.LINTER002.getDiagnosticCode())) {
                 tags.add(DiagnosticTag.Deprecated);
             }
             computedDiag.setTags(tags);

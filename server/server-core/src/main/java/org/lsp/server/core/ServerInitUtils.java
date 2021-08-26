@@ -65,7 +65,10 @@ public class ServerInitUtils {
     public static TextDocumentSyncOptions getDocumentSyncOption() {
         TextDocumentSyncOptions syncOptions = new TextDocumentSyncOptions();
         SaveOptions saveOptions = new SaveOptions(true);
+        // Can use Incremental for diff based approach
+        // Can use None and if not set, default is None
         syncOptions.setChange(TextDocumentSyncKind.Full);
+        // Client will send open and close notifications
         syncOptions.setOpenClose(true);
         syncOptions.setWillSave(true);
         syncOptions.setWillSaveWaitUntil(true);
