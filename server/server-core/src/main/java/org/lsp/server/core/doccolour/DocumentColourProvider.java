@@ -5,6 +5,7 @@ import io.ballerina.compiler.api.symbols.AnnotationSymbol;
 import io.ballerina.compiler.api.symbols.ParameterSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
+import io.ballerina.compiler.syntax.tree.AnnotationNode;
 import io.ballerina.compiler.syntax.tree.BasicLiteralNode;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
 import io.ballerina.compiler.syntax.tree.FunctionArgumentNode;
@@ -18,6 +19,7 @@ import io.ballerina.compiler.syntax.tree.ParameterNode;
 import io.ballerina.compiler.syntax.tree.PositionalArgumentNode;
 import io.ballerina.compiler.syntax.tree.RequiredParameterNode;
 import io.ballerina.compiler.syntax.tree.SeparatedNodeList;
+import io.ballerina.compiler.syntax.tree.SimpleNameReferenceNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import io.ballerina.projects.Document;
@@ -64,29 +66,26 @@ public class DocumentColourProvider {
 
         for (FunctionDefinitionNode function : functions) {
             SeparatedNodeList<ParameterNode> parameters = function.functionSignature().parameters();
-            LinePosition fLine = function.functionName().lineRange().startLine();
-            LinePosition funcLinePos = LinePosition.from(fLine.line(), fLine.offset());
+            Optional<Symbol> symbol = semanticModel.symbol(function.functionName());
             for (int i = 0; i < parameters.size(); i++) {
                 ParameterNode param = parameters.get(i);
                 if (param.kind() != SyntaxKind.REQUIRED_PARAM) {
                     continue;
                 }
                 RequiredParameterNode reqParm = (RequiredParameterNode) param;
-                LinePosition sLine = reqParm.paramName().get().lineRange().startLine();
-                LinePosition linePosition = LinePosition.from(sLine.line(), sLine.offset());
-                Optional<Symbol> symbol = semanticModel.symbol(document, linePosition);
-                if (symbol.isEmpty() || symbol.get().kind() != SymbolKind.PARAMETER) {
-                    continue;
-                }
-                ParameterSymbol paramSymbol = (ParameterSymbol) symbol.get();
-                List<AnnotationSymbol> annotations = paramSymbol.annotations();
-                Optional<AnnotationSymbol> colour = annotations.stream()
-                        .filter(annotation -> annotation.getName().get().equals("Colour"))
+                Optional<AnnotationNode> colourAnnotation
+                        = reqParm.annotations().stream()
+                        .filter(node ->
+                                ((SimpleNameReferenceNode) node.annotReference())
+                                        .name().text().equals("Colour"))
                         .findAny();
-                if (colour.isEmpty()) {
+                if (colourAnnotation.isEmpty()) {
                     continue;
                 }
-                List<Location> references = semanticModel.references(document, funcLinePos, false);
+                // get all the references of function
+                // and capture the colour values
+                List<Location> references =
+                        semanticModel.references(symbol.get(), false);
 
                 // Convert RGB string to 
                 Map<Range, List<Double>> rgbInfo = getRGB(references, i, context, path);

@@ -97,7 +97,7 @@ public class ModulePartNodeContextProvider extends
         CompletionItem item = new CompletionItem();
         String template = "service /${1} on new http:Listener(8080) {"
                 + lineSeparator + "\tresource function ${2:get} ${3:getResource}"
-                + "(http:Caller ${4:caller}, " + "http:Request ${5:req}) {" + lineSeparator
+                + "(http:Caller ${4:caller}, http:Request ${5:req}) {" + lineSeparator
                 + "\t\t" + lineSeparator + "\t}" + lineSeparator + "}";
         item.setInsertText(template);
         item.setInsertTextFormat(InsertTextFormat.Snippet);

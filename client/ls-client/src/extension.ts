@@ -18,7 +18,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 		let classPath = path.join(__dirname, '..', '*');
 		const args: string[] = ['-cp', classPath];
-		let BAL_HOME = "/Users/nadeeshaan/Development/BalWS/jballerina-tools-2.0.0-beta.3-SNAPSHOT";
+		let BAL_HOME = "/Users/nadeeshaan/Development/BalWS/jballerina-tools-2.0.0-beta.4-SNAPSHOT";
 		args.push('-Dballerina.home=' + BAL_HOME);
 		if (process.env.LSDEBUG === "true") {
 			logChannel.appendLine('LSDEBUG is set to "true". Language Server is starting on debug mode');
