@@ -29,6 +29,16 @@
         "extensions": [
           ".bal"
         ]
+      },
+      {
+        "id": "text",
+        "aliases": [
+          "text",
+          "txt"
+        ],
+        "extensions": [
+          ".txt"
+        ]
       }
     ],
     "configuration": {

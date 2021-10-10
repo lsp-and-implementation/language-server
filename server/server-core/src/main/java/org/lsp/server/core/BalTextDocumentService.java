@@ -82,6 +82,7 @@ import org.eclipse.lsp4j.WillSaveTextDocumentParams;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
+import org.lsp.server.api.ClientLogManager;
 import org.lsp.server.api.DiagnosticsPublisher;
 import org.lsp.server.api.context.BalCallHierarchyOutgoingContext;
 import org.lsp.server.api.context.BalCodeActionContext;
@@ -157,11 +158,17 @@ public class BalTextDocumentService implements TextDocumentService {
     }
 
     @Override
-    // Done
     public void didOpen(DidOpenTextDocumentParams params) {
         Path uriPath = CommonUtils.uriToPath(params.getTextDocument().getUri());
         BaseOperationContext context = ContextBuilder.baseContext(this.serverContext);
         CompilerManager compilerManager = context.compilerManager();
+        if (uriPath.toFile().getName().endsWith(".txt")) {
+            // Here we notify that we have opened a .txt document.
+            // If the server needs special handling the implementation can navigate to the
+            // relevant handler from this point
+            context.clientLogManager().showInfoMessage("Document opened with `.txt` extension");
+            return;
+        }
         Optional<Project> projectForPath = compilerManager.getProject(uriPath);
         /*
         If the project already exists in the compiler manager that means
@@ -180,6 +187,14 @@ public class BalTextDocumentService implements TextDocumentService {
     // Done
     public void didChange(DidChangeTextDocumentParams params) {
         BaseOperationContext context = ContextBuilder.baseContext(this.serverContext);
+        Path uriPath = CommonUtils.uriToPath(params.getTextDocument().getUri());
+        if (uriPath.toFile().getName().endsWith(".txt")) {
+            // Here we notify that we have changed a .txt document.
+            // If the server needs special handling the implementation can navigate to the
+            // relevant handler from this point
+            context.clientLogManager().showInfoMessage("Document change event for a document with `.txt` extension");
+            return;
+        }
         Optional<Project> project = this.documentSyncHandler.didChange(params, context);
         DiagnosticsPublisher diagnosticsPublisher = context.diagnosticPublisher();
         Path pathUri = CommonUtils.uriToPath(params.getTextDocument().getUri());
@@ -213,11 +228,11 @@ public class BalTextDocumentService implements TextDocumentService {
     @Override
     public CompletableFuture<List<TextEdit>>
     willSaveWaitUntil(WillSaveTextDocumentParams params) {
-        BaseOperationContext context =
-                ContextBuilder.baseContext(this.serverContext);
-        ClientCapabilities clientCapabilities =
-                this.serverContext.getClientCapabilities().orElseThrow();
         return CompletableFuture.supplyAsync(() -> {
+            BaseOperationContext context =
+                    ContextBuilder.baseContext(this.serverContext);
+            ClientCapabilities clientCapabilities =
+                    this.serverContext.getClientCapabilities().orElseThrow();
             if (!clientCapabilities.getTextDocument()
                     .getSynchronization().getWillSaveWaitUntil()) {
                 return null;

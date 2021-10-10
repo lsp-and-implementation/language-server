@@ -47,11 +47,6 @@ public class BalCompletionResolveContextImpl extends BalTextDocumentContextImpl 
     }
 
     @Override
-    public ClientLogManager clientLogManager() {
-        return null;
-    }
-
-    @Override
     public List<Symbol> visibleSymbols() {
 //        Path path = CommonUtils.uriToPath(this.params.getTextDocument().getUri());
 //        Document currentDoc = this.currentDocument().orElseThrow();

@@ -1,5 +1,7 @@
 package org.lsp.server.core.codeaction;
 
+import com.google.gson.Gson;
+
 public class CommandArgument {
     private final String key;
     private final Object value;
@@ -11,6 +13,11 @@ public class CommandArgument {
 
     public String getKey() {
         return key;
+    }
+
+    public <T> T getValue(Class<? extends T> clzz) {
+        Gson gson = new Gson();
+        return gson.fromJson(gson.toJsonTree(this.value), clzz);
     }
 
     public Object getValue() {

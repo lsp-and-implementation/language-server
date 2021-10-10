@@ -12,6 +12,7 @@ subprojects {
 //        maven {
 //            url = 'https://maven.wso2.org/nexus/content/repositories/releases/'
 //        }
+        // enable following for beta3 changes
 //        maven {
 //            url = 'https://maven.wso2.org/nexus/content/groups/wso2-public/'
 //        }

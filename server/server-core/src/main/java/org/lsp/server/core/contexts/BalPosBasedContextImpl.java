@@ -47,11 +47,6 @@ public class BalPosBasedContextImpl extends BalTextDocumentContextImpl implement
     }
 
     @Override
-    public ClientLogManager clientLogManager() {
-        return ClientLogManagerImpl.getInstance(this.serverContext);
-    }
-
-    @Override
     public List<Symbol> visibleSymbols() {
         Path path = CommonUtils.uriToPath(uri);
         Document currentDoc = this.currentDocument().orElseThrow();

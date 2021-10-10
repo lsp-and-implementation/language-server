@@ -28,6 +28,25 @@ public interface ClientLogManager {
      * @param message {@link String}
      */
     void publishWarning(String message);
-    
+
+    /**
+     * Show an error message to the client.
+     *
+     * @param message message to be shown
+     */
     void showErrorMessage(String message);
+
+    /**
+     * Show an info message to the client.
+     *
+     * @param message message to be shown
+     */
+    void showInfoMessage(String message);
+
+    /**
+     * Show a log message to the client.
+     *
+     * @param message message to be shown
+     */
+    void showLogMessage(String message);
 }

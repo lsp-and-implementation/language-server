@@ -1,19 +1,24 @@
 package org.lsp.server.core.executecommand;
 
 import io.ballerina.tools.diagnostics.Diagnostic;
+import io.ballerina.tools.text.LinePosition;
+import io.ballerina.tools.text.LineRange;
+import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 
 public class CreateVariableArgs {
-    private Range range;
-    private String uri;
-    private String newText;
-    private Diagnostic diagnostic;
+    private final Range range;
+    private final String uri;
+    private final String newText;
 
-    public CreateVariableArgs(String newText, Range range, String uri, Diagnostic diagnostic) {
+    public CreateVariableArgs(String newText, LineRange range, String uri, Diagnostic diagnostic) {
         this.newText = newText;
-        this.range = range;
+        LinePosition startLine = range.startLine();
+        LinePosition endLine = range.endLine();
+        
+        this.range = new Range(new Position(startLine.line(), startLine.offset()),
+                new Position(endLine.line(), endLine.offset()));
         this.uri = uri;
-        this.diagnostic = diagnostic;
     }
 
     public String getUri() {
@@ -26,9 +31,5 @@ public class CreateVariableArgs {
 
     public Range getRange() {
         return range;
-    }
-
-    public Diagnostic getDiagnostic() {
-        return diagnostic;
     }
 }

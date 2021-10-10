@@ -11,6 +11,7 @@ import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
 import org.lsp.server.core.DiagnosticsPublisherImpl;
 import org.lsp.server.core.compiler.manager.BallerinaCompilerManager;
 import org.lsp.server.core.configdidchange.ConfigurationHolderImpl;
+import org.lsp.server.core.utils.ClientLogManagerImpl;
 
 public class BaseOperationContextImpl implements BaseOperationContext {
     private final LSContext serverContext;
@@ -31,7 +32,7 @@ public class BaseOperationContextImpl implements BaseOperationContext {
 
     @Override
     public ClientLogManager clientLogManager() {
-        return null;
+        return ClientLogManagerImpl.getInstance(this.serverContext);
     }
 
     @Override

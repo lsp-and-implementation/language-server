@@ -1,5 +1,6 @@
 package org.lsp.server.core.codeaction;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.syntax.tree.ImportDeclarationNode;
@@ -42,8 +43,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import static org.lsp.server.core.utils.CommonUtils.getExpectedTypeDescriptor;
+import static org.lsp.server.core.utils.CommonUtils.toDiagnostic;
+
 public class CodeActionProvider {
     private static final String VAR_ASSIGNMENT_REQUIRED = "variable assignment is required";
+    private static final String UNDEFINED_FUNCTION = "undefined function";
+    private static final Gson GSON = new Gson();
 
     public static List<Either<Command, CodeAction>>
     getCodeAction(BalCodeActionContext context, CodeActionParams params) {
@@ -63,6 +69,14 @@ public class CodeActionProvider {
             Either<Command, CodeAction> command =
                     Either.forLeft(createVarCommand);
             return Collections.singletonList(command);
+
+            // Enable the following for the code action based implementation.
+            // Before that comment the lines 69-74
+            // CodeAction createVarCodeAction
+            //         = getCreateVarCodeAction(context, params.getRange(), diagnostic);
+            // Either<Command, CodeAction> codeAction =
+            //         Either.forRight(createVarCodeAction);
+            // return Collections.singletonList(codeAction);
         }
         codeActions.add(getOrganizeImportsCodeAction(params));
         ConfigurationHolder configHolder = context.clientConfigHolder();
@@ -73,6 +87,14 @@ public class CodeActionProvider {
                     params,
                     topLevelNode.get())
             );
+        }
+
+        // Checks for the create function code action and route to the relevant provider
+        Optional<Diagnostic> undefinedFunctionDiagnostic = getUndefinedFunctionDiagnostic(diags);
+
+        if (undefinedFunctionDiagnostic.isPresent()) {
+            Diagnostic diagnostic = undefinedFunctionDiagnostic.get();
+            codeActions.add(Either.forRight(CreateFunctionCodeAction.getCodeAction(context, diagnostic, params)));
         }
 //        if (topLevelNode.isPresent() && topLevelNode.get().kind()
 //                == SyntaxKind.FUNCTION_DEFINITION
@@ -94,6 +116,9 @@ public class CodeActionProvider {
             unresolved.setEdit(workspaceEdit);
 
             return unresolved;
+        }
+        if (unresolved.getTitle().equals(BalCommand.CREATE_FUNCTION.getTitle())) {
+            return CreateFunctionCodeActionResolve.getResolved(context, unresolved);
         }
 
         return null;
@@ -137,13 +162,11 @@ public class CodeActionProvider {
 
     private static Either<Command, CodeAction>
     getAddDocsCodeAction(BalCodeActionContext context, CodeActionParams params, Node node) {
-        // TODO: Finalize
         CodeAction codeAction = new CodeAction();
         JsonObject data = new JsonObject();
         data.addProperty("uri", params.getTextDocument().getUri());
-        codeAction.setKind(CodeActionKind.SourceOrganizeImports);
         codeAction.setIsPreferred(true);
-        codeAction.setTitle(BalCommand.ORGANIZE_IMPORTS.getTitle());
+        codeAction.setTitle(BalCommand.ADD_DOC.getTitle());
         codeAction.setData(data);
 
         return Either.forRight(codeAction);
@@ -153,20 +176,59 @@ public class CodeActionProvider {
     getCreateVarCommand(BalCodeActionContext context,
                         Diagnostic diagnostic,
                         Range range) {
-        String expr = context.getNodeAtCursor().toSourceCode();
+        String expr = context.getNodeAtCursor().toSourceCode().trim();
         Command command = new Command();
         command.setCommand(BalCommand.CREATE_VAR.getCommand());
         command.setTitle(BalCommand.CREATE_VAR.getTitle());
         List<Object> args = new ArrayList<>();
-        String typeDescriptor = getExpectedTypeDescriptor(range);
+        String typeDescriptor = getExpectedTypeDescriptor(range, context);
         String uri = context.getPath().toUri().toString();
-        String newText = typeDescriptor + " = " + expr;
+        String newText = typeDescriptor + " varName = " + expr;
+        LineRange lineRange = context.getNodeAtCursor().lineRange();
         CreateVariableArgs createVarArgs =
-                new CreateVariableArgs(newText, range, uri, diagnostic);
+                new CreateVariableArgs(newText, lineRange, uri, diagnostic);
         args.add(new CommandArgument("params", createVarArgs));
         command.setArguments(args);
 
         return command;
+    }
+
+    private static CodeAction
+    getCreateVarCodeAction(BalCodeActionContext context,
+                           Range range,
+                           Diagnostic diagnostic) {
+        CodeAction codeAction = new CodeAction();
+        codeAction.setTitle(BalCommand.CREATE_VAR.getTitle());
+        codeAction.setKind(CodeActionKind.QuickFix);
+        /*
+        Setting the diagnostic will show a quickfix link when hover over
+        the diagnostic
+         */
+        codeAction.setDiagnostics(Collections
+                .singletonList(toDiagnostic(diagnostic)));
+        codeAction.setEdit(getCreateVarWorkspaceEdit(context, range));
+
+        return codeAction;
+    }
+
+    private static WorkspaceEdit getCreateVarWorkspaceEdit(BalCodeActionContext context,
+                                                           Range range) {
+        WorkspaceEdit workspaceEdit = new WorkspaceEdit();
+        Map<String, List<TextEdit>> textEditMap = new HashMap<>();
+        TextEdit textEdit = new TextEdit();
+
+        String expr = context.getNodeAtCursor().toSourceCode().trim();
+        String typeDescriptor = getExpectedTypeDescriptor(range, context);
+        String uri = context.getPath().toUri().toString();
+        String newText = typeDescriptor + " varName = " + expr;
+
+        textEdit.setRange(toRange(context.getNodeAtCursor().lineRange()));
+        textEdit.setNewText(newText);
+        textEditMap.put(uri, Collections.singletonList(textEdit));
+
+        workspaceEdit.setChanges(textEditMap);
+
+        return workspaceEdit;
     }
 
     private static WorkspaceEdit
@@ -205,14 +267,6 @@ public class CodeActionProvider {
         return workspaceEdit;
     }
 
-    private static org.eclipse.lsp4j.Diagnostic toDiagnostic(Diagnostic diagnostic) {
-        return null;
-    }
-
-    private static String getExpectedTypeDescriptor(Range range) {
-        return null;
-    }
-
     private static List<Diagnostic> getDiagnostics(BalCodeActionContext context, Range range) {
         Path path = context.getPath();
         Optional<SemanticModel> semanticModel = context.compilerManager().getSemanticModel(path);
@@ -233,9 +287,10 @@ public class CodeActionProvider {
 
     /**
      * Get the configuration for ballerina.codeAction.documentation config option.
-     * Can be used alongside the 
-     * @param context
-     * @return
+     * Can be used alongside the
+     *
+     * @param context code action context
+     * @return {@link Boolean}
      */
     private static boolean documentationEnabled(BalCodeActionContext context) {
         LanguageClient client = context.getClient();
@@ -252,7 +307,7 @@ public class CodeActionProvider {
             return false;
         }
 
-        return (Boolean) (configValue.get(0));
+        return GSON.toJsonTree(configValue.get(0)).getAsBoolean();
     }
 
     private static Position toPosition(LinePosition linePosition) {
@@ -269,5 +324,11 @@ public class CodeActionProvider {
         range.setEnd(toPosition(lineRange.endLine()));
 
         return range;
+    }
+
+    private static Optional<Diagnostic> getUndefinedFunctionDiagnostic(List<Diagnostic> diagnostics) {
+        return diagnostics.stream()
+                .filter(diagnostic -> diagnostic.message().contains(UNDEFINED_FUNCTION))
+                .findFirst();
     }
 }

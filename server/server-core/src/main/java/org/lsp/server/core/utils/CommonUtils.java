@@ -23,8 +23,11 @@ import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.VariableSymbol;
 import io.ballerina.compiler.syntax.tree.ModuleMemberDeclarationNode;
 import io.ballerina.projects.Project;
+import io.ballerina.tools.diagnostics.Diagnostic;
+import io.ballerina.tools.diagnostics.DiagnosticInfo;
 import io.ballerina.tools.text.LinePosition;
 import io.ballerina.tools.text.LineRange;
+import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
@@ -137,7 +140,7 @@ public class CommonUtils {
         return defLocation;
     }
 
-    private static Position toPosition(LinePosition linePosition) {
+    public static Position toPosition(LinePosition linePosition) {
         Position position = new Position();
         position.setLine(linePosition.line());
         position.setCharacter(linePosition.offset());
@@ -145,7 +148,7 @@ public class CommonUtils {
         return position;
     }
 
-    private static Range toRange(LineRange lineRange) {
+    public static Range toRange(LineRange lineRange) {
         Range range = new Range();
         range.setStart(toPosition(lineRange.startLine()));
         range.setEnd(toPosition(lineRange.endLine()));
@@ -163,5 +166,37 @@ public class CommonUtils {
         Path definitionPath = projRoot.resolve("modules").resolve(moduleName)
                 .resolve(location.lineRange().filePath());
         return definitionPath.toUri().toString();
+    }
+
+    public static org.eclipse.lsp4j.Diagnostic toDiagnostic(Diagnostic diagnostic) {
+        org.eclipse.lsp4j.Diagnostic diag = new org.eclipse.lsp4j.Diagnostic();
+        DiagnosticInfo diagnosticInfo = diagnostic.diagnosticInfo();
+        diag.setCode(diagnosticInfo.code());
+        diag.setMessage(diagnostic.message());
+        diag.setRange(toRange(diagnostic.location().lineRange()));
+        switch (diagnosticInfo.severity()) {
+            case HINT:
+                diag.setSeverity(DiagnosticSeverity.Hint);
+                break;
+            case INFO:
+                diag.setSeverity(DiagnosticSeverity.Information);
+                break;
+            case ERROR:
+                diag.setSeverity(DiagnosticSeverity.Error);
+                break;
+            case WARNING:
+                diag.setSeverity(DiagnosticSeverity.Warning);
+                break;
+        }
+
+        return diag;
+    }
+    
+    public static String getExpectedTypeDescriptor(Range range, BalPosBasedContext context) {
+        LinePosition start = LinePosition.from(range.getStart().getLine(), range.getStart().getCharacter());
+        LinePosition end = LinePosition.from(range.getEnd().getLine(), range.getEnd().getCharacter());
+        String filePath = context.getPath().toFile().getName();
+        LineRange lineRange = LineRange.from(filePath, start, end);
+        return context.compilerManager().getSemanticModel(context.getPath()).get().typeOf(lineRange).get().signature();
     }
 }
