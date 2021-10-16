@@ -49,10 +49,21 @@ public class ClientLogManagerImpl implements ClientLogManager {
         this.client.logMessage(this.getMessageParams(message, MessageType.Warning));
     }
     
+    @Override
     public void showErrorMessage(String message) {
         this.client.showMessage(this.getMessageParams(message, MessageType.Error));
     }
-    
+
+    @Override
+    public void showInfoMessage(String message) {
+        this.client.showMessage(this.getMessageParams(message, MessageType.Info));
+    }
+
+    @Override
+    public void showLogMessage(String message) {
+        this.client.showMessage(this.getMessageParams(message, MessageType.Warning));
+    }
+
     private MessageParams getMessageParams(String message, MessageType type) {
         MessageParams messageParams = new MessageParams();
         messageParams.setMessage(message);

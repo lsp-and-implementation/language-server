@@ -34,7 +34,7 @@ public class ReferencesProvider extends AbstractProvider {
         Map<Module, List<io.ballerina.tools.diagnostics.Location>> references
                 = findReferences(context, includeDeclaration);
 
-        // Generate the rename response
+        // Generate the references response
         references
                 .forEach((module, locationList) -> locationList
                         .forEach(location ->

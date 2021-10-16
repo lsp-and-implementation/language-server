@@ -47,11 +47,6 @@ public class BalRenameContextImpl extends BalTextDocumentContextImpl implements 
     }
 
     @Override
-    public ClientLogManager clientLogManager() {
-        return ClientLogManagerImpl.getInstance(this.serverContext);
-    }
-
-    @Override
     public List<Symbol> visibleSymbols() {
         Path path = CommonUtils.uriToPath(this.params.getTextDocument().getUri());
         Document currentDoc = this.currentDocument().orElseThrow();

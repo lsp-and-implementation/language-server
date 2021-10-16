@@ -83,7 +83,8 @@ public class BalLanguageServer implements BalExtendedLanguageServer, LanguageCli
             sCapabilities.setRenameProvider(ServerInitUtils.getRenameOptions());
             sCapabilities.setDocumentFormattingProvider(true);
             sCapabilities.setDocumentRangeFormattingProvider(true);
-            sCapabilities.setDocumentOnTypeFormattingProvider(ServerInitUtils.getOnTypeFormatOptions());
+            // Comment the following before enabling dynamic registration
+            // sCapabilities.setDocumentOnTypeFormattingProvider(ServerInitUtils.getOnTypeFormatOptions());
             sCapabilities.setDocumentSymbolProvider(ServerInitUtils.getDocumentSymbolOptions());
             sCapabilities.setDocumentHighlightProvider(true);
             sCapabilities.setDocumentLinkProvider(ServerInitUtils.getDocumentLinkOptions());
@@ -102,6 +103,7 @@ public class BalLanguageServer implements BalExtendedLanguageServer, LanguageCli
             sCapabilities.setDefinitionProvider(ServerInitUtils.getDefinitionOptions());
             sCapabilities.setTypeDefinitionProvider(ServerInitUtils.getTypeDefinitionOptions());
             sCapabilities.setImplementationProvider(ServerInitUtils.getImplementationOptions());
+            sCapabilities.setDeclarationProvider(ServerInitUtils.getDeclarationOptions());
             sCapabilities.setWorkspaceSymbolProvider(ServerInitUtils.getWorkspaceSymbolOptions());
 
             // Set the workspace capabilities
@@ -117,8 +119,10 @@ public class BalLanguageServer implements BalExtendedLanguageServer, LanguageCli
         MessageParams messageParams = new MessageParams();
         messageParams.setMessage("Server Initiated!");
         messageParams.setType(MessageType.Info);
-        // Registering the onTypeFormatting capability
-//        this.dynamicCapabilitySetter.registerOnTypeFormatting(this.serverContext);
+        // Registering the onTypeFormatting capability.
+        // If enable the following, comment out the ontype formatting in the initialize method
+        this.dynamicCapabilitySetter.registerOnTypeFormatting(this.serverContext);
+        this.dynamicCapabilitySetter.registerTextDocumentSyncOptions(serverContext);
         this.client.showMessage(messageParams);
 
         // Register file watchers

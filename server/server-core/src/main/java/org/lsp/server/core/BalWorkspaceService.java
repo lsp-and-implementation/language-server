@@ -19,6 +19,17 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.ballerina.compiler.api.SemanticModel;
+import io.ballerina.compiler.syntax.tree.DefaultableParameterNode;
+import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
+import io.ballerina.compiler.syntax.tree.ModuleMemberDeclarationNode;
+import io.ballerina.compiler.syntax.tree.ModulePartNode;
+import io.ballerina.compiler.syntax.tree.ParameterNode;
+import io.ballerina.compiler.syntax.tree.RequiredParameterNode;
+import io.ballerina.compiler.syntax.tree.RestParameterNode;
+import io.ballerina.compiler.syntax.tree.ReturnTypeDescriptorNode;
+import io.ballerina.compiler.syntax.tree.SyntaxKind;
+import io.ballerina.compiler.syntax.tree.SyntaxTree;
+import io.ballerina.tools.text.LinePosition;
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
@@ -28,6 +39,7 @@ import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.FileChangeType;
 import org.eclipse.lsp4j.FileEvent;
 import org.eclipse.lsp4j.ProgressParams;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.ResourceOperation;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentEdit;
@@ -49,10 +61,12 @@ import org.lsp.server.core.codeaction.BalCommand;
 import org.lsp.server.core.codeaction.CommandArgument;
 import org.lsp.server.core.configdidchange.ConfigurationHolderImpl;
 import org.lsp.server.core.contexts.ContextBuilder;
+import org.lsp.server.core.executecommand.AddDocsArgs;
 import org.lsp.server.core.executecommand.CreateVariableArgs;
 import org.lsp.server.core.utils.CommonUtils;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -107,7 +121,7 @@ public class BalWorkspaceService implements WorkspaceService {
             // Reload the project
             context.compilerManager().reloadProject(projectRoot.get());
         }
-        if (cloudTomlEvent.isPresent()) {
+        if (ballerinaTomlEvent.isPresent()) {
             // Send codelens refresh request to client
             LanguageClient client = this.lsServerContext.getClient();
             client.refreshCodeLenses();
@@ -170,7 +184,10 @@ public class BalWorkspaceService implements WorkspaceService {
             if (command.equals(BalCommand.CREATE_VAR.getCommand())) {
                 return applyCreateVarWorkspaceEdit(context, params);
             }
-            
+            if (command.equals(BalCommand.ADD_DOC.getCommand())) {
+                return applyAddDocumentationWorkspaceEdit(context, params);
+            }
+
             // TODO: IMPLEMENT THE MOVE FUNCTION CODE ACTION WHICH CREATES A FILE
 
             return null;
@@ -185,7 +202,7 @@ public class BalWorkspaceService implements WorkspaceService {
         if (!commandArg.getKey().equals("params")) {
             return null;
         }
-        CreateVariableArgs createVarArgs = (CreateVariableArgs) commandArg.getValue();
+        CreateVariableArgs createVarArgs = commandArg.getValue(CreateVariableArgs.class);
         WorkspaceEdit workspaceEdit = new WorkspaceEdit();
         TextDocumentEdit documentEdit = new TextDocumentEdit();
         VersionedTextDocumentIdentifier identifier =
@@ -208,8 +225,35 @@ public class BalWorkspaceService implements WorkspaceService {
         try {
             return response.get();
         } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
+            // TODO: handle gracefully
         }
+        return null;
+    }
+
+    private ApplyWorkspaceEditResponse applyAddDocumentationWorkspaceEdit(BalWorkspaceContext context,
+                                                                          ExecuteCommandParams params) {
+        JsonObject arg = (JsonObject) params.getArguments().get(0);
+        CommandArgument commandArg = new Gson().fromJson(arg, CommandArgument.class);
+        if (!commandArg.getKey().equals("params")) {
+            return null;
+        }
+        AddDocsArgs addDocsArgs = commandArg.getValue(AddDocsArgs.class);
+
+        // get the function node and calculate docs
+        String uri = addDocsArgs.getUri();
+        Optional<SyntaxTree> syntaxTree = context.compilerManager().getSyntaxTree(CommonUtils.uriToPath(uri));
+        WorkspaceEdit wsEdit = getDocumentationForFunction(syntaxTree.get(), addDocsArgs.getName(), uri);
+        ApplyWorkspaceEditParams applyEditParams = new ApplyWorkspaceEditParams();
+        applyEditParams.setEdit(wsEdit);
+        CompletableFuture<ApplyWorkspaceEditResponse> response =
+                context.getClient().applyEdit(applyEditParams);
+
+        try {
+            return response.get();
+        } catch (InterruptedException | ExecutionException e) {
+            // TODO: handle gracefully
+        }
+
         return null;
     }
 
@@ -281,5 +325,61 @@ public class BalWorkspaceService implements WorkspaceService {
         endParams.setValue(Either.forLeft(endProgress));
         client.notifyProgress(endParams);
 
+    }
+
+    private WorkspaceEdit getDocumentationForFunction(SyntaxTree tree, String name, String uri) {
+        Optional<ModuleMemberDeclarationNode> function = ((ModulePartNode) tree.rootNode()).members().stream()
+                .filter(member -> member.kind() == SyntaxKind.FUNCTION_DEFINITION
+                        && ((FunctionDefinitionNode) member).functionName().text().equals(name))
+                .findFirst();
+
+        if (function.isEmpty()) {
+            return null;
+        }
+        FunctionDefinitionNode functionNode = (FunctionDefinitionNode) function.get();
+        StringBuilder docs = new StringBuilder("# Description");
+        for (ParameterNode parameter : functionNode.functionSignature().parameters()) {
+            String paramName;
+            if (parameter.kind() == SyntaxKind.DEFAULTABLE_PARAM) {
+                paramName = ((DefaultableParameterNode) parameter).paramName().get().text();
+            } else if (parameter.kind() == SyntaxKind.REQUIRED_PARAM) {
+                paramName = ((RequiredParameterNode) parameter).paramName().get().text();
+            } else {
+                paramName = ((RestParameterNode) parameter).paramName().get().text();
+            }
+
+            docs.append(System.lineSeparator())
+                    .append("# + ")
+                    .append(paramName)
+                    .append(" - ")
+                    .append(paramName)
+                    .append(" description");
+        }
+        Optional<ReturnTypeDescriptorNode> returnType = functionNode.functionSignature().returnTypeDesc();
+        if (returnType.isPresent()) {
+            docs.append(System.lineSeparator())
+                    .append("# + return - Return type description");
+        }
+        docs.append(System.lineSeparator());
+
+        WorkspaceEdit workspaceEdit = new WorkspaceEdit();
+        TextDocumentEdit documentEdit = new TextDocumentEdit();
+        VersionedTextDocumentIdentifier identifier =
+                new VersionedTextDocumentIdentifier();
+        identifier.setUri(uri);
+        LinePosition startLine = functionNode.lineRange().startLine();
+        Range range = new Range();
+        range.setStart(CommonUtils.toPosition(startLine));
+        range.setEnd(CommonUtils.toPosition(startLine));
+
+        TextEdit textEdit = new TextEdit(range, docs.toString());
+
+        documentEdit.setEdits(Collections.singletonList(textEdit));
+        documentEdit.setTextDocument(identifier);
+        Either<TextDocumentEdit, ResourceOperation> documentChanges =
+                Either.forLeft(documentEdit);
+        workspaceEdit.setDocumentChanges(Collections.singletonList(documentChanges));
+
+        return workspaceEdit;
     }
 }

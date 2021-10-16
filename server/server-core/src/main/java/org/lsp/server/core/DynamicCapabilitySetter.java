@@ -24,11 +24,16 @@ import org.eclipse.lsp4j.DocumentOnTypeFormattingRegistrationOptions;
 import org.eclipse.lsp4j.OnTypeFormattingCapabilities;
 import org.eclipse.lsp4j.Registration;
 import org.eclipse.lsp4j.RegistrationParams;
+import org.eclipse.lsp4j.TextDocumentChangeRegistrationOptions;
+import org.eclipse.lsp4j.TextDocumentRegistrationOptions;
+import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.lsp.server.api.context.LSContext;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * A capability setting utility which allows the language server to register capabilities dynamically.
@@ -133,6 +138,36 @@ public class DynamicCapabilitySetter {
         RegistrationParams regParams = new RegistrationParams(regList);
 
 //        return regParams;
+    }
+    
+    public void registerTextDocumentSyncOptions(LSContext serverContext) {
+        TextDocumentChangeRegistrationOptions registrationOptions = new TextDocumentChangeRegistrationOptions();
+        
+        DocumentFilter txtDocFilter = new DocumentFilter();
+        txtDocFilter.setLanguage("text");
+        txtDocFilter.setScheme("file");
+                
+        registrationOptions.setDocumentSelector(Collections.singletonList(txtDocFilter));
+        registrationOptions.setSyncKind(TextDocumentSyncKind.Full);
+
+        // Once registered we will receive didOpen notification for .txt files
+        // For the demonstration purposes we will show a notification for now
+        Registration didOpenRegistration = new Registration();
+        didOpenRegistration.setRegisterOptions(registrationOptions);
+        didOpenRegistration.setMethod("textDocument/didOpen");
+        didOpenRegistration.setId(UUID.randomUUID().toString());
+
+        // Once registered we will receive didChange notification for .txt files
+        // For the demonstration purposes we will show a notification for now
+        Registration didChangeRegistration = new Registration();
+        didChangeRegistration.setRegisterOptions(registrationOptions);
+        didChangeRegistration.setMethod("textDocument/didChange");
+        didChangeRegistration.setId(UUID.randomUUID().toString());
+        
+        RegistrationParams registrationParams = new RegistrationParams();
+        registrationParams.setRegistrations(Arrays.asList(didOpenRegistration, didChangeRegistration));
+        
+        serverContext.getClient().registerCapability(registrationParams);
     }
 
     private enum Method {

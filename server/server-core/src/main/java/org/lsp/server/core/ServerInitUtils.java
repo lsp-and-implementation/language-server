@@ -19,6 +19,8 @@ import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.CodeActionOptions;
 import org.eclipse.lsp4j.CodeLensOptions;
 import org.eclipse.lsp4j.CompletionOptions;
+import org.eclipse.lsp4j.DeclarationOptions;
+import org.eclipse.lsp4j.DeclarationRegistrationOptions;
 import org.eclipse.lsp4j.DefinitionOptions;
 import org.eclipse.lsp4j.DocumentLinkOptions;
 import org.eclipse.lsp4j.DocumentOnTypeFormattingOptions;
@@ -132,6 +134,12 @@ public class ServerInitUtils {
 
     public static ImplementationRegistrationOptions getImplementationOptions() {
         ImplementationRegistrationOptions options = new ImplementationRegistrationOptions();
+        
+        return options;
+    }
+
+    public static DeclarationRegistrationOptions getDeclarationOptions() {
+        DeclarationRegistrationOptions options = new DeclarationRegistrationOptions();
         
         return options;
     }

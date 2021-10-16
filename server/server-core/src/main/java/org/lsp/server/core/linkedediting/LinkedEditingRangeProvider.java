@@ -35,15 +35,15 @@ public class LinkedEditingRangeProvider extends AbstractProvider {
         } else {
             return null;
         }
-
+    
         LinkedEditingRanges editingRanges = new LinkedEditingRanges();
-
+    
         List<Range> ranges = new ArrayList<>();
         ranges.add(toRange(startTag.name().lineRange()));
         ranges.add(toRange(endTag.name().lineRange()));
-
+    
         editingRanges.setRanges(ranges);
-
+    
         return editingRanges;
     }
 }

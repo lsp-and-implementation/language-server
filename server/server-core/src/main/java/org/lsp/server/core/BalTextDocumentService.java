@@ -36,6 +36,7 @@ import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
+import org.eclipse.lsp4j.DeclarationParams;
 import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
@@ -82,12 +83,14 @@ import org.eclipse.lsp4j.WillSaveTextDocumentParams;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
+import org.lsp.server.api.ClientLogManager;
 import org.lsp.server.api.DiagnosticsPublisher;
 import org.lsp.server.api.context.BalCallHierarchyOutgoingContext;
 import org.lsp.server.api.context.BalCodeActionContext;
 import org.lsp.server.api.context.BalCodeLensContext;
 import org.lsp.server.api.context.BalCompletionContext;
 import org.lsp.server.api.context.BalCompletionResolveContext;
+import org.lsp.server.api.context.BalDeclarationContext;
 import org.lsp.server.api.context.BalDefinitionContext;
 import org.lsp.server.api.context.BalDocumentColourContext;
 import org.lsp.server.api.context.BalDocumentHighlightContext;
@@ -157,11 +160,17 @@ public class BalTextDocumentService implements TextDocumentService {
     }
 
     @Override
-    // Done
     public void didOpen(DidOpenTextDocumentParams params) {
         Path uriPath = CommonUtils.uriToPath(params.getTextDocument().getUri());
         BaseOperationContext context = ContextBuilder.baseContext(this.serverContext);
         CompilerManager compilerManager = context.compilerManager();
+        if (uriPath.toFile().getName().endsWith(".txt")) {
+            // Here we notify that we have opened a .txt document.
+            // If the server needs special handling the implementation can navigate to the
+            // relevant handler from this point
+            context.clientLogManager().showInfoMessage("Document opened with `.txt` extension");
+            return;
+        }
         Optional<Project> projectForPath = compilerManager.getProject(uriPath);
         /*
         If the project already exists in the compiler manager that means
@@ -180,6 +189,14 @@ public class BalTextDocumentService implements TextDocumentService {
     // Done
     public void didChange(DidChangeTextDocumentParams params) {
         BaseOperationContext context = ContextBuilder.baseContext(this.serverContext);
+        Path uriPath = CommonUtils.uriToPath(params.getTextDocument().getUri());
+        if (uriPath.toFile().getName().endsWith(".txt")) {
+            // Here we notify that we have changed a .txt document.
+            // If the server needs special handling the implementation can navigate to the
+            // relevant handler from this point
+            context.clientLogManager().showInfoMessage("Document change event for a document with `.txt` extension");
+            return;
+        }
         Optional<Project> project = this.documentSyncHandler.didChange(params, context);
         DiagnosticsPublisher diagnosticsPublisher = context.diagnosticPublisher();
         Path pathUri = CommonUtils.uriToPath(params.getTextDocument().getUri());
@@ -213,11 +230,11 @@ public class BalTextDocumentService implements TextDocumentService {
     @Override
     public CompletableFuture<List<TextEdit>>
     willSaveWaitUntil(WillSaveTextDocumentParams params) {
-        BaseOperationContext context =
-                ContextBuilder.baseContext(this.serverContext);
-        ClientCapabilities clientCapabilities =
-                this.serverContext.getClientCapabilities().orElseThrow();
         return CompletableFuture.supplyAsync(() -> {
+            BaseOperationContext context =
+                    ContextBuilder.baseContext(this.serverContext);
+            ClientCapabilities clientCapabilities =
+                    this.serverContext.getClientCapabilities().orElseThrow();
             if (!clientCapabilities.getTextDocument()
                     .getSynchronization().getWillSaveWaitUntil()) {
                 return null;
@@ -380,10 +397,30 @@ public class BalTextDocumentService implements TextDocumentService {
     @Override
     public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> implementation(ImplementationParams params) {
         return CompletableFuture.supplyAsync(() -> {
-            BalGotoImplContext context = ContextBuilder.getGotoImplContext(this.serverContext, params);
-            ContextEvaluator.fillTokenInfoAtCursor(context);
-            List<Location> definitions = DefinitionProvider.implementation(context);
-            return Either.forLeft(definitions);
+            try {
+                BalGotoImplContext context = ContextBuilder.getGotoImplContext(this.serverContext, params);
+                ContextEvaluator.fillTokenInfoAtCursor(context);
+                List<Location> definitions = DefinitionProvider.implementation(context);
+                return Either.forLeft(definitions);
+            } catch (Throwable e) {
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>>
+    declaration(DeclarationParams params) {
+        return CompletableFuture.supplyAsync(() -> {
+           try {
+               BalDeclarationContext context = ContextBuilder.getDeclarationContext(this.serverContext, params);
+               ContextEvaluator.fillTokenInfoAtCursor(context);
+               List<Location> declaration = DefinitionProvider.declaration(context);
+               
+               return Either.forLeft(declaration);
+           } catch (Throwable e) {
+               return null;
+           }
         });
     }
 

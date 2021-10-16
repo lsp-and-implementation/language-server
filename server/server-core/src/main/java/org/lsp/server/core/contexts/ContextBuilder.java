@@ -5,6 +5,7 @@ import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionParams;
+import org.eclipse.lsp4j.DeclarationParams;
 import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.DocumentColorParams;
 import org.eclipse.lsp4j.DocumentHighlightParams;
@@ -29,6 +30,7 @@ import org.lsp.server.api.context.BalCodeActionContext;
 import org.lsp.server.api.context.BalCodeLensContext;
 import org.lsp.server.api.context.BalCompletionContext;
 import org.lsp.server.api.context.BalCompletionResolveContext;
+import org.lsp.server.api.context.BalDeclarationContext;
 import org.lsp.server.api.context.BalDefinitionContext;
 import org.lsp.server.api.context.BalDocumentColourContext;
 import org.lsp.server.api.context.BalDocumentHighlightContext;
@@ -157,6 +159,13 @@ public class ContextBuilder {
         Position position = params.getPosition();
         
         return new BalDefinitionContextImpl(serverContext, uri, position);
+    }
+    
+    public static BalDeclarationContext getDeclarationContext(LSContext serverContext, DeclarationParams params) {
+        String uri = params.getTextDocument().getUri();
+        Position position = params.getPosition();
+        
+        return new BalDeclarationContextImpl(serverContext, uri, position);
     }
     
     public static BalTypeDefContext getTypeDefinitionContext(LSContext serverContext, TypeDefinitionParams params) {

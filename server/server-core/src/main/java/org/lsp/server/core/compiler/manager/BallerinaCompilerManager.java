@@ -37,6 +37,7 @@ import io.ballerina.tools.text.LinePosition;
 import io.ballerina.tools.text.TextDocument;
 import io.ballerina.tools.text.TextRange;
 import org.eclipse.lsp4j.MessageActionItem;
+import org.eclipse.lsp4j.ShowDocumentParams;
 import org.eclipse.lsp4j.ShowMessageRequestParams;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.lsp.server.api.context.LSContext;
@@ -111,6 +112,9 @@ public class BallerinaCompilerManager extends CompilerManager {
     public Optional<Project> getProject(Path path) {
         if (this.projectsMap.containsKey(path)) {
             return Optional.of(this.projectsMap.get(path));
+        }
+        if (ProjectPaths.isStandaloneBalFile(path)) {
+            return Optional.ofNullable(this.projectsMap.get(path));
         }
         return Optional.ofNullable(this.projectsMap.get(ProjectPaths.packageRoot(path)));
     }
@@ -232,7 +236,11 @@ public class BallerinaCompilerManager extends CompilerManager {
                 params.setActions(Collections.singletonList(openBalToml));
                 this.client.showMessageRequest(params)
                         .whenComplete((messageActionItem, throwable) -> {
-                            // TODO: use window.showDocument
+                            ShowDocumentParams documentParams = new ShowDocumentParams();
+                            documentParams.setExternal(false);
+                            documentParams.setUri(project.sourceRoot().resolve("Ballerina.toml").toUri().toString());
+                            documentParams.setTakeFocus(true);
+                            client.showDocument(documentParams);
                         });
             }
 
