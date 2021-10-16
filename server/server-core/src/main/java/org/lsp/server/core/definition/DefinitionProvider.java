@@ -13,6 +13,7 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
+import org.lsp.server.api.context.BalDeclarationContext;
 import org.lsp.server.api.context.BalDefinitionContext;
 import org.lsp.server.api.context.BalGotoImplContext;
 import org.lsp.server.api.context.BalPosBasedContext;
@@ -39,6 +40,7 @@ public class DefinitionProvider extends AbstractProvider {
         Position cursorPos = context.getCursorPosition();
         LinePosition linePos = LinePosition.from(cursorPos.getLine(),
                 cursorPos.getCharacter());
+        // Ballerina semantic API facilitate an API to find the symbol and from that we get the definition
         Optional<Symbol> symbol =
                 semanticModel.symbol(document, linePos);
         if (symbol.isEmpty()) {
@@ -144,11 +146,34 @@ public class DefinitionProvider extends AbstractProvider {
 
         return Collections.singletonList(toLspLocation(context, symbol.get(), location));
     }
-    
+
+    public static List<Location> declaration(BalDeclarationContext context) {
+        // In this implementation we only consider the definition
+        // of the constructs in the same project.
+        Path path = context.getPath();
+        CompilerManager compilerManager = context.compilerManager();
+        SemanticModel semanticModel = compilerManager
+                .getSemanticModel(path).orElseThrow();
+        Document document = compilerManager.getDocument(path)
+                .orElseThrow();
+        Position cursorPos = context.getCursorPosition();
+        LinePosition linePos = LinePosition.from(cursorPos.getLine(),
+                cursorPos.getCharacter());
+        // Ballerina semantic API facilitate an API to find the symbol and from that we get the definition
+        Optional<Symbol> symbol =
+                semanticModel.symbol(document, linePos);
+        if (symbol.isEmpty() || symbol.get().kind() != SymbolKind.VARIABLE) {
+            return Collections.emptyList();
+        }
+        io.ballerina.tools.diagnostics.Location location = symbol.get().getLocation().orElseThrow();
+
+        return Collections.singletonList(toLspLocation(context, symbol.get(), location));
+    }
+
     // TODO: Implement declaration
-    
+
     private static String getUri(BalPosBasedContext context, Symbol symbol,
-                          io.ballerina.tools.diagnostics.Location location) {
+                                 io.ballerina.tools.diagnostics.Location location) {
         Optional<Path> projectRoot = context.compilerManager().getProjectRoot(context.getPath());
         Optional<Project> project = context.compilerManager().getProject(context.getPath());
         String moduleName = symbol.getModule().orElseThrow().id().moduleName();

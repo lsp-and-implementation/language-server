@@ -36,6 +36,7 @@ import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
+import org.eclipse.lsp4j.DeclarationParams;
 import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
@@ -89,6 +90,7 @@ import org.lsp.server.api.context.BalCodeActionContext;
 import org.lsp.server.api.context.BalCodeLensContext;
 import org.lsp.server.api.context.BalCompletionContext;
 import org.lsp.server.api.context.BalCompletionResolveContext;
+import org.lsp.server.api.context.BalDeclarationContext;
 import org.lsp.server.api.context.BalDefinitionContext;
 import org.lsp.server.api.context.BalDocumentColourContext;
 import org.lsp.server.api.context.BalDocumentHighlightContext;
@@ -395,10 +397,30 @@ public class BalTextDocumentService implements TextDocumentService {
     @Override
     public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> implementation(ImplementationParams params) {
         return CompletableFuture.supplyAsync(() -> {
-            BalGotoImplContext context = ContextBuilder.getGotoImplContext(this.serverContext, params);
-            ContextEvaluator.fillTokenInfoAtCursor(context);
-            List<Location> definitions = DefinitionProvider.implementation(context);
-            return Either.forLeft(definitions);
+            try {
+                BalGotoImplContext context = ContextBuilder.getGotoImplContext(this.serverContext, params);
+                ContextEvaluator.fillTokenInfoAtCursor(context);
+                List<Location> definitions = DefinitionProvider.implementation(context);
+                return Either.forLeft(definitions);
+            } catch (Throwable e) {
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>>
+    declaration(DeclarationParams params) {
+        return CompletableFuture.supplyAsync(() -> {
+           try {
+               BalDeclarationContext context = ContextBuilder.getDeclarationContext(this.serverContext, params);
+               ContextEvaluator.fillTokenInfoAtCursor(context);
+               List<Location> declaration = DefinitionProvider.declaration(context);
+               
+               return Either.forLeft(declaration);
+           } catch (Throwable e) {
+               return null;
+           }
         });
     }
 

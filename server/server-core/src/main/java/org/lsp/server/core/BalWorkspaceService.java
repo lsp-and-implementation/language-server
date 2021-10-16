@@ -121,7 +121,7 @@ public class BalWorkspaceService implements WorkspaceService {
             // Reload the project
             context.compilerManager().reloadProject(projectRoot.get());
         }
-        if (cloudTomlEvent.isPresent()) {
+        if (ballerinaTomlEvent.isPresent()) {
             // Send codelens refresh request to client
             LanguageClient client = this.lsServerContext.getClient();
             client.refreshCodeLenses();
