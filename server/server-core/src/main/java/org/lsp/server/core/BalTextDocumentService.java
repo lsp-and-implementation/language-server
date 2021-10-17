@@ -451,8 +451,11 @@ public class BalTextDocumentService implements TextDocumentService {
     }
 
     @Override
-    public CompletableFuture<DocumentLink> documentLinkResolve(DocumentLink params) {
-        return null;
+    public CompletableFuture<DocumentLink> documentLinkResolve(DocumentLink documentLink) {
+        return CompletableFuture.supplyAsync(() -> {
+            BaseOperationContext context = ContextBuilder.baseContext(this.serverContext);
+            return DocumentLinkProvider.getDocumentLinkResolved(context, documentLink);
+        });
     }
 
     @Override
