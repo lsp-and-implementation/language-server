@@ -12,7 +12,7 @@ public class OutgoingCallVisitor extends NodeVisitor {
     @Override
     public void visit(FunctionCallExpressionNode node) {
         this.outgoingCalls.add(node);
-        node.accept(this);
+//        node.accept(this);
     }
 
     public List<FunctionCallExpressionNode> getOutgoingCalls() {

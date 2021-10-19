@@ -161,6 +161,7 @@ public class CallHierarchyProvider {
             CallHierarchyOutgoingCall call = new CallHierarchyOutgoingCall();
             call.setTo(cItem);
             call.setFromRanges(ranges);
+            calls.add(call);
         });
 
         return calls;
@@ -226,7 +227,7 @@ public class CallHierarchyProvider {
     private static Optional<FunctionDefinitionNode> getEnclosedFunction(BalPosBasedContext context, Location location) {
         Path path = context.getPath();
         LinePosition startLine = location.lineRange().startLine();
-        Optional<Node> node = context.compilerManager().getNode(path, startLine.line() - 1, startLine.offset() - 1);
+        Optional<Node> node = context.compilerManager().getNode(path, startLine.line(), startLine.offset());
         if (node.isEmpty()) {
             return Optional.empty();
         }
@@ -254,6 +255,7 @@ public class CallHierarchyProvider {
         String filePath = lineRange.filePath();
         String[] moduleName = moduleID.moduleName().split(prjRoot.getFileName().toString() + "\\.");
 
+        // TODO: Fix the following
 //        if (module.project().kind() == ProjectKind.SINGLE_FILE_PROJECT) {
 //            return prjRoot.toUri().toString();
 //        } else if (module.isDefaultModule()) {
