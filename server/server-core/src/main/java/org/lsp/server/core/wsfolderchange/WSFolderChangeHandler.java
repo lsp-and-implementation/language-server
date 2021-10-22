@@ -37,6 +37,8 @@ public class WSFolderChangeHandler {
             if (project.isEmpty()) {
                 continue;
             }
+            // Note: This is only for the demonstration purposes and the users can perform other operations other than
+            // reloading the projects
             // If folder is added, then reload the project instance
             cManager.reloadProject(projectRoot.get());
             reloadedProjects.add(projectRoot.get());

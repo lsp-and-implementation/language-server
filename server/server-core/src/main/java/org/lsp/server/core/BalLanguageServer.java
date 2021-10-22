@@ -107,6 +107,7 @@ public class BalLanguageServer implements BalExtendedLanguageServer, LanguageCli
             sCapabilities.setWorkspaceSymbolProvider(ServerInitUtils.getWorkspaceSymbolOptions());
 
             // Set the workspace capabilities
+            wsCapabilities.setWorkspaceFolders(ServerInitUtils.getWorkspaceFolderOptions());
             sCapabilities.setWorkspace(wsCapabilities);
 
             return new InitializeResult(sCapabilities);

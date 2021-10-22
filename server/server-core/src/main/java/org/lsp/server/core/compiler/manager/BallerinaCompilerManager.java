@@ -43,10 +43,14 @@ import org.eclipse.lsp4j.services.LanguageClient;
 import org.lsp.server.api.context.LSContext;
 import org.lsp.server.ballerina.compiler.workspace.CompilerManager;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -169,11 +173,12 @@ public class BallerinaCompilerManager extends CompilerManager {
 
     @Override
     public Optional<Path> getProjectRoot(Path path) {
-        Optional<Project> project = this.getProject(path);
+        Path evalPath = getBallerinaFilePathInFolder(path);
+        Optional<Project> project = this.getProject(evalPath);
         if (project.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.ofNullable(ProjectPaths.packageRoot(path));
+        return Optional.ofNullable(ProjectPaths.packageRoot(evalPath));
     }
 
     @Override
@@ -257,5 +262,18 @@ public class BallerinaCompilerManager extends CompilerManager {
         return diagnosticResult.diagnostics().stream()
                 .anyMatch(diagnostic -> diagnostic instanceof TomlDiagnostic
                         && diagnostic.location().lineRange().filePath().endsWith("Ballerina.toml"));
+    }
+
+    private Path getBallerinaFilePathInFolder(Path path) {
+        File file = path.toFile();
+        if (!file.isDirectory()) {
+            return path;
+        }
+        if (path.resolve("Ballerina.toml").toFile().exists()) {
+            return path.resolve("Ballerina.toml");
+        }
+        return Arrays.stream(Objects.requireNonNull(file.listFiles((dir, name) -> name.endsWith(".bal"))))
+                .findAny().map(File::toPath).orElse(path);
+
     }
 }

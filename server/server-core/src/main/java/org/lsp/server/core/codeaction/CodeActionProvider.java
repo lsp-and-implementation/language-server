@@ -88,14 +88,10 @@ public class CodeActionProvider {
                     topLevelNode.get())
             );
         }
-
-        // Checks for the create function code action and route to the relevant provider
-        Optional<Diagnostic> undefinedFunctionDiagnostic = getUndefinedFunctionDiagnostic(diags);
-
-        if (undefinedFunctionDiagnostic.isPresent()) {
-            Diagnostic diagnostic = undefinedFunctionDiagnostic.get();
-            codeActions.add(Either.forRight(CreateFunctionCodeAction.getCodeAction(context, diagnostic, params)));
-        }
+        /*
+        Comment out the lines 83-89 and use the bellow variation to enable the workspace/configuration
+        request based code action
+         */
 //        if (topLevelNode.isPresent() && topLevelNode.get().kind()
 //                == SyntaxKind.FUNCTION_DEFINITION
 //                && documentationEnabled(context)) {
@@ -104,6 +100,14 @@ public class CodeActionProvider {
 //                    topLevelNode.get())
 //            );
 //        }
+
+        // Checks for the create function code action and route to the relevant provider
+        Optional<Diagnostic> undefinedFunctionDiagnostic = getUndefinedFunctionDiagnostic(diags);
+
+        if (undefinedFunctionDiagnostic.isPresent()) {
+            Diagnostic diagnostic = undefinedFunctionDiagnostic.get();
+            codeActions.add(Either.forRight(CreateFunctionCodeAction.getCodeAction(context, diagnostic, params)));
+        }
 
         return codeActions;
     }

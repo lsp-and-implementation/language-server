@@ -64,6 +64,7 @@ import org.lsp.server.core.contexts.ContextBuilder;
 import org.lsp.server.core.executecommand.AddDocsArgs;
 import org.lsp.server.core.executecommand.CreateVariableArgs;
 import org.lsp.server.core.utils.CommonUtils;
+import org.lsp.server.core.wsfolderchange.WSFolderChangeHandler;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -120,8 +121,6 @@ public class BalWorkspaceService implements WorkspaceService {
             }
             // Reload the project
             context.compilerManager().reloadProject(projectRoot.get());
-        }
-        if (ballerinaTomlEvent.isPresent()) {
             // Send codelens refresh request to client
             LanguageClient client = this.lsServerContext.getClient();
             client.refreshCodeLenses();
@@ -144,6 +143,7 @@ public class BalWorkspaceService implements WorkspaceService {
                     for (SemanticModel semanticModel : semanticModels) {
                         List<SymbolInformation> symbols =
                                 semanticModel.moduleSymbols().stream()
+                                        .filter(s -> s.getName().isPresent())
                                         .map(symbol -> CommonUtils
                                                 .getSymbolInformation(symbol, context, projectRoot))
                                         .collect(Collectors.toList());
@@ -162,6 +162,13 @@ public class BalWorkspaceService implements WorkspaceService {
         BalWorkspaceContext context = ContextBuilder.getWorkspaceContext(this.lsServerContext);
         List<WorkspaceFolder> added = params.getEvent().getAdded();
         List<WorkspaceFolder> removed = params.getEvent().getRemoved();
+        // Note: Enable the following to support the following scenario, which is a hypothetical usage example
+        /*
+        In this example scenario we assume that the user opens a module at a time in the workspace,
+        instead of opening the root project folder and once a new module is added through the file system the user
+        adds the module to the workspace manually
+         */
+        WSFolderChangeHandler.updateProjects(context, params);
 
         Runnable task = () -> {
             try {
@@ -265,8 +272,11 @@ public class BalWorkspaceService implements WorkspaceService {
                 = client.workspaceFolders();
         List<Path> projects = new ArrayList<>();
         for (WorkspaceFolder workspaceFolder : result.get()) {
-            Path path = CommonUtils.uriToPath(workspaceFolder.getUri());
-            path = path.resolve("modules").resolve("mod1").resolve("mod1.bal");
+            Path path = CommonUtils.uriToPath(workspaceFolder.getUri()).resolve("Ballerina.toml");
+            // Ballerina project contains a Ballerina.toml 
+            if (!path.toFile().exists()) {
+                continue;
+            }
             Optional<Path> project =
                     context.compilerManager().getProjectRoot(path);
             project.ifPresent(projects::add);
