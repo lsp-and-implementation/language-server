@@ -2,15 +2,18 @@ plugins {
     id 'java'
 }
 
-group 'org.example'
-version '1.0-SNAPSHOT'
+version project.version
 
 repositories {
     mavenCentral()
     mavenLocal()
-//    maven {
-//        url = 'https://oss.sonatype.org/content/repositories/snapshots'
-//    }
+    maven {
+        url 'https://maven.pkg.github.com/ballerina-platform/*'
+        credentials {
+            username System.getenv('packageUser')
+            password System.getenv('packagePAT')
+        }
+    }
 }
 
 dependencies {
@@ -27,7 +30,7 @@ test {
 
 task copyArtifacts(type: Copy) {
     dependsOn 'uberJar'
-    from "$buildDir/libs/launchers-1.0-SNAPSHOT-uber.jar"
+    from "$buildDir/libs/launchers-$project.version-uber.jar"
     into "../client/ls-client/"
 }
 

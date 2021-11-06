@@ -1,6 +1,2 @@
-group 'org.example'
-version '1.0-SNAPSHOT'
-
-//build.finalizedBy(copyArtifacts)
+version project.version
 apply plugin: 'java'
-

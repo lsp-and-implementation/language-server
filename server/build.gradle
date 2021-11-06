@@ -3,40 +3,34 @@ version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
 
+ext {
+    lsp4jVersion = "0.12.0"
+    ballerinaLangVersion = "2.0.0-beta.3"
+}
+
 subprojects {
     apply plugin: 'java'
 
     repositories {
         mavenLocal()
         mavenCentral()
-//        maven {
-//            url = 'https://maven.wso2.org/nexus/content/repositories/releases/'
-//        }
-        // enable following for beta3 changes
-//        maven {
-//            url = 'https://maven.wso2.org/nexus/content/groups/wso2-public/'
-//        }
-//
-//        maven {
-//            url = 'https://maven.wso2.org/nexus/content/repositories/orgballerinalang-1614'
-//        }
-//
-//        maven {
-//            url = 'https://repo.maven.apache.org/maven2'
-//        }
-//        maven {
-//            url = 'https://oss.sonatype.org/content/repositories/snapshots'
-//        }
+        maven {
+            url 'https://maven.pkg.github.com/ballerina-platform/*'
+            credentials {
+                username System.getenv('packageUser')
+                password System.getenv('packagePAT')
+            }
+        }
     }
     
     dependencies {
-        compile 'org.eclipse.lsp4j:org.eclipse.lsp4j:0.12.0'
-        compile 'org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:0.12.0'
-        compile 'org.ballerinalang:ballerina-lang:2.0.0-beta.4-SNAPSHOT'
-        compile 'org.ballerinalang:ballerina-parser:2.0.0-beta.4-SNAPSHOT'
-        compile 'org.ballerinalang:ballerina-tools-api:2.0.0-beta.4-SNAPSHOT'
-        compile 'org.ballerinalang:formatter:2.0.0-beta.4-SNAPSHOT'
-        compile 'org.ballerinalang:formatter-core:2.0.0-beta.4-SNAPSHOT'
-        compile 'org.ballerinalang:toml-parser:2.0.0-beta.4-SNAPSHOT'
+        compile "org.eclipse.lsp4j:org.eclipse.lsp4j:${lsp4jVersion}"
+        compile "org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:${lsp4jVersion}"
+        compile "org.ballerinalang:ballerina-lang:${ballerinaLangVersion}"
+        compile "org.ballerinalang:ballerina-parser:${ballerinaLangVersion}"
+        compile "org.ballerinalang:ballerina-tools-api:${ballerinaLangVersion}"
+        compile "org.ballerinalang:formatter:${ballerinaLangVersion}"
+        compile "org.ballerinalang:formatter-core:${ballerinaLangVersion}"
+        compile "org.ballerinalang:toml-parser:${ballerinaLangVersion}"
     }
 }
