@@ -73,6 +73,7 @@ export function activate(context: vscode.ExtensionContext) {
 		let clientOptions: LanguageClientOptions = {
 			// Register the server for ballerina documents
 			documentSelector: [{ scheme: 'file', language: 'ballerina' }],
+			// Set the initialization options
 			initializationOptions: {
 				enableDocumentationCodeLenses: false,
 			},

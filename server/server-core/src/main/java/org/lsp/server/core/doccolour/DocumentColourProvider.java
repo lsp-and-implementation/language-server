@@ -67,6 +67,7 @@ public class DocumentColourProvider {
         for (FunctionDefinitionNode function : functions) {
             SeparatedNodeList<ParameterNode> parameters = function.functionSignature().parameters();
             Optional<Symbol> symbol = semanticModel.symbol(function.functionName());
+            // Iterate over parameters
             for (int i = 0; i < parameters.size(); i++) {
                 ParameterNode param = parameters.get(i);
                 if (param.kind() != SyntaxKind.REQUIRED_PARAM) {

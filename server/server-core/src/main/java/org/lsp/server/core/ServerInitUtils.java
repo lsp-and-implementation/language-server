@@ -19,7 +19,6 @@ import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.CodeActionOptions;
 import org.eclipse.lsp4j.CodeLensOptions;
 import org.eclipse.lsp4j.CompletionOptions;
-import org.eclipse.lsp4j.DeclarationOptions;
 import org.eclipse.lsp4j.DeclarationRegistrationOptions;
 import org.eclipse.lsp4j.DefinitionOptions;
 import org.eclipse.lsp4j.DocumentLinkOptions;
@@ -36,8 +35,6 @@ import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
 import org.eclipse.lsp4j.SignatureHelpOptions;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.TextDocumentSyncOptions;
-import org.eclipse.lsp4j.TypeDefinitionOptions;
-import org.eclipse.lsp4j.TypeDefinitionParams;
 import org.eclipse.lsp4j.TypeDefinitionRegistrationOptions;
 import org.eclipse.lsp4j.WorkspaceFoldersOptions;
 import org.eclipse.lsp4j.WorkspaceSymbolOptions;
@@ -147,15 +144,6 @@ public class ServerInitUtils {
     public static DocumentLinkOptions getDocumentLinkOptions() {
         DocumentLinkOptions options = new DocumentLinkOptions();
         options.setResolveProvider(true);
-        return options;
-    }
-
-    public static ExecuteCommandOptions getExecCommandOptions() {
-        ExecuteCommandOptions options = new ExecuteCommandOptions();
-        options.setCommands(Arrays.asList(
-                "ADD_DOC",
-                "CREATE_VAR"));
-
         return options;
     }
 

@@ -186,7 +186,6 @@ public class BalTextDocumentService implements TextDocumentService {
     }
 
     @Override
-    // Done
     public void didChange(DidChangeTextDocumentParams params) {
         BaseOperationContext context = ContextBuilder.baseContext(this.serverContext);
         Path uriPath = CommonUtils.uriToPath(params.getTextDocument().getUri());
@@ -198,7 +197,6 @@ public class BalTextDocumentService implements TextDocumentService {
             return;
         }
         Optional<Project> project = this.documentSyncHandler.didChange(params, context);
-        DiagnosticsPublisher diagnosticsPublisher = context.diagnosticPublisher();
         Path pathUri = CommonUtils.uriToPath(params.getTextDocument().getUri());
         /*
          Publish the diagnostics upon the changes of the document.
@@ -206,7 +204,7 @@ public class BalTextDocumentService implements TextDocumentService {
          affect the whole project. Therefore we have to publish the 
          diagnostics for the whole project.
          */
-        project.ifPresent(prj -> diagnosticsPublisher.publish(context, pathUri));
+        project.ifPresent(prj -> context.diagnosticPublisher().publish(context, pathUri));
     }
 
     @Override
@@ -375,10 +373,10 @@ public class BalTextDocumentService implements TextDocumentService {
         return CompletableFuture.supplyAsync(() -> {
             BalDefinitionContext context = ContextBuilder.getDefinitionContext(this.serverContext, params);
             ContextEvaluator.fillTokenInfoAtCursor(context);
-            if (this.serverContext.getClientCapabilities().get().getTextDocument().getDefinition().getLinkSupport()) {
-                List<LocationLink> locationLinks = DefinitionProvider.definitionWithLocationLink(context);
-                return Either.forRight(locationLinks);
-            }
+//            if (this.serverContext.getClientCapabilities().get().getTextDocument().getDefinition().getLinkSupport()) {
+//                List<LocationLink> locationLinks = DefinitionProvider.definitionWithLocationLink(context);
+//                return Either.forRight(locationLinks);
+//            }
             List<Location> definitions = DefinitionProvider.definition(context);
             return Either.forLeft(definitions);
         });

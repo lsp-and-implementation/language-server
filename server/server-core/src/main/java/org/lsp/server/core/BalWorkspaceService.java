@@ -174,7 +174,7 @@ public class BalWorkspaceService implements WorkspaceService {
             try {
                 this.reIndexWorkspace(context, this.lsServerContext.getClient());
             } catch (ExecutionException | InterruptedException e) {
-                e.printStackTrace();
+                // ignore
             }
         };
         Thread thread = new Thread(task);
@@ -285,10 +285,29 @@ public class BalWorkspaceService implements WorkspaceService {
         return projects;
     }
 
+    private List<Path> getAllProjectRoots(BalWorkspaceContext context)
+            throws ExecutionException, InterruptedException {
+        LanguageClient client = this.lsServerContext.getClient();
+        // Invoke the workspace/workspaceFolders
+        CompletableFuture<List<WorkspaceFolder>> result
+                = client.workspaceFolders();
+        List<Path> projects = new ArrayList<>();
+        for (WorkspaceFolder workspaceFolder : result.get()) {
+            Path path = CommonUtils.uriToPath(workspaceFolder.getUri()).resolve("Ballerina.toml");
+            // Ballerina project contains a Ballerina.toml 
+            if (!path.toFile().exists()) {
+                continue;
+            }
+            projects.add(path);
+        }
+
+        return projects;
+    }
+
     private void reIndexWorkspace(BalWorkspaceContext context,
                                   LanguageClient client)
             throws ExecutionException, InterruptedException {
-        List<Path> projectRoots = getProjectRoots(context);
+        List<Path> projectRoots = getAllProjectRoots(context);
         WorkDoneProgressCreateParams progressCreate =
                 new WorkDoneProgressCreateParams();
         UUID uuid = UUID.randomUUID();
@@ -322,7 +341,7 @@ public class BalWorkspaceService implements WorkspaceService {
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                // ignore
             }
         }
 

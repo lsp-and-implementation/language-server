@@ -107,7 +107,7 @@ public class SignatureProvider {
         SignatureHelpCapabilities capabilities = context.clientCapabilities().getTextDocument().getSignatureHelp();
         List<String> docFormat = capabilities.getSignatureInformation().getDocumentationFormat();
         Documentation documentation = functionSymbol.get().documentation().orElseThrow();
-        String description = documentation.description().get();
+        String description = documentation.description().isPresent() ? documentation.description().get() : "";
 
         StringBuilder signatureLabel = new StringBuilder(functionSymbol.get().getName().get());
         signatureLabel.append("(");
