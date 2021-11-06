@@ -2,13 +2,7 @@ plugins {
     id 'java'
 }
 
-group 'org.example'
-version '1.0-SNAPSHOT'
-
-ext {
-    lsp4jVersion = "0.12.0"
-    ballerinaLangVersion = "2.0.0-beta.3"
-}
+version project.version
 
 repositories {
     mavenCentral()
@@ -36,7 +30,7 @@ test {
 
 task copyArtifacts(type: Copy) {
     dependsOn 'uberJar'
-    from "$buildDir/libs/launchers-1.0-SNAPSHOT-uber.jar"
+    from "$buildDir/libs/launchers-$project.version-uber.jar"
     into "../client/ls-client/"
 }
 
