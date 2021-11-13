@@ -1,4 +1,4 @@
-import { execSync, exec, spawnSync } from 'child_process';
+import { execSync, spawnSync } from 'child_process';
 import { ChildProcess, spawn } from 'mz/child_process';
 import * as vscode from 'vscode';
 import * as path from 'path';
@@ -8,17 +8,20 @@ import { LanguageClient, LanguageClientOptions, ServerOptions, StreamInfo } from
 export function activate(context: vscode.ExtensionContext) {
 	var logChannel = vscode.window.createOutputChannel("Bal_LSP_and_Impl");
 	const main: string = 'com.lspandimpl.launcher.stdio.StdioLauncher';
-	const tcpMain: string = 'TCPLauncher'
+	const tcpMain: string = 'com.lspandimpl.launcher.tcp.TCPLauncher'
 	logChannel.appendLine("Starting the Ballerina Language Server Extension!");
 
 	getJavaHome().then(val => {
 		let javaHome = ((val + '').split('java.home =')[1]).trim();
-		logChannel.appendLine(javaHome);
-		let excecutable: string = path.join(javaHome, 'bin', 'java');
+		logChannel.appendLine('Java Home: [' + javaHome + ']');
 
+		let excecutable: string = path.join(javaHome, 'bin', 'java');
 		let classPath = path.join(__dirname, '..', '*');
 		const args: string[] = ['-cp', classPath];
+
 		let ballerinaHome = getBallerinaHome();
+		logChannel.appendLine('Ballerina Home: [' + ballerinaHome + ']');
+
 		args.push('-Dballerina.home=' + ballerinaHome);
 		if (process.env.LSDEBUG === "true") {
 			logChannel.appendLine('LSDEBUG is set to "true". Language Server is starting on debug mode');
@@ -67,7 +70,6 @@ export function activate(context: vscode.ExtensionContext) {
 					return childProcess
 				});
 			});
-
 		// ######## End of TCP Connection ########
 
 		let clientOptions: LanguageClientOptions = {
@@ -108,22 +110,12 @@ function getJavaHome() {
 }
 
 function getBallerinaHome() {
-	let cmd: string;
-
-	if (process.platform == 'win32') {
-		cmd = 'java -XshowSettings:properties -version 2>&1 | findstr "java.home"';
-	} else {
-		cmd = "bal home";
-	}
-
 	try {
 		let response = spawnSync('bal', ['home']);
 		if (response.stdout.length > 0) {
 			return response.stdout.toString().trim();
 		}
 	} catch (er) {
-		if (er instanceof Error) {
-			return "Failed"
-		}
+		return "Failed to execute the command `bal home`";
 	}
 }
