@@ -18,6 +18,7 @@ package com.lspandimpl.server.core;
 import io.ballerina.projects.util.ProjectConstants;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.DidChangeWatchedFilesRegistrationOptions;
+import org.eclipse.lsp4j.FileOperationsServerCapabilities;
 import org.eclipse.lsp4j.FileSystemWatcher;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
@@ -105,6 +106,7 @@ public class BalLanguageServer implements BalExtendedLanguageServer, LanguageCli
 
             // Set the workspace capabilities
             wsCapabilities.setWorkspaceFolders(ServerInitUtils.getWorkspaceFolderOptions());
+            wsCapabilities.setFileOperations(ServerInitUtils.getFileOpsServerCapabilities());
             sCapabilities.setWorkspace(wsCapabilities);
 
             return new InitializeResult(sCapabilities);

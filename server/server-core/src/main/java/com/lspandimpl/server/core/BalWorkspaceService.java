@@ -18,7 +18,17 @@ package com.lspandimpl.server.core;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.lspandimpl.server.api.context.BalWorkspaceContext;
+import com.lspandimpl.server.api.context.LSContext;
+import com.lspandimpl.server.core.codeaction.BalCommand;
+import com.lspandimpl.server.core.codeaction.CommandArgument;
+import com.lspandimpl.server.core.configdidchange.ConfigurationHolderImpl;
+import com.lspandimpl.server.core.contexts.ContextBuilder;
+import com.lspandimpl.server.core.executecommand.AddDocsArgs;
+import com.lspandimpl.server.core.executecommand.CreateVariableArgs;
+import com.lspandimpl.server.core.fileevents.FileOperationEventsHandler;
 import com.lspandimpl.server.core.utils.CommonUtils;
+import com.lspandimpl.server.core.wsfolderchange.WSFolderChangeHandler;
 import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.syntax.tree.DefaultableParameterNode;
 import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
@@ -33,6 +43,8 @@ import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import io.ballerina.tools.text.LinePosition;
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
+import org.eclipse.lsp4j.CreateFilesParams;
+import org.eclipse.lsp4j.DeleteFilesParams;
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.DidChangeWorkspaceFoldersParams;
@@ -41,6 +53,7 @@ import org.eclipse.lsp4j.FileChangeType;
 import org.eclipse.lsp4j.FileEvent;
 import org.eclipse.lsp4j.ProgressParams;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.RenameFilesParams;
 import org.eclipse.lsp4j.ResourceOperation;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentEdit;
@@ -56,15 +69,6 @@ import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.WorkspaceService;
-import com.lspandimpl.server.api.context.BalWorkspaceContext;
-import com.lspandimpl.server.api.context.LSContext;
-import com.lspandimpl.server.core.codeaction.BalCommand;
-import com.lspandimpl.server.core.codeaction.CommandArgument;
-import com.lspandimpl.server.core.configdidchange.ConfigurationHolderImpl;
-import com.lspandimpl.server.core.contexts.ContextBuilder;
-import com.lspandimpl.server.core.executecommand.AddDocsArgs;
-import com.lspandimpl.server.core.executecommand.CreateVariableArgs;
-import com.lspandimpl.server.core.wsfolderchange.WSFolderChangeHandler;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -198,6 +202,36 @@ public class BalWorkspaceService implements WorkspaceService {
 
             return null;
         });
+    }
+
+    @Override
+    public CompletableFuture<WorkspaceEdit> willCreateFiles(CreateFilesParams params) {
+        return CompletableFuture.supplyAsync(() -> FileOperationEventsHandler.willCreate(params));
+    }
+
+    @Override
+    public void didCreateFiles(CreateFilesParams params) {
+        FileOperationEventsHandler.didCreate(params, lsServerContext.getClient());
+    }
+
+    @Override
+    public CompletableFuture<WorkspaceEdit> willRenameFiles(RenameFilesParams params) {
+        return CompletableFuture.supplyAsync(() -> null);
+    }
+
+    @Override
+    public void didRenameFiles(RenameFilesParams params) {
+
+    }
+
+    @Override
+    public CompletableFuture<WorkspaceEdit> willDeleteFiles(DeleteFilesParams params) {
+        return CompletableFuture.supplyAsync(() -> null);
+    }
+
+    @Override
+    public void didDeleteFiles(DeleteFilesParams params) {
+
     }
 
     private ApplyWorkspaceEditResponse
