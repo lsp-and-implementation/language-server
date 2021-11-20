@@ -15,6 +15,7 @@
  */
 package com.lspandimpl.server.core;
 
+import io.ballerina.projects.util.ProjectConstants;
 import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.CodeActionOptions;
 import org.eclipse.lsp4j.CodeLensOptions;
@@ -25,6 +26,10 @@ import org.eclipse.lsp4j.DocumentLinkOptions;
 import org.eclipse.lsp4j.DocumentOnTypeFormattingOptions;
 import org.eclipse.lsp4j.DocumentSymbolOptions;
 import org.eclipse.lsp4j.ExecuteCommandOptions;
+import org.eclipse.lsp4j.FileOperationFilter;
+import org.eclipse.lsp4j.FileOperationOptions;
+import org.eclipse.lsp4j.FileOperationPattern;
+import org.eclipse.lsp4j.FileOperationsServerCapabilities;
 import org.eclipse.lsp4j.HoverOptions;
 import org.eclipse.lsp4j.ImplementationRegistrationOptions;
 import org.eclipse.lsp4j.ReferenceOptions;
@@ -189,6 +194,24 @@ public class ServerInitUtils {
         options.setTriggerCharacters(Arrays.asList("(", ","));
 
         return options;
+    }
+    
+    public static FileOperationsServerCapabilities getFileOpsServerCapabilities() {
+        FileOperationFilter balTomlFilter = new FileOperationFilter();
+        FileOperationPattern balTomlPattern = new FileOperationPattern();
+        balTomlPattern.setGlob("/**/" + ProjectConstants.BALLERINA_TOML);
+        balTomlFilter.setPattern(balTomlPattern);
+        balTomlFilter.setScheme("file");
+        
+        FileOperationsServerCapabilities capabilities = new FileOperationsServerCapabilities();
+        capabilities.setWillCreate(new FileOperationOptions(Collections.singletonList(balTomlFilter)));
+        capabilities.setDidCreate(new FileOperationOptions(Collections.singletonList(balTomlFilter)));
+        capabilities.setWillDelete(new FileOperationOptions(Collections.singletonList(balTomlFilter)));
+        capabilities.setDidDelete(new FileOperationOptions(Collections.singletonList(balTomlFilter)));
+        capabilities.setWillRename(new FileOperationOptions(Collections.singletonList(balTomlFilter)));
+        capabilities.setDidRename(new FileOperationOptions(Collections.singletonList(balTomlFilter)));
+        
+        return capabilities;
     }
 
     public static HoverOptions getHoverOptions() {
