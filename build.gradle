@@ -1,2 +1,18 @@
+plugins {
+    id 'net.researchgate.release' version '2.8.1'
+}
+
 version project.version
 apply plugin: 'java'
+
+release {
+    // Disable check snapshots temporarily
+    failOnSnapshotDependencies = false
+    failOnCommitNeeded = false
+    tagTemplate = 'release_${version}'
+    buildTasks = ['build']
+    git {
+        // To release from any branch
+        requireBranch = null
+    }
+}
