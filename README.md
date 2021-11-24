@@ -17,6 +17,9 @@ LinkedIn - linkedin.com/in/nipuna-marcus-0b721143
 Github: https://github.com/NipunaMarcus
 
 ### Introduction
+The Language Server Protocol (LSP) has been one of the most talked about topics during the past few years when it comes to the tooling for programming languages. With the advancement of the developer tools and the programming languages, developers started to rely more and more on advanced tools and enhanced language services. When we consider one of the most focused branches of developer tools which is IDEs and text editors, there are many vendors who have released various editing tools in the past couple of decades. When we consider the number of programming languages along with the number of smart editors nowadays, in order to support language intelligence among the editors, these vendors have to repeat the same thing. The Language Server Protocol was introduced to solve this particular problem, and today it has become the norm of the development tools’ language intelligence provider. By adopting the LSP, tools such as text editors and integrated development environments (IDEs) could expand the capabilities and avoid the users’ burden of switching between the development tools for trying new programming languages and frameworks.
+This book is for the developers who are passionate about developing programming language tools. In this book, we provide the readers a comprehensive understanding about the Language Server Protocol and how to develop a Language Server from scratch. The readers will be guided with code samples to provide a better understanding about the server implementation by adhering to the user experience best practices as well as the LSP best practices. The readers are expected to use the book along with the example implementation, in order to get a better understanding about the concepts described
+in the book. In the example implementation, the book refers to VS Code as the client; however, the readers can use any other client and integrate the server implementation as desired.
 
 ## Technologies
 - The client implementation is done with [TypeScript](https://www.typescriptlang.org/).
@@ -67,4 +70,4 @@ Open the `REPO_ROOT/client/ls-client/` directory in VS Code.
 Go to `REPO_ROOT/client/ls-client/.vscode/launch.json` file and set the `LSDEBUG` config value to `true`
 
 ##### Step 3
-Run the extension as shown in the figure
+Run the extension from VSCode
