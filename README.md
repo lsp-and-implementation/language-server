@@ -35,6 +35,20 @@ This repository contains two components as the client and the server implementat
 Clone the repo
 
 ##### Step 2
+**Set the github access token**
+In order to build the repo, you have the set the github access token in the first place. In order to do so, execute the following command
+
+In Unix
+```
+export packageUser='your_github_user_name'
+export packagePAT='your_github_personal_access_token'
+```
+
+In Windows
+```
+set packageUser='your_github_user_name'
+set packagePAT='your_github_personal_access_token'
+```
 **Build the Server Implementation**
 Go to the repo root and execute the following command to build the server implementation.
 `./gradlew clean build`
