@@ -85,3 +85,7 @@ Go to `REPO_ROOT/client/ls-client/.vscode/launch.json` file and set the `LSDEBUG
 
 ##### Step 3
 Run the extension from VSCode
+
+## Known Issues
+- If you use windows and cannot get the server implementation up and running due to any errors, please check the following and there is a solution as well.
+Link: https://discord.com/channels/957996897782616114/966324885720825866/1035241303526613053
